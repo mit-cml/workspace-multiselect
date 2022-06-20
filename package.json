@@ -1,12 +1,12 @@
 {
   "name": "@mit-app-inventor/blockly-plugin-workspace-multiselect",
-  "version": "0.0.0",
-  "description": "A Blockly plugin.",
+  "version": "0.1.0",
+  "description": "A Blockly plugin that allows to select multiple blocks in the workspace.",
   "scripts": {
     "audit:fix": "blockly-scripts auditFix",
     "build": "blockly-scripts build",
     "clean": "blockly-scripts clean",
-    "lint": "blockly-scripts lint",
+    "lint": "blockly-scripts lint --fix",
     "predeploy": "blockly-scripts predeploy",
     "prepublishOnly": "npm run clean && npm run build",
     "start": "blockly-scripts start",

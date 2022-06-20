@@ -1,9 +1,6 @@
 # blockly-plugin-workspace-multiselect [![Built on Blockly](https://tinyurl.com/built-on-blockly)](https://github.com/google/blockly)
 
-<!--
-  - TODO: Edit plugin description.
-  -->
-A [Blockly](https://www.npmjs.com/package/blockly) plugin that ...
+A [Blockly](https://www.npmjs.com/package/blockly) plugin that allows to select multiple blocks in the workspace.
 
 ## Installation
 
@@ -19,21 +16,21 @@ npm install blockly-plugin-workspace-multiselect --save
 
 ## Usage
 
-<!--
-  - TODO: Update usage.
-  -->
 ```js
 import * as Blockly from 'blockly';
-import {Plugin} from 'blockly-plugin-workspace-multiselect';
+import {WorkspaceMultiSelect, MultiSelectBlockDragger} from 'blockly-plugin-workspace-multiselect';
 
 // Inject Blockly.
 const workspace = Blockly.inject('blocklyDiv', {
   toolbox: toolboxCategories,
+  plugins: {
+    'blockDragger': MultiSelectBlockDragger,
+  },
 });
 
 // Initialize plugin.
-const plugin = new Plugin(workspace);
-plugin.init();
+const multiSelectPlugin = new WorkspaceMultiSelect(workspace);
+multiSelectPlugin.init();
 ```
 
 ## API

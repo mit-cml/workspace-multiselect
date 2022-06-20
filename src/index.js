@@ -4,32 +4,213 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-// TODO: Edit plugin overview.
 /**
- * @fileoverview Plugin overview.
+ * @fileoverview Plugin main class.
  */
 
-// TODO: Rename plugin and edit plugin description.
+import * as Blockly from 'blockly/core';
+import DragSelect from '../lib/ds.min';
+
+import {blockSelection} from './global';
+
 /**
- * Plugin description.
+ * Class for using multiple select blocks on workspace.
  */
-export class Plugin {
+export class WorkspaceMultiSelect {
   /**
-   * Constructor for ...
-   * @param {!Blockly.WorkspaceSvg} workspace The workspace that the plugin will
-   *     be added to.
+   * Initalize the class data structure.
+   * @param {!Blockly.WorkspaceSvg} workspace The workspace to sit in.
    */
   constructor(workspace) {
-    /**
-     * The workspace.
-     * @type {!Blockly.WorkspaceSvg}
-     * @protected
-     */
     this.workspace_ = workspace;
+    this.keyPressed_ = false;
+    this.hasDisableWorkspaceDrag_ = false;
+    this.justDeletedBlock_ = null;
   }
 
   /**
-   * Initialize.
+   * Bind the events and replace registration.
    */
-  init() { }
+  init() {
+    this.onKeyDownWrapper_ = Blockly.browserEvents.conditionalBind(
+        this.workspace_.injectionDiv_, 'keydown', this, this.onKeyDown_);
+    this.onKeyUpWrapper_ = Blockly.browserEvents.conditionalBind(
+        this.workspace_.injectionDiv_, 'keyup', this, this.onKeyUp_);
+    this.onBlockSelectedWrapper_ = this.onBlockSelected_.bind(this);
+    this.workspace_.addChangeListener(this.onBlockSelectedWrapper_);
+  }
+
+  /**
+   * Unbind the events and replace with original registration.
+   */
+  dispose() {
+    if (this.onKeyDownWrapper_) {
+      Blockly.browserEvents.unbind(this.onKeyDownWrapper_);
+      this.onKeyDownWrapper_ = null;
+    }
+    if (this.onKeyUpWrapper_) {
+      Blockly.browserEvents.unbind(this.onKeyUpWrapper_);
+      this.onKeyUpWrapper_ = null;
+    }
+    if (this.onBlockSelectedWrapper_) {
+      this.workspace_.removeChangeListener(this.onBlockSelectedWrapper_);
+      this.onBlockSelectedWrapper_ = null;
+    }
+  }
+
+  /**
+   * Switch the multiple selection mode.
+   * @param {!boolean} on Whether to turn on the mode.
+   */
+  switchMultiSelect(on) {
+    if (on) {
+      this.onKeyDown_({keyCode: Blockly.utils.KeyCodes.SHIFT});
+    } else {
+      this.onKeyUp_({keyCode: Blockly.utils.KeyCodes.SHIFT});
+    }
+  }
+
+  /**
+   * Maintain the selected blocks set list when updating.
+   * @param {!Blockly.BlockSvg} block The block to update.
+   * @private
+   */
+  updateBlocks_(block) {
+    if (block &&
+      block.isDeletable() &&
+      block.isMovable()) {
+      if (blockSelection.has(block.id)) {
+        blockSelection.delete(block.id);
+        this.justDeletedBlock_ = block;
+        block.pathObject.updateSelected(false);
+      } else {
+        blockSelection.add(block.id);
+        this.justDeletedBlock_ = null;
+        block.pathObject.updateSelected(true);
+      }
+      console.log(blockSelection);
+    }
+  }
+
+  /**
+   * Handle a change to the selected block.
+   * @param {!Event} e Blockly event.
+   * @private
+   */
+  onBlockSelected_(e) {
+    if (e.type === Blockly.Events.SELECTED) {
+      if (!this.keyPressed_) {
+        if (!Blockly.selected ||
+          (Blockly.selected && !blockSelection.has(Blockly.selected.id))) {
+          // When not in multiple selection mode and Blockly selects a block not
+          // in currently selected set or unselects, clear the selected set.
+          blockSelection.forEach((id) => {
+            const element = this.workspace_.getBlockById(id);
+            if (element && !element.disposed) {
+              element.pathObject.updateSelected(false);
+            }
+          });
+          blockSelection.clear();
+          this.updateBlocks_(Blockly.selected);
+        }
+      } else if (this.justDeletedBlock_ && Blockly.selected &&
+        Blockly.selected.id === this.justDeletedBlock_.id) {
+        // Update the Blockly selected block when that block is
+        // no longer selected in our set.
+        if (blockSelection.size > 0) {
+          Blockly.common.setSelected(
+              this.workspace_.getBlockById(blockSelection.keys().next().value));
+        } else {
+          Blockly.common.setSelected(null);
+        }
+        this.justDeletedBlock_.pathObject.updateSelected(false);
+        this.justDeletedBlock_ = null;
+      }
+      // Update the selection highlight.
+      blockSelection.forEach((id) => {
+        const element = this.workspace_.getBlockById(id);
+        if (element && !element.disposed) {
+          element.pathObject.updateSelected(true);
+        }
+      });
+    }
+  }
+
+  /**
+   * Handle a key-down on the workspace.
+   * @param {KeyboardEvent} e The keyboard event.
+   * @private
+   */
+  onKeyDown_(e) {
+    if (e.keyCode === Blockly.utils.KeyCodes.SHIFT) {
+      if (!this.keyPressed_) {
+        // Ensure that we only restore drag to move the workspace behavior
+        // when it is enabled.
+        if (!this.hasDisableWorkspaceDrag_ &&
+          this.workspace_.options.moveOptions &&
+          this.workspace_.options.moveOptions.drag) {
+          this.workspace_.options.moveOptions.drag = false;
+          this.hasDisableWorkspaceDrag_ = true;
+        }
+        this.dragSelect_ = new DragSelect({
+          selectables: document.querySelectorAll(
+              'g.blocklyDraggable:not(.blocklyInsertionMarker)'),
+          area: document.querySelector('.blocklyWorkspace'),
+          multiSelectMode: true,
+          draggability: false,
+          usePointerEvents: true,
+        });
+        this.dragSelect_.subscribe('elementselect', (info) => {
+          const element = info.item;
+          if (this.keyPressed_ && element.dataset && element.dataset.id) {
+            this.updateBlocks_(
+                this.workspace_.getBlockById(element.dataset.id));
+          }
+        });
+        this.dragSelect_.subscribe('elementunselect', (info) => {
+          const element = info.item;
+          if (this.keyPressed_ && element.dataset && element.dataset.id) {
+            this.updateBlocks_(
+                this.workspace_.getBlockById(element.dataset.id));
+          }
+        });
+        if (this.controls_) {
+          this.controls_.updateMultiSelect(true);
+        }
+        this.keyPressed_ = true;
+      }
+    }
+  }
+
+  /**
+   * Handle a key-up on the workspace.
+   * @param {KeyboardEvent} e The keyboard event.
+   * @private
+   */
+  onKeyUp_(e) {
+    if (e.keyCode == Blockly.utils.KeyCodes.SHIFT) {
+      this.keyPressed_ = false;
+      if (this.dragSelect_) {
+        this.dragSelect_.stop();
+      }
+      // Ensure that at least Blockly select one of the blocks in the
+      // selection set, or clear the Blockly selection if our set is empty.
+      if (blockSelection.size == 0 && Blockly.selected) {
+        Blockly.common.setSelected(null);
+      } else if (blockSelection.size > 0 && !Blockly.selected) {
+        Blockly.common.setSelected(
+            this.workspace_.getBlockById(blockSelection.keys().next().value));
+      }
+      if (this.hasDisableWorkspaceDrag_) {
+        this.workspace_.options.moveOptions.drag = true;
+        this.hasDisableWorkspaceDrag_ = false;
+      }
+      if (this.controls_) {
+        this.controls_.updateMultiSelect(false);
+      }
+    }
+  }
 }
+
+export * from './patch';
+export * from './dragger';

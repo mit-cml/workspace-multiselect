@@ -10,7 +10,7 @@
 
 import * as Blockly from 'blockly';
 import {toolboxCategories, createPlayground} from '@blockly/dev-tools';
-import {Plugin} from '../src/index';
+import {WorkspaceMultiSelect, MultiSelectBlockDragger} from '../src/index';
 
 /**
  * Create a workspace.
@@ -21,9 +21,8 @@ import {Plugin} from '../src/index';
 function createWorkspace(blocklyDiv, options) {
   const workspace = Blockly.inject(blocklyDiv, options);
 
-  // TODO: Initialize your plugin here.
-  const plugin = new Plugin(workspace);
-  plugin.init();
+  const multiSelectPlugin = new WorkspaceMultiSelect(workspace);
+  multiSelectPlugin.init();
 
   return workspace;
 }
@@ -31,6 +30,18 @@ function createWorkspace(blocklyDiv, options) {
 document.addEventListener('DOMContentLoaded', function() {
   const defaultOptions = {
     toolbox: toolboxCategories,
+    grid: {
+      spacing: 25,
+      length: 3,
+      colour: '#ccc',
+      snap: true,
+    },
+    zoom: {
+      wheel: true,
+    },
+    plugins: {
+      'blockDragger': MultiSelectBlockDragger,
+    },
   };
   createPlayground(document.getElementById('root'), createWorkspace,
       defaultOptions);
