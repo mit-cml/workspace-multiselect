@@ -21,6 +21,7 @@ export class MultiSelectBlockDragger extends Blockly.BlockDragger {
     super(block, workspace);
     this.block_ = block;
     this.workspace_ = workspace;
+    this.group_ = '';
     this.blockDraggers_ = new Set();
   }
 
@@ -93,7 +94,12 @@ export class MultiSelectBlockDragger extends Blockly.BlockDragger {
    *     has moved from the position at the start of the drag, in pixel units.
    */
   endDrag(e, currentDragDeltaXY) {
-    this.blockDraggers_.forEach(function(blockDragger_) {
+    this.blockDraggers_.forEach((blockDragger_) => {
+      if (Blockly.Events.getGroup()) {
+        this.group_ = Blockly.Events.getGroup();
+      } else {
+        Blockly.Events.setGroup(this.group_);
+      }
       blockDragger_.endDrag(e, currentDragDeltaXY);
     });
   }
