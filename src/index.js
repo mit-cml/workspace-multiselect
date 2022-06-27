@@ -12,6 +12,7 @@ import * as Blockly from 'blockly/core';
 import DragSelect from '../lib/ds.min';
 
 import {blockSelection} from './global';
+import {MultiSelectControls} from './switch';
 
 /**
  * Class for using multiple select blocks on workspace.
@@ -38,6 +39,11 @@ export class WorkspaceMultiSelect {
         this.workspace_.injectionDiv_, 'keyup', this, this.onKeyUp_);
     this.onBlockSelectedWrapper_ = this.onBlockSelected_.bind(this);
     this.workspace_.addChangeListener(this.onBlockSelectedWrapper_);
+
+    this.controls_ = new MultiSelectControls(this.workspace_, this);
+    const svgControls = this.controls_.createDom();
+    this.workspace_.svgGroup_.appendChild(svgControls);
+    this.controls_.init();
   }
 
   /**
@@ -55,6 +61,11 @@ export class WorkspaceMultiSelect {
     if (this.onBlockSelectedWrapper_) {
       this.workspace_.removeChangeListener(this.onBlockSelectedWrapper_);
       this.onBlockSelectedWrapper_ = null;
+    }
+
+    if (this.controls_) {
+      this.controls_.dispose();
+      this.controls_ = null;
     }
   }
 
