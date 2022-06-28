@@ -21,9 +21,14 @@
     "blockly-plugin",
     "workspace-multiselect"
   ],
-  "homepage": "",
-  "bugs": {},
-  "repository": {},
+  "homepage": "https://github.com/mit-cml/workspace-multiselect/#readme",
+  "bugs": {
+    "url": "https://github.com/mit-cml/workspace-multiselect/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mit-cml/workspace-multiselect.git"
+  },
   "license": "Apache-2.0",
   "directories": {
     "dist": "dist",
@@ -34,12 +39,12 @@
     "src"
   ],
   "devDependencies": {
-    "@blockly/dev-scripts": "^1.2.20",
-    "@blockly/dev-tools": "^3.1.5",
+    "@blockly/dev-scripts": "^1.2.21",
+    "@blockly/dev-tools": "^3.1.6",
     "blockly": "^8.0.3"
   },
   "peerDependencies": {
-    "blockly": "^8.0.3"
+    "blockly": "^7 - 8"
   },
   "publishConfig": {},
   "eslintConfig": {

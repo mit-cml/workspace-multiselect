@@ -232,10 +232,9 @@ export class MultiSelectControls {
     this.workspace_.markFocused();
     this.enable = !this.enable;
     this.plugin_.switchMultiSelect(this.enable);
-    if (e) {
-      e.stopPropagation(); // Don't start a workspace scroll.
-      e.preventDefault(); // Stop double-clicking from selecting text.
-    }
+    Blockly.Touch.clearTouchIdentifier(); // Don't block future drags.
+    e.stopPropagation(); // Don't start a workspace scroll.
+    e.preventDefault(); // Stop double-clicking from selecting text.
   }
 
   /**

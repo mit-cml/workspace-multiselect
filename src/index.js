@@ -9,9 +9,10 @@
  */
 
 import * as Blockly from 'blockly/core';
+
 import DragSelect from '../lib/ds.min';
 
-import {blockSelection} from './global';
+import {blockSelection, inMultipleSelectionMode, setSelectionMode} from './global';
 import {MultiSelectControls} from './switch';
 
 /**
@@ -24,7 +25,6 @@ export class WorkspaceMultiSelect {
    */
   constructor(workspace) {
     this.workspace_ = workspace;
-    this.keyPressed_ = false;
     this.hasDisableWorkspaceDrag_ = false;
     this.justDeletedBlock_ = null;
   }
@@ -37,8 +37,8 @@ export class WorkspaceMultiSelect {
         this.workspace_.injectionDiv_, 'keydown', this, this.onKeyDown_);
     this.onKeyUpWrapper_ = Blockly.browserEvents.conditionalBind(
         this.workspace_.injectionDiv_, 'keyup', this, this.onKeyUp_);
-    this.onBlockSelectedWrapper_ = this.onBlockSelected_.bind(this);
-    this.workspace_.addChangeListener(this.onBlockSelectedWrapper_);
+    this.eventListenerWrapper_ = this.eventListener_.bind(this);
+    this.workspace_.addChangeListener(this.eventListenerWrapper_);
 
     this.controls_ = new MultiSelectControls(this.workspace_, this);
     const svgControls = this.controls_.createDom();
@@ -58,9 +58,9 @@ export class WorkspaceMultiSelect {
       Blockly.browserEvents.unbind(this.onKeyUpWrapper_);
       this.onKeyUpWrapper_ = null;
     }
-    if (this.onBlockSelectedWrapper_) {
-      this.workspace_.removeChangeListener(this.onBlockSelectedWrapper_);
-      this.onBlockSelectedWrapper_ = null;
+    if (this.eventListenerWrapper_) {
+      this.workspace_.removeChangeListener(this.eventListenerWrapper_);
+      this.eventListenerWrapper_ = null;
     }
 
     if (this.controls_) {
@@ -104,13 +104,14 @@ export class WorkspaceMultiSelect {
   }
 
   /**
-   * Handle a change to the selected block.
+   * Handle workspace events.
    * @param {!Event} e Blockly event.
    * @private
    */
-  onBlockSelected_(e) {
+  eventListener_(e) {
+    // on Block Selected
     if (e.type === Blockly.Events.SELECTED) {
-      if (!this.keyPressed_) {
+      if (!inMultipleSelectionMode) {
         if (!Blockly.selected ||
           (Blockly.selected && !blockSelection.has(Blockly.selected.id))) {
           // When not in multiple selection mode and Blockly selects a block not
@@ -154,7 +155,7 @@ export class WorkspaceMultiSelect {
    */
   onKeyDown_(e) {
     if (e.keyCode === Blockly.utils.KeyCodes.SHIFT) {
-      if (!this.keyPressed_) {
+      if (!inMultipleSelectionMode) {
         // Ensure that we only restore drag to move the workspace behavior
         // when it is enabled.
         if (!this.hasDisableWorkspaceDrag_ &&
@@ -165,22 +166,25 @@ export class WorkspaceMultiSelect {
         }
         this.dragSelect_ = new DragSelect({
           selectables: document.querySelectorAll(
-              'g.blocklyDraggable:not(.blocklyInsertionMarker)'),
+              'g.blocklyDraggable:not(.blocklyInsertionMarker)' +
+            '> path.blocklyPath'),
           area: document.querySelector('.blocklyWorkspace'),
           multiSelectMode: true,
           draggability: false,
           usePointerEvents: true,
         });
         this.dragSelect_.subscribe('elementselect', (info) => {
-          const element = info.item;
-          if (this.keyPressed_ && element.dataset && element.dataset.id) {
+          const element = info.item.parentElement;
+          if (inMultipleSelectionMode && element.dataset &&
+            element.dataset.id) {
             this.updateBlocks_(
                 this.workspace_.getBlockById(element.dataset.id));
           }
         });
         this.dragSelect_.subscribe('elementunselect', (info) => {
-          const element = info.item;
-          if (this.keyPressed_ && element.dataset && element.dataset.id) {
+          const element = info.item.parentElement;
+          if (inMultipleSelectionMode && element.dataset &&
+            element.dataset.id) {
             this.updateBlocks_(
                 this.workspace_.getBlockById(element.dataset.id));
           }
@@ -188,7 +192,7 @@ export class WorkspaceMultiSelect {
         if (this.controls_) {
           this.controls_.updateMultiSelect(true);
         }
-        this.keyPressed_ = true;
+        setSelectionMode(true);
       }
     }
   }
@@ -200,9 +204,10 @@ export class WorkspaceMultiSelect {
    */
   onKeyUp_(e) {
     if (e.keyCode == Blockly.utils.KeyCodes.SHIFT) {
-      this.keyPressed_ = false;
+      setSelectionMode(false);
       if (this.dragSelect_) {
         this.dragSelect_.stop();
+        this.dragSelect_ = null;
       }
       // Ensure that at least Blockly select one of the blocks in the
       // selection set, or clear the Blockly selection if our set is empty.

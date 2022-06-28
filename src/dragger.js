@@ -9,7 +9,7 @@
  */
 
 import * as Blockly from 'blockly/core';
-import {blockSelection, hasSelectedParent} from './global';
+import {blockSelection, inMultipleSelectionMode, hasSelectedParent} from './global';
 
 /**
  * A block dragger that adds the functionality for multiple block to
@@ -33,44 +33,38 @@ export class MultiSelectBlockDragger extends Blockly.BlockDragger {
    *     disconnecting.
    */
   startDrag(currentDragDeltaXY, healStack) {
-    this.blockDraggers_.clear();
-    let blockDraggerList = [];
-    let hasSelectedBlock = false;
-    blockSelection.forEach((id) => {
-      const element = this.workspace_.getBlockById(id);
-      if (element.disposed) {
-        blockSelection.delete(id);
-        return;
+    if (!inMultipleSelectionMode) {
+      const blockDraggerList = [];
+      if (!blockSelection.has(this.block_.id)) {
+        blockSelection.forEach((id) => {
+          const element = this.workspace_.getBlockById(id);
+          if (!element.disposed) {
+            element.pathObject.updateSelected(false);
+          }
+        });
+        blockSelection.clear();
+        blockDraggerList.push(new Blockly.BlockDragger(this.block_,
+            this.workspace_));
+        this.block_.pathObject.updateSelected(true);
       }
-      // Put the current Blockly selected block in the end of dragger list.
-      if (element === this.block_) {
-        hasSelectedBlock = true;
-        return;
-      }
-      // Only drag the parent if it is selected.
-      if (hasSelectedParent(element)) {
-        return;
-      }
-      blockDraggerList.push(new Blockly.BlockDragger(element,
-          this.workspace_));
-    });
-    if (!hasSelectedBlock) {
       blockSelection.forEach((id) => {
         const element = this.workspace_.getBlockById(id);
-        if (!element.disposed) {
-          element.pathObject.updateSelected(false);
+        if (element.disposed) {
+          blockSelection.delete(id);
+          return;
         }
+        // Only drag the parent if it is selected.
+        if (hasSelectedParent(element)) {
+          return;
+        }
+        blockDraggerList.push(new Blockly.BlockDragger(element,
+            this.workspace_));
       });
-      blockSelection.clear();
-      blockDraggerList = [];
+      blockDraggerList.forEach((blockDragger) => {
+        blockDragger.startDrag(currentDragDeltaXY, healStack);
+        this.blockDraggers_.add(blockDragger);
+      });
     }
-    blockDraggerList.push(new Blockly.BlockDragger(this.block_,
-        this.workspace_));
-    this.block_.pathObject.updateSelected(true);
-    blockDraggerList.forEach((blockDragger) => {
-      blockDragger.startDrag(currentDragDeltaXY, healStack);
-      this.blockDraggers_.add(blockDragger);
-    });
   }
 
   /**
