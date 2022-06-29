@@ -19,6 +19,11 @@ export const blockSelection = new Set();
 export let inMultipleSelectionMode = false;
 
 /**
+ * Store the original rendered connection highlight function.
+ */
+export const origHighlight = Blockly.RenderedConnection.prototype.highlight;
+
+/**
  * Set the inMultipleSelectionMode.
  * @param {boolean} isMultiple selection mode.
  */

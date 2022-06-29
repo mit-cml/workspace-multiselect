@@ -9,7 +9,7 @@
  */
 
 import * as Blockly from 'blockly/core';
-import {blockSelection, inMultipleSelectionMode, hasSelectedParent} from './global';
+import {blockSelection, inMultipleSelectionMode, hasSelectedParent, origHighlight} from './global';
 
 /**
  * A block dragger that adds the functionality for multiple block to
@@ -64,6 +64,11 @@ export class MultiSelectBlockDragger extends Blockly.BlockDragger {
         blockDragger.startDrag(currentDragDeltaXY, healStack);
         this.blockDraggers_.add(blockDragger);
       });
+      if (this.blockDraggers_.size > 1) {
+        // Disabled the highlighting around connection for multiple blocks
+        // dragging because of the bugs.
+        Blockly.RenderedConnection.prototype.highlight = function() {};
+      }
     }
   }
 
@@ -96,6 +101,10 @@ export class MultiSelectBlockDragger extends Blockly.BlockDragger {
       }
       blockDragger_.endDrag(e, currentDragDeltaXY);
     });
+    if (this.blockDraggers_.size > 1) {
+      // Restore the highlighting around connection for multiple blocks.
+      Blockly.RenderedConnection.prototype.highlight = origHighlight;
+    }
   }
 
   /**
