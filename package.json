@@ -1,7 +1,7 @@
 {
   "name": "@mit-app-inventor/blockly-plugin-workspace-multiselect",
   "version": "0.1.0",
-  "description": "A Blockly plugin that allows to select multiple blocks in the workspace.",
+  "description": "A Blockly plugin that allows to darg, select and doing actions on multiple blocks in the workspace.",
   "scripts": {
     "audit:fix": "blockly-scripts auditFix",
     "build": "blockly-scripts build",
@@ -15,7 +15,7 @@
   "main": "./dist/index.js",
   "module": "./src/index.js",
   "unpkg": "./dist/index.js",
-  "author": "",
+  "author": "Songlin Jiang",
   "keywords": [
     "blockly",
     "blockly-plugin",
@@ -54,8 +54,6 @@
     "node": ">=8.17.0"
   },
   "browserslist": [
-    "defaults",
-    "IE 11",
-    "IE_Mob 11"
+    "defaults"
   ]
 }

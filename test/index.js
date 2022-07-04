@@ -30,12 +30,6 @@ function createWorkspace(blocklyDiv, options) {
 document.addEventListener('DOMContentLoaded', function() {
   const defaultOptions = {
     toolbox: toolboxCategories,
-    grid: {
-      spacing: 25,
-      length: 3,
-      colour: '#ccc',
-      snap: true,
-    },
     zoom: {
       wheel: true,
     },

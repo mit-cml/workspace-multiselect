@@ -12,6 +12,7 @@ import * as Blockly from 'blockly/core';
 
 import DragSelect from '../lib/ds.min';
 
+import * as ContextMenu from './contextmenu';
 import {blockSelection, inMultipleSelectionMode, setSelectionMode} from './global';
 import {MultiSelectControls} from './switch';
 
@@ -40,6 +41,9 @@ export class WorkspaceMultiSelect {
     this.eventListenerWrapper_ = this.eventListener_.bind(this);
     this.workspace_.addChangeListener(this.eventListenerWrapper_);
 
+    ContextMenu.unregisterContextMenu();
+    ContextMenu.registerOurContextMenu();
+
     this.controls_ = new MultiSelectControls(this.workspace_, this);
     const svgControls = this.controls_.createDom();
     this.workspace_.svgGroup_.appendChild(svgControls);
@@ -62,6 +66,10 @@ export class WorkspaceMultiSelect {
       this.workspace_.removeChangeListener(this.eventListenerWrapper_);
       this.eventListenerWrapper_ = null;
     }
+
+    ContextMenu.unregisterContextMenu();
+    ContextMenu.registerOrigContextMenu();
+    Blockly.ContextMenuRegistry.registry.unregister('workspaceSelectAll');
 
     if (this.controls_) {
       this.controls_.dispose();
