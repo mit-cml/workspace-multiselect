@@ -13,7 +13,9 @@ import * as Blockly from 'blockly/core';
 import DragSelect from '../lib/ds.min';
 
 import * as ContextMenu from './contextmenu';
-import {blockSelection, inMultipleSelectionMode, setSelectionMode} from './global';
+import * as Shortcut from './shortcut';
+import {blockSelection, inMultipleSelectionMode, setSelectionMode,
+  origHandleWsStart, hasSelectedParent} from './global';
 import {MultiSelectControls} from './switch';
 
 /**
@@ -32,8 +34,9 @@ export class WorkspaceMultiSelect {
 
   /**
    * Bind the events and replace registration.
+   * @param {!Blockly.BlocklyOptions} options to set.
    */
-  init() {
+  init(options) {
     this.onKeyDownWrapper_ = Blockly.browserEvents.conditionalBind(
         this.workspace_.injectionDiv_, 'keydown', this, this.onKeyDown_);
     this.onKeyUpWrapper_ = Blockly.browserEvents.conditionalBind(
@@ -43,11 +46,19 @@ export class WorkspaceMultiSelect {
 
     ContextMenu.unregisterContextMenu();
     ContextMenu.registerOurContextMenu();
+    Shortcut.unregisterShortcut();
+    Shortcut.registerOurShortcut();
 
-    this.controls_ = new MultiSelectControls(this.workspace_, this);
-    const svgControls = this.controls_.createDom();
-    this.workspace_.svgGroup_.appendChild(svgControls);
-    this.controls_.init();
+    if (options.multiSelectIcon) {
+      this.controls_ = new MultiSelectControls(this.workspace_, this);
+      const svgControls = this.controls_.createDom();
+      this.workspace_.svgGroup_.appendChild(svgControls);
+      this.controls_.init();
+    }
+
+    if (options.useDoubleClick) {
+      this.useDoubleClick_(true);
+    }
   }
 
   /**
@@ -70,11 +81,16 @@ export class WorkspaceMultiSelect {
     ContextMenu.unregisterContextMenu();
     ContextMenu.registerOrigContextMenu();
     Blockly.ContextMenuRegistry.registry.unregister('workspaceSelectAll');
+    Shortcut.unregisterShortcut();
+    Blockly.ShortcutRegistry.registry.unregister('selectall');
+    Shortcut.registerOrigShortcut();
 
     if (this.controls_) {
       this.controls_.dispose();
       this.controls_ = null;
     }
+
+    this.useDoubleClick_(false);
   }
 
   /**
@@ -86,6 +102,70 @@ export class WorkspaceMultiSelect {
       this.onKeyDown_({keyCode: Blockly.utils.KeyCodes.SHIFT});
     } else {
       this.onKeyUp_({keyCode: Blockly.utils.KeyCodes.SHIFT});
+    }
+  }
+
+  /**
+   * Add double click to expand/collapse blocks (MIT App Inventor Supported).
+   * @param {!boolean} on Whether to turn on the mode.
+   * @private
+   */
+  useDoubleClick_(on) {
+    if (on) {
+      Blockly.Gesture.prototype.handleWsStart = (function(func) {
+        if (func.isWrapped) {
+          return func;
+        } else {
+          const wrappedFunc = function(e, ws) {
+            func.call(this, e, ws);
+            if (this.targetBlock_ && e.buttons == 1 &&
+                (blockSelection.has(this.targetBlock_.id) &&
+                blockSelection.size > 1 || blockSelection.size < 2)) {
+              const preCondition = function(block) {
+                return !block.isInFlyout && block.isMovable() &&
+                block.workspace.options.collapse;
+              };
+              if (Blockly.selected && preCondition(Blockly.selected)) {
+                if (ws.doubleClickPid_) {
+                  clearTimeout(ws.doubleClickPid_);
+                  ws.doubleClickPid_ = undefined;
+                  if (Blockly.selected.id === ws.doubleClickBlock_) {
+                    const state = !Blockly.selected.isCollapsed();
+                    const apply = function(block) {
+                      if (block && preCondition(block) &&
+                      !hasSelectedParent(block)) {
+                        block.setCollapsed(state);
+                      }
+                    };
+                    Blockly.Events.setGroup(true);
+                    if (Blockly.selected && blockSelection.size === 0) {
+                      apply(Blockly.selected);
+                    }
+                    blockSelection.forEach(function(id) {
+                      const block = ws.getBlockById(id);
+                      if (block) {
+                        apply(block);
+                      }
+                    });
+                    Blockly.Events.setGroup(false);
+                    return;
+                  }
+                }
+                if (!ws.doubleClickPid_) {
+                  ws.doubleClickBlock_ = Blockly.selected.id;
+                  ws.doubleClickPid_ = setTimeout(function() {
+                    ws.doubleClickPid_ = undefined;
+                  }, 500);
+                }
+              }
+            }
+          };
+          wrappedFunc.isWrapped = true;
+          return wrappedFunc;
+        }
+      })(Blockly.Gesture.prototype.handleWsStart);
+    } else {
+      Blockly.Gesture.prototype.handleWsStart = origHandleWsStart;
     }
   }
 
@@ -238,3 +318,4 @@ export class WorkspaceMultiSelect {
 
 export * from './patch';
 export * from './dragger';
+export {blockSelection};

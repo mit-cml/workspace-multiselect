@@ -22,7 +22,7 @@ function createWorkspace(blocklyDiv, options) {
   const workspace = Blockly.inject(blocklyDiv, options);
 
   const multiSelectPlugin = new WorkspaceMultiSelect(workspace);
-  multiSelectPlugin.init();
+  multiSelectPlugin.init(options);
 
   return workspace;
 }
@@ -30,6 +30,8 @@ function createWorkspace(blocklyDiv, options) {
 document.addEventListener('DOMContentLoaded', function() {
   const defaultOptions = {
     toolbox: toolboxCategories,
+    multiSelectIcon: true,
+    useDoubleClick: true,
     zoom: {
       wheel: true,
     },
