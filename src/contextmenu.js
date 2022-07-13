@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2022 Google LLC
+ * Copyright 2022 MIT
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -18,12 +18,18 @@ import {blockSelection, hasSelectedParent} from './global';
 const registerDuplicate = function() {
   const duplicateOption = {
     displayText: function() {
-      const selectedBlocksLength = blockSelection.size;
-      if (selectedBlocksLength <= 1) {
+      let workableBlocksLength = 0;
+      blockSelection.forEach(function(id) {
+        const block = Blockly.getMainWorkspace().getBlockById(id);
+        if (duplicateOption.check(block)) {
+          workableBlocksLength++;
+        }
+      });
+      if (workableBlocksLength <= 1) {
         return Blockly.Msg['DUPLICATE_BLOCK'];
       } else {
         return Blockly.Msg['DUPLICATE_BLOCK'] + ' (' +
-        selectedBlocksLength + ')';
+        workableBlocksLength + ')';
       }
     },
     preconditionFn: function(scope) {
@@ -36,25 +42,27 @@ const registerDuplicate = function() {
       }
       return 'hidden';
     },
+    // Only duplicate-able blocks will be duplicated.
+    check: function(block) {
+      return block &&
+             duplicateOption.preconditionFn({block: block}) === 'enabled' &&
+             !hasSelectedParent(block);
+    },
     callback: function(scope) {
       const duplicatedBlocks = [];
       const apply = function(block) {
-        if (block && duplicateOption.preconditionFn({
-          block: block,
-        }) === 'enabled' && !hasSelectedParent(block)) {
+        if (duplicateOption.check(block)) {
           duplicatedBlocks.push(Blockly.clipboard.duplicate(block));
         }
+        block.pathObject.updateSelected(false);
       };
       Blockly.Events.setGroup(true);
-      if (scope.block && blockSelection.size === 0) {
+      if (!blockSelection.size) {
         apply(scope.block);
       }
       blockSelection.forEach(function(id) {
         const block = Blockly.getMainWorkspace().getBlockById(id);
-        if (block) {
-          apply(block);
-          block.pathObject.updateSelected(false);
-        }
+        apply(block);
       });
       Blockly.Events.setGroup(false);
       blockSelection.clear();
@@ -78,20 +86,30 @@ const registerDuplicate = function() {
 const registerComment = function() {
   const commentOption = {
     displayText: function(scope) {
-      const selectedBlocksLength = blockSelection.size;
-      if (scope.block.getCommentIcon()) {
-        if (selectedBlocksLength <= 1) {
+      let workableBlocksLength = 0;
+      const state = scope.block.getCommentIcon();
+      blockSelection.forEach(function(id) {
+        const block = Blockly.getMainWorkspace().getBlockById(id);
+        if (commentOption.check(block) &&
+            (block.getCommentIcon() instanceof Blockly.Comment) ===
+            (state instanceof Blockly.Comment)) {
+          workableBlocksLength++;
+        }
+      });
+      if (state) {
+        if (workableBlocksLength <= 1) {
           return Blockly.Msg['REMOVE_COMMENT'];
         } else {
           return Blockly.Msg['REMOVE_COMMENT'] + ' (' +
-          selectedBlocksLength + ')';
+          workableBlocksLength + ')';
         }
-      }
-      if (selectedBlocksLength <= 1) {
-        return Blockly.Msg['ADD_COMMENT'];
       } else {
-        return Blockly.Msg['ADD_COMMENT'] + ' (' +
-        selectedBlocksLength + ')';
+        if (workableBlocksLength <= 1) {
+          return Blockly.Msg['ADD_COMMENT'];
+        } else {
+          return Blockly.Msg['ADD_COMMENT'] + ' (' +
+          workableBlocksLength + ')';
+        }
       }
     },
     preconditionFn: function(scope) {
@@ -103,12 +121,14 @@ const registerComment = function() {
       }
       return 'hidden';
     },
+    check: function(block) {
+      return block &&
+             commentOption.preconditionFn({block: block}) === 'enabled';
+    },
     callback: function(scope) {
       const hasCommentIcon = scope.block.getCommentIcon();
       const apply = function(block) {
-        if (block && commentOption.preconditionFn({
-          block: block,
-        }) === 'enabled') {
+        if (commentOption.check(block)) {
           if (hasCommentIcon) {
             block.setCommentText(null);
           } else {
@@ -117,14 +137,12 @@ const registerComment = function() {
         }
       };
       Blockly.Events.setGroup(true);
-      if (scope.block && blockSelection.size === 0) {
+      if (!blockSelection.size) {
         apply(scope.block);
       }
       blockSelection.forEach(function(id) {
         const block = Blockly.getMainWorkspace().getBlockById(id);
-        if (block) {
-          apply(block);
-        }
+        apply(block);
       });
       Blockly.Events.setGroup(false);
     },
@@ -141,20 +159,28 @@ const registerComment = function() {
 const registerInline = function() {
   const inlineOption = {
     displayText: function(scope) {
-      const selectedBlocksLength = blockSelection.size;
-      if (scope.block.getInputsInline()) {
-        if (selectedBlocksLength <= 1) {
+      let workableBlocksLength = 0;
+      const state = scope.block.getInputsInline();
+      blockSelection.forEach(function(id) {
+        const block = Blockly.getMainWorkspace().getBlockById(id);
+        if (inlineOption.check(block) &&
+            block.getInputsInline() === state) {
+          workableBlocksLength++;
+        }
+      });
+      if (state) {
+        if (workableBlocksLength <= 1) {
           return Blockly.Msg['EXTERNAL_INPUTS'];
         } else {
           return Blockly.Msg['EXTERNAL_INPUTS'] + ' (' +
-          selectedBlocksLength + ')';
+          workableBlocksLength + ')';
         }
       } else {
-        if (selectedBlocksLength <= 1) {
+        if (workableBlocksLength <= 1) {
           return Blockly.Msg['INLINE_INPUTS'];
         } else {
           return Blockly.Msg['INLINE_INPUTS'] + ' (' +
-          selectedBlocksLength + ')';
+          workableBlocksLength + ')';
         }
       }
     },
@@ -172,24 +198,24 @@ const registerInline = function() {
       }
       return 'hidden';
     },
+    check: function(block) {
+      return block &&
+             inlineOption.preconditionFn({block: block}) === 'enabled';
+    },
     callback: function(scope) {
       const state = !scope.block.getInputsInline();
       const apply = function(block) {
-        if (block && inlineOption.preconditionFn({
-          block: block,
-        }) === 'enabled') {
+        if (inlineOption.check(block)) {
           block.setInputsInline(state);
         }
       };
       Blockly.Events.setGroup(true);
-      if (scope.block && blockSelection.size === 0) {
+      if (!blockSelection.size) {
         apply(scope.block);
       }
       blockSelection.forEach(function(id) {
         const block = Blockly.getMainWorkspace().getBlockById(id);
-        if (block) {
-          apply(block);
-        }
+        apply(block);
       });
       Blockly.Events.setGroup(false);
     },
@@ -207,20 +233,28 @@ const registerInline = function() {
 const registerCollapseExpandBlock = function() {
   const collapseExpandOption = {
     displayText: function(scope) {
-      const selectedBlocksLength = blockSelection.size;
-      if (scope.block.isCollapsed()) {
-        if (selectedBlocksLength <= 1) {
+      let workableBlocksLength = 0;
+      const state = scope.block.isCollapsed();
+      blockSelection.forEach(function(id) {
+        const block = Blockly.getMainWorkspace().getBlockById(id);
+        if (collapseExpandOption.check(block) &&
+            block.isCollapsed() === state) {
+          workableBlocksLength++;
+        }
+      });
+      if (state) {
+        if (workableBlocksLength <= 1) {
           return Blockly.Msg['EXPAND_BLOCK'];
         } else {
           return Blockly.Msg['EXPAND_BLOCK'] + ' (' +
-          selectedBlocksLength + ')';
+          workableBlocksLength + ')';
         }
       } else {
-        if (selectedBlocksLength <= 1) {
+        if (workableBlocksLength <= 1) {
           return Blockly.Msg['COLLAPSE_BLOCK'];
         } else {
           return Blockly.Msg['COLLAPSE_BLOCK'] + ' (' +
-          selectedBlocksLength + ')';
+          workableBlocksLength + ')';
         }
       }
     },
@@ -232,24 +266,25 @@ const registerCollapseExpandBlock = function() {
       }
       return 'hidden';
     },
+    check: function(block) {
+      return block &&
+             collapseExpandOption.preconditionFn({block: block}) ===
+             'enabled' && (!hasSelectedParent(block) || block.isCollapsed());
+    },
     callback: function(scope) {
       const state = !scope.block.isCollapsed();
       const apply = function(block) {
-        if (block && collapseExpandOption.preconditionFn({
-          block: block,
-        }) === 'enabled' && !hasSelectedParent(block)) {
+        if (collapseExpandOption.check(block)) {
           block.setCollapsed(state);
         }
       };
       Blockly.Events.setGroup(true);
-      if (scope.block && blockSelection.size === 0) {
+      if (!blockSelection.size) {
         apply(scope.block);
       }
       blockSelection.forEach(function(id) {
         const block = Blockly.getMainWorkspace().getBlockById(id);
-        if (block) {
-          apply(block);
-        }
+        apply(block);
       });
       Blockly.Events.setGroup(false);
     },
@@ -266,27 +301,35 @@ const registerCollapseExpandBlock = function() {
 const registerDisable = function() {
   const disableOption = {
     displayText: function(scope) {
-      const selectedBlocksLength = blockSelection.size;
-      if (scope.block.isEnabled()) {
-        if (selectedBlocksLength <= 1) {
+      let workableBlocksLength = 0;
+      const state = scope.block.isEnabled();
+      blockSelection.forEach(function(id) {
+        const block = Blockly.getMainWorkspace().getBlockById(id);
+        if (disableOption.check(block) &&
+            block.isEnabled() === state) {
+          workableBlocksLength++;
+        }
+      });
+      if (state) {
+        if (workableBlocksLength <= 1) {
           return Blockly.Msg['DISABLE_BLOCK'];
         } else {
           return Blockly.Msg['DISABLE_BLOCK'] + ' (' +
-          selectedBlocksLength + ')';
+          workableBlocksLength + ')';
         }
       } else {
-        if (selectedBlocksLength <= 1) {
+        if (workableBlocksLength <= 1) {
           return Blockly.Msg['ENABLE_BLOCK'];
         } else {
           return Blockly.Msg['ENABLE_BLOCK'] + ' (' +
-          selectedBlocksLength + ')';
+          workableBlocksLength + ')';
         }
       }
     },
     preconditionFn: function(scope) {
       const block = scope.block;
       if (!block.isInFlyout && block.workspace.options.disable &&
-        block.isEditable()) {
+          block.isEditable()) {
         if (block.getInheritedDisabled()) {
           return 'disabled';
         }
@@ -294,24 +337,25 @@ const registerDisable = function() {
       }
       return 'hidden';
     },
+    check: function(block) {
+      return block &&
+             disableOption.preconditionFn({block: block}) === 'enabled' &&
+             (!hasSelectedParent(block) || !block.isEnabled());
+    },
     callback: function(scope) {
       const state = !scope.block.isEnabled();
       const apply = function(block) {
-        if (block && disableOption.preconditionFn({
-          block: block,
-        }) === 'enabled' && !hasSelectedParent(block)) {
+        if (disableOption.check(block)) {
           block.setEnabled(state);
         }
       };
       Blockly.Events.setGroup(true);
-      if (scope.block && blockSelection.size === 0) {
+      if (!blockSelection.size) {
         apply(scope.block);
       }
       blockSelection.forEach(function(id) {
         const block = Blockly.getMainWorkspace().getBlockById(id);
-        if (block) {
-          apply(block);
-        }
+        apply(block);
       });
       Blockly.Events.setGroup(false);
     },
@@ -331,7 +375,7 @@ const registerDelete = function() {
       let descendantCount = 0;
       blockSelection.forEach(function(id) {
         const block = Blockly.getMainWorkspace().getBlockById(id);
-        if (block) {
+        if (block && !hasSelectedParent(block)) {
           // Count the number of blocks that are nested in this block.
           descendantCount += block.getDescendants(false).length;
           const nextBlock = block.getNextBlock();
@@ -351,14 +395,14 @@ const registerDelete = function() {
       }
       return 'hidden';
     },
+    check: function(block) {
+      return block &&
+             deleteOption.preconditionFn({block: block}) === 'enabled' &&
+             !hasSelectedParent(block) && !block.workspace.isFlyout;
+    },
     callback: function(scope) {
       const apply = function(block) {
-        if (block && deleteOption.preconditionFn({
-          block: block,
-        }) === 'enabled' && !hasSelectedParent(block)) {
-          if (block.workspace.isFlyout) {
-            return;
-          }
+        if (deleteOption.check(block)) {
           block.workspace.hideChaff();
           if (block.outputConnection) {
             block.dispose(false, true);
@@ -368,14 +412,12 @@ const registerDelete = function() {
         }
       };
       Blockly.Events.setGroup(true);
-      if (scope.block && blockSelection.size === 0) {
+      if (!blockSelection.size) {
         apply(scope.block);
       }
       blockSelection.forEach(function(id) {
         const block = Blockly.getMainWorkspace().getBlockById(id);
-        if (block) {
-          apply(block);
-        }
+        apply(block);
       });
       Blockly.Events.setGroup(false);
     },
@@ -395,18 +437,8 @@ const registerSelectAll = function() {
       return 'Select all Blocks';
     },
     preconditionFn: function(scope) {
-      const topBlocks = scope.workspace.getTopBlocks(false);
-      for (let i = 0; i < topBlocks.length; i++) {
-        let block = topBlocks[i];
-        while (block) {
-          if (block.isDeletable() &&
-          block.isMovable()) {
-            return 'enabled';
-          }
-          block = block.getNextBlock();
-        }
-      }
-      return 'disabled';
+      return scope.workspace.getTopBlocks().some(
+          (b) => b.isDeletable() && b.isMovable()) ? 'enabled' : 'disabled';
     },
     callback: function(scope) {
       if (Blockly.selected) {
@@ -415,10 +447,9 @@ const registerSelectAll = function() {
       }
       scope.workspace.getTopBlocks().forEach(function(block) {
         if (block &&
-          block.isDeletable() &&
-          block.isMovable() &&
-          !block.pathObject.svgRoot.classList.contains(
-              'blocklyInsertionMarker')) {
+            block.isDeletable() &&
+            block.isMovable() &&
+            !block.isInsertionMarker()) {
           blockSelection.add(block.id);
           if (!Blockly.common.getSelected()) {
             Blockly.common.setSelected(block);

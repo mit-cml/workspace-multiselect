@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2022 Google LLC
+ * Copyright 2022 MIT
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -138,7 +138,7 @@ export class WorkspaceMultiSelect {
                       }
                     };
                     Blockly.Events.setGroup(true);
-                    if (Blockly.selected && blockSelection.size === 0) {
+                    if (Blockly.selected && !blockSelection.size) {
                       apply(Blockly.selected);
                     }
                     blockSelection.forEach(function(id) {
@@ -206,7 +206,7 @@ export class WorkspaceMultiSelect {
           // in currently selected set or unselects, clear the selected set.
           blockSelection.forEach((id) => {
             const element = this.workspace_.getBlockById(id);
-            if (element && !element.disposed) {
+            if (element) {
               element.pathObject.updateSelected(false);
             }
           });
@@ -217,7 +217,7 @@ export class WorkspaceMultiSelect {
         Blockly.selected.id === this.justDeletedBlock_.id) {
         // Update the Blockly selected block when that block is
         // no longer selected in our set.
-        if (blockSelection.size > 0) {
+        if (blockSelection.size) {
           Blockly.common.setSelected(
               this.workspace_.getBlockById(blockSelection.keys().next().value));
         } else {
@@ -229,7 +229,7 @@ export class WorkspaceMultiSelect {
       // Update the selection highlight.
       blockSelection.forEach((id) => {
         const element = this.workspace_.getBlockById(id);
-        if (element && !element.disposed) {
+        if (element) {
           element.pathObject.updateSelected(true);
         }
       });
@@ -299,9 +299,9 @@ export class WorkspaceMultiSelect {
       }
       // Ensure that at least Blockly select one of the blocks in the
       // selection set, or clear the Blockly selection if our set is empty.
-      if (blockSelection.size == 0 && Blockly.selected) {
+      if (!blockSelection.size && Blockly.selected) {
         Blockly.common.setSelected(null);
-      } else if (blockSelection.size > 0 && !Blockly.selected) {
+      } else if (blockSelection.size && !Blockly.selected) {
         Blockly.common.setSelected(
             this.workspace_.getBlockById(blockSelection.keys().next().value));
       }

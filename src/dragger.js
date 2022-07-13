@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2022 Google LLC
+ * Copyright 2022 MIT
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -33,23 +33,15 @@ export class MultiSelectBlockDragger extends Blockly.BlockDragger {
    *     disconnecting.
    */
   startDrag(currentDragDeltaXY, healStack) {
-    if (!inMultipleSelectionMode) {
-      const blockDraggerList = [];
-      if (!blockSelection.has(this.block_.id)) {
-        blockSelection.forEach((id) => {
-          const element = this.workspace_.getBlockById(id);
-          if (!element.disposed) {
-            element.pathObject.updateSelected(false);
-          }
-        });
-        blockSelection.clear();
-        blockDraggerList.push(new Blockly.BlockDragger(this.block_,
-            this.workspace_));
-        this.block_.pathObject.updateSelected(true);
-      }
+    if (inMultipleSelectionMode) {
+      return;
+    }
+
+    const blockDraggerList = [];
+    if (blockSelection.has(this.block_.id)) {
       blockSelection.forEach((id) => {
         const element = this.workspace_.getBlockById(id);
-        if (element.disposed) {
+        if (!element) {
           blockSelection.delete(id);
           return;
         }
@@ -60,15 +52,29 @@ export class MultiSelectBlockDragger extends Blockly.BlockDragger {
         blockDraggerList.push(new Blockly.BlockDragger(element,
             this.workspace_));
       });
-      blockDraggerList.forEach((blockDragger) => {
-        blockDragger.startDrag(currentDragDeltaXY, healStack);
-        this.blockDraggers_.add(blockDragger);
+    } else {
+      // Dragging a new block that not in the selection list would
+      // clear the multiple selections and only drag that block.
+      blockSelection.forEach((id) => {
+        const element = this.workspace_.getBlockById(id);
+        if (element) {
+          element.pathObject.updateSelected(false);
+        }
       });
-      if (this.blockDraggers_.size > 1) {
-        // Disabled the highlighting around connection for multiple blocks
-        // dragging because of the bugs.
-        Blockly.RenderedConnection.prototype.highlight = function() {};
-      }
+      blockSelection.clear();
+      blockDraggerList.push(new Blockly.BlockDragger(this.block_,
+          this.workspace_));
+      this.block_.pathObject.updateSelected(true);
+    }
+
+    blockDraggerList.forEach((blockDragger) => {
+      blockDragger.startDrag(currentDragDeltaXY, healStack);
+      this.blockDraggers_.add(blockDragger);
+    });
+    if (this.blockDraggers_.size > 1) {
+      // Disabled the highlighting around connection for multiple blocks
+      // dragging because of the bugs.
+      Blockly.RenderedConnection.prototype.highlight = function() {};
     }
   }
 

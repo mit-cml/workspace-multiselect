@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2022 Google LLC
+ * Copyright 2022 MIT
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -47,14 +47,12 @@ const registerShortcutDelete = function() {
       };
       const selected = Blockly.common.getSelected();
       Blockly.Events.setGroup(true);
-      if (selected && blockSelection.size === 0) {
+      if (!blockSelection.size) {
         apply(selected);
       }
       blockSelection.forEach(function(id) {
         const block = Blockly.getMainWorkspace().getBlockById(id);
-        if (block) {
-          apply(block);
-        }
+        apply(block);
       });
       Blockly.Events.setGroup(false);
       return true;
@@ -88,20 +86,18 @@ const registerCopy = function() {
       copyData.clear();
       workspace.hideChaff();
       const apply = function(block) {
-        if (block && !block.disposed && !hasSelectedParent(block)) {
+        if (block && !hasSelectedParent(block)) {
           copyData.add(block.toCopyData());
         }
       };
       const selected = Blockly.common.getSelected();
       Blockly.Events.setGroup(true);
-      if (selected && blockSelection.size === 0) {
+      if (!blockSelection.size) {
         apply(selected);
       }
       blockSelection.forEach(function(id) {
         const block = Blockly.getMainWorkspace().getBlockById(id);
-        if (block) {
-          apply(block);
-        }
+        apply(block);
       });
       Blockly.Events.setGroup(false);
       return true;
@@ -143,8 +139,9 @@ const registerCut = function() {
     callback: function() {
       copyData.clear();
       const apply = function(block) {
-        if (block && !block.disposed &&
-          block.isDeletable() && !hasSelectedParent(block)) {
+        if (block &&
+            block.isDeletable() &&
+            !hasSelectedParent(block)) {
           copyData.add(block.toCopyData());
           if (block.workspace.isFlyout) {
             return;
@@ -159,14 +156,12 @@ const registerCut = function() {
       };
       const selected = Blockly.common.getSelected();
       Blockly.Events.setGroup(true);
-      if (selected && blockSelection.size === 0) {
+      if (!blockSelection.size) {
         apply(selected);
       }
       blockSelection.forEach(function(id) {
         const block = Blockly.getMainWorkspace().getBlockById(id);
-        if (block) {
-          apply(block);
-        }
+        apply(block);
       });
       Blockly.Events.setGroup(false);
       return true;
@@ -267,10 +262,9 @@ const registeSelectAll = function() {
       }
       workspace.getTopBlocks().forEach(function(block) {
         if (block &&
-          block.isDeletable() &&
-          block.isMovable() &&
-          !block.pathObject.svgRoot.classList.contains(
-              'blocklyInsertionMarker')) {
+            block.isDeletable() &&
+            block.isMovable() &&
+            !block.isInsertionMarker()) {
           blockSelection.add(block.id);
           if (!Blockly.common.getSelected()) {
             Blockly.common.setSelected(block);
