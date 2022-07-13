@@ -59,6 +59,9 @@ export class WorkspaceMultiSelect {
     if (options.useDoubleClick) {
       this.useDoubleClick_(true);
     }
+
+    this.origBumpNeighbours = Blockly.BlockSvg.prototype.bumpNeighbours;
+    Blockly.BlockSvg.prototype.bumpNeighbours = function() {};
   }
 
   /**
@@ -91,6 +94,10 @@ export class WorkspaceMultiSelect {
     }
 
     this.useDoubleClick_(false);
+
+    if (this.origBumpNeighbours) {
+      Blockly.BlockSvg.prototype.bumpNeighbours = this.origBumpNeighbours;
+    }
   }
 
   /**
@@ -186,6 +193,7 @@ export class WorkspaceMultiSelect {
         blockSelection.add(block.id);
         this.justDeletedBlock_ = null;
         block.pathObject.updateSelected(true);
+        block.bringToFront();
       }
       console.log(blockSelection);
     }
