@@ -9,7 +9,7 @@
  */
 
 /**
- * Store the current selected blockSvg set.
+ * Set for storing the current selected blockSvg ids.
  */
 export const blockSelection = new Set();
 
@@ -43,7 +43,7 @@ export const setSelectionMode = function(isMultiple) {
  */
 export const hasSelectedParent = function(block) {
   while (block) {
-    block = block.parentBlock_;
+    block = block.getParent();
     if (block && blockSelection.has(block.id)) {
       return true;
     }

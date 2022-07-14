@@ -37,6 +37,8 @@ multiSelectPlugin.init();
 
 - `init`: Initializes to select multiple blocks in the workspace.
 - `dispose`: Disposes of selecting multiple blocks in the workspace.
+- `blockSelection`: Get a set of currently selected block ids.
+- `inMultipleSelectionMode`: Check whether the plugin is in multiple selection mode.
 
 ## Credit
 - [ds.min.js](lib/ds.min.js): This plugin uses [a patched version of DragSelect](https://github.com/ThibaultJanBeyer/DragSelect/pull/128) to realize "drag a rectangle to select multiple blocks" feature.
