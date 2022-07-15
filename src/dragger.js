@@ -9,8 +9,8 @@
  */
 
 import * as Blockly from 'blockly/core';
-import {blockSelection, inMultipleSelectionMode, hasSelectedParent,
-  origHighlight} from './global';
+import {blockSelection, inMultipleSelectionMode,
+  hasSelectedParent} from './global';
 
 /**
  * A block dragger that adds the functionality for multiple block to
@@ -24,6 +24,9 @@ export class MultiSelectBlockDragger extends Blockly.BlockDragger {
     this.workspace_ = workspace;
     this.group_ = '';
     this.blockDraggers_ = new Set();
+    this.origHighlight_ = Blockly.RenderedConnection.prototype.highlight;
+    this.origUpdateBlockAfterMove_ =
+        Blockly.BlockDragger.prototype.updateBlockAfterMove_;
   }
 
   /**
@@ -101,6 +104,9 @@ export class MultiSelectBlockDragger extends Blockly.BlockDragger {
    *     has moved from the position at the start of the drag, in pixel units.
    */
   endDrag(e, currentDragDeltaXY) {
+    if (this.blockDraggers_.size > 1) {
+      this.patchUpdateBlockAfterMove(true);
+    }
     this.blockDraggers_.forEach((blockDragger_) => {
       if (Blockly.Events.getGroup()) {
         this.group_ = Blockly.Events.getGroup();
@@ -111,7 +117,61 @@ export class MultiSelectBlockDragger extends Blockly.BlockDragger {
     });
     if (this.blockDraggers_.size > 1) {
       // Restore the highlighting around connection for multiple blocks.
-      Blockly.RenderedConnection.prototype.highlight = origHighlight;
+      Blockly.RenderedConnection.prototype.highlight = this.origHighlight_;
+      this.patchUpdateBlockAfterMove(false);
+    }
+  }
+
+  /**
+   * Patch the Blockly.BlockDragger.updateBlockAfterMove_ function.
+   * @param {boolean} on To start the patch or restore.
+   */
+  patchUpdateBlockAfterMove(on) {
+    if (!on) {
+      Blockly.BlockDragger.prototype.updateBlockAfterMove_ =
+          this.origUpdateBlockAfterMove_;
+    } else {
+      Blockly.BlockDragger.prototype.updateBlockAfterMove_ = function(delta) {
+        this.draggingBlock_.moveConnections(delta.x, delta.y);
+        this.fireMoveEvent_();
+        if (this.draggedConnectionManager_.wouldConnectBlock()) {
+          // We have to ensure that we can't connect to a block
+          // that is in dragging.
+          if (!blockSelection.has(
+              this.draggedConnectionManager_.closestConnection_.
+                  sourceBlock_.id)) {
+            // Applying connections also rerenders the relevant blocks.
+            this.draggedConnectionManager_.applyConnections();
+          } else {
+            // We have to hide preview if any.
+            // Don't fire events for insertion markers.
+            Blockly.Events.disable();
+            this.draggedConnectionManager_.hidePreview_();
+            Blockly.Events.enable();
+          }
+        }
+
+        // TODO: As App Inventor uses a different rendering
+        // algorithm than base Blockly, we will have to verify
+        // if this is still OKay/neccessary.
+
+        /**
+         * Fix when you drag the selected children blocks from their
+         * unselected parent the children blocks of the selected ones
+         * can be out of the position while still connected
+         * (do should remain connected).
+         *
+         * Each time you render a block it rerenders all of that block's
+         * parents as well.
+         */
+        this.draggingBlock_.getDescendants(false).forEach(function(block) {
+          if (!block.getChildren().length) {
+            block.render();
+          }
+        });
+
+        this.draggingBlock_.scheduleSnapAndBump();
+      };
     }
   }
 

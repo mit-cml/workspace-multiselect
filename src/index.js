@@ -15,7 +15,7 @@ import DragSelect from '../lib/ds.min';
 import * as ContextMenu from './contextmenu';
 import * as Shortcut from './shortcut';
 import {blockSelection, inMultipleSelectionMode, setSelectionMode,
-  origHandleWsStart, hasSelectedParent} from './global';
+  hasSelectedParent} from './global';
 import {MultiSelectControls} from './switch';
 
 /**
@@ -30,6 +30,7 @@ export class WorkspaceMultiSelect {
     this.workspace_ = workspace;
     this.hasDisableWorkspaceDrag_ = false;
     this.justUnselectedBlock_ = null;
+    this.origHandleWsStart_ = Blockly.Gesture.prototype.handleWsStart;
   }
 
   /**
@@ -121,7 +122,7 @@ export class WorkspaceMultiSelect {
    */
   useDoubleClick_(on) {
     if (!on) {
-      Blockly.Gesture.prototype.handleWsStart = origHandleWsStart;
+      Blockly.Gesture.prototype.handleWsStart = this.origHandleWsStart_;
       return;
     }
 

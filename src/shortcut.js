@@ -294,7 +294,7 @@ const registeSelectAll = function() {
     callback: function(workspace, e) {
       // Prevent the default text all selection behavior.
       e.preventDefault();
-      if (Blockly.selected) {
+      if (Blockly.selected && !blockSelection.has(Blockly.selected.id)) {
         Blockly.selected.pathObject.updateSelected(false);
         Blockly.common.setSelected(null);
       }

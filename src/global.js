@@ -19,16 +19,6 @@ export const blockSelection = new Set();
 export let inMultipleSelectionMode = false;
 
 /**
- * Store the original rendered connection highlight function.
- */
-export const origHighlight = Blockly.RenderedConnection.prototype.highlight;
-
-/**
- * Store the original handle workspace start function.
- */
-export const origHandleWsStart = Blockly.Gesture.prototype.handleWsStart;
-
-/**
  * Set the inMultipleSelectionMode.
  * @param {boolean} isMultiple selection mode.
  */

@@ -446,10 +446,11 @@ const registerSelectAll = function() {
              !block.isInsertionMarker();
     },
     callback: function(scope) {
-      if (Blockly.selected) {
+      if (Blockly.selected && !blockSelection.has(Blockly.selected.id)) {
         Blockly.selected.pathObject.updateSelected(false);
         Blockly.common.setSelected(null);
       }
+
       scope.workspace.getTopBlocks().forEach(function(block) {
         if (selectAllOption.check(block)) {
           blockSelection.add(block.id);
