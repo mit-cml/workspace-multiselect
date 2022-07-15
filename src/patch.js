@@ -30,9 +30,15 @@ Blockly.BlockDragger.prototype.updateBlockAfterMove_ = (function(func) {
   } else {
     const wrappedFunc = function(delta) {
       func.call(this, delta);
-      this.draggingBlock_.render();
+      // TODO: As App Inventor uses a different rendering algorithm than
+      // base Blockly, we will have to verify if this is still OKay/neccessary.
+
+      // Each time you render a block it rerenders all of that block's
+      // parents as well.
       this.draggingBlock_.getDescendants(false).forEach(function(block) {
-        block.render();
+        if (!block.getChildren().length) {
+          block.render();
+        }
       });
     };
     wrappedFunc.isWrapped = true;

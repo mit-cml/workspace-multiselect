@@ -15,16 +15,14 @@ import * as Blockly from 'blockly/core';
 /**
  * Icon path of the multi select controls when enabled.
  * @type {string}
- * @const
  */
-const ENABLED_IMG = 'media/select.svg';
+let ENABLED_IMG = 'https://github.com/mit-cml/workspace-multiselect/raw/main/test/media/select.svg';
 
 /**
  * Icon path of the multi select controls when disabled.
  * @type {string}
- * @const
  */
-const UNENABLED_IMG = 'media/unselect.svg';
+let DISABLED_IMG = 'https://github.com/mit-cml/workspace-multiselect/raw/main/test/media/unselect.svg';
 
 /**
  * Width of the multi select controls.
@@ -60,9 +58,10 @@ const MARGIN_HORIZONTAL = 20;
 export class MultiSelectControls {
   /**
    * @param {!Blockly.WorkspaceSvg} workspace The workspace to sit in.
+   * @param {Object} options The icons configuration.
    * @param {!WorkspaceMultiSelect} plugin The plugin to sit in.
    */
-  constructor(workspace, plugin) {
+  constructor(workspace, options, plugin) {
     /**
      * @type {!Blockly.WorkspaceSvg} The workspace to sit in.
      * @private
@@ -70,7 +69,7 @@ export class MultiSelectControls {
     this.workspace_ = workspace;
 
     /**
-     * @type {!WorkspaceMultiSelect} The plugin to sit in.
+     * @type {!WorkspaceMultiSelect} The plugin this button controls.
      * @private
      */
     this.plugin_ = plugin;
@@ -79,7 +78,7 @@ export class MultiSelectControls {
      * State of the multi select controls.
      * @type {boolean}
      */
-    this.enable = false;
+    this.enabled = false;
 
     /**
      * The unique id for this component that is used to register with the
@@ -109,6 +108,14 @@ export class MultiSelectControls {
      * @private
      */
     this.initialized_ = false;
+
+    if (options && options.enabledIcon) {
+      ENABLED_IMG = options.enabledIcon;
+    }
+
+    if (options && options.disabledIcon) {
+      DISABLED_IMG = options.disabledIcon;
+    }
   }
   /**
    * Create the multi select controls.
@@ -186,7 +193,7 @@ export class MultiSelectControls {
         startRect, MARGIN_VERTICAL, bumpDirection, savedPositions);
 
     if (verticalPosition === Blockly.uiPosition.verticalPosition.TOP) {
-      this.MultiSelectGroup_.setAttribute(
+      this.multiSelectGroup_.setAttribute(
           'transform', 'translate(0, ' + HEIGHT + ')');
     }
 
@@ -205,7 +212,7 @@ export class MultiSelectControls {
       <image width="32" height="32" xlink:href="media/unselect.svg"></image>
     </g>
     */
-    this.MultiSelectGroup_ =
+    this.multiSelectGroup_ =
       Blockly.utils.dom.createSvgElement(Blockly.utils.Svg.G, {
         'class': 'blocklyMultiSelect',
       }, this.svgGroup_);
@@ -214,13 +221,13 @@ export class MultiSelectControls {
           'width': WIDTH,
           'height': HEIGHT,
         },
-        this.MultiSelectGroup_);
+        this.multiSelectGroup_);
     MultiSelectSvg.setAttributeNS(
-        Blockly.utils.dom.XLINK_NS, 'xlink:href', UNENABLED_IMG);
+        Blockly.utils.dom.XLINK_NS, 'xlink:href', DISABLED_IMG);
 
     // Attach event listeners.
     this.onMultiSelectWrapper_ = Blockly.browserEvents.conditionalBind(
-        this.MultiSelectGroup_, 'mousedown', null,
+        this.multiSelectGroup_, 'mousedown', null,
         this.switchMultiSelect_.bind(this));
   }
   /**
@@ -230,8 +237,8 @@ export class MultiSelectControls {
    */
   switchMultiSelect_(e) {
     this.workspace_.markFocused();
-    this.enable = !this.enable;
-    this.plugin_.switchMultiSelect(this.enable);
+    this.enabled = !this.enabled;
+    this.plugin_.switchMultiSelect(this.enabled);
     Blockly.Touch.clearTouchIdentifier(); // Don't block future drags.
     e.stopPropagation(); // Don't start a workspace scroll.
     e.preventDefault(); // Stop double-clicking from selecting text.
@@ -241,14 +248,14 @@ export class MultiSelectControls {
    * Updates the multi select icon.
    * @param {boolean} enable Whether the multi select is enabled.
    */
-  updateMultiSelect(enable) {
-    this.enable = enable;
+  updateMultiSelectIcon(enable) {
+    this.enabled = enable;
     if (enable) {
-      this.MultiSelectGroup_.firstElementChild.setAttributeNS(
+      this.multiSelectGroup_.firstElementChild.setAttributeNS(
           Blockly.utils.dom.XLINK_NS, 'xlink:href', ENABLED_IMG);
     } else {
-      this.MultiSelectGroup_.firstElementChild.setAttributeNS(
-          Blockly.utils.dom.XLINK_NS, 'xlink:href', UNENABLED_IMG);
+      this.multiSelectGroup_.firstElementChild.setAttributeNS(
+          Blockly.utils.dom.XLINK_NS, 'xlink:href', DISABLED_IMG);
     }
   }
 }

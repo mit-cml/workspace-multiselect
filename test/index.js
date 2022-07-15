@@ -30,8 +30,12 @@ function createWorkspace(blocklyDiv, options) {
 document.addEventListener('DOMContentLoaded', function() {
   const defaultOptions = {
     toolbox: toolboxCategories,
-    multiSelectIcon: true,
     useDoubleClick: true,
+    multiSelectIcon: {
+      enabled: true,
+      enabledIcon: 'media/select.svg',
+      disabledIcon: 'media/unselect.svg',
+    },
     zoom: {
       wheel: true,
     },

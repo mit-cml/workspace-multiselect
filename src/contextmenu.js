@@ -396,9 +396,9 @@ const registerDelete = function() {
       return 'hidden';
     },
     check: function(block) {
-      return block &&
+      return block && !block.workspace.isFlyout &&
              deleteOption.preconditionFn({block: block}) === 'enabled' &&
-             !hasSelectedParent(block) && !block.workspace.isFlyout;
+             !hasSelectedParent(block);
     },
     callback: function(scope) {
       const apply = function(block) {
@@ -438,7 +438,12 @@ const registerSelectAll = function() {
     },
     preconditionFn: function(scope) {
       return scope.workspace.getTopBlocks().some(
-          (b) => b.isDeletable() && b.isMovable()) ? 'enabled' : 'disabled';
+          (b) => selectAllOption.check(b)) ? 'enabled' : 'disabled';
+    },
+    check: function(block) {
+      return block &&
+             (block.isDeletable() || block.isMovable()) &&
+             !block.isInsertionMarker();
     },
     callback: function(scope) {
       if (Blockly.selected) {
@@ -446,10 +451,7 @@ const registerSelectAll = function() {
         Blockly.common.setSelected(null);
       }
       scope.workspace.getTopBlocks().forEach(function(block) {
-        if (block &&
-            block.isDeletable() &&
-            block.isMovable() &&
-            !block.isInsertionMarker()) {
+        if (selectAllOption.check(block)) {
           blockSelection.add(block.id);
           if (!Blockly.common.getSelected()) {
             Blockly.common.setSelected(block);

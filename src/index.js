@@ -30,12 +30,11 @@ export class WorkspaceMultiSelect {
     this.workspace_ = workspace;
     this.hasDisableWorkspaceDrag_ = false;
     this.justUnselectedBlock_ = null;
-    this.blocklyUnselectedBlock_ = null;
   }
 
   /**
    * Bind the events and replace registration.
-   * @param {{multiSelectIcon: boolean, useDoubleClick: boolean}} options
+   * @param {{multiSelectIcon: Object, useDoubleClick: boolean}} options
    * to set.
    */
   init(options) {
@@ -51,8 +50,9 @@ export class WorkspaceMultiSelect {
     Shortcut.unregisterShortcut();
     Shortcut.registerOurShortcut();
 
-    if (options.multiSelectIcon) {
-      this.controls_ = new MultiSelectControls(this.workspace_, this);
+    if (options.multiSelectIcon && options.multiSelectIcon.enabled) {
+      this.controls_ = new MultiSelectControls(
+          this.workspace_, options.multiSelectIcon, this);
       const svgControls = this.controls_.createDom();
       this.workspace_.svgGroup_.appendChild(svgControls);
       this.controls_.init();
@@ -239,12 +239,13 @@ export class WorkspaceMultiSelect {
       this.justUnselectedBlock_ = null;
     }
 
-    if (this.blocklyUnselectedBlock_ &&
-        blockSelection.has(this.blocklyUnselectedBlock_.id)) {
-      this.blocklyUnselectedBlock_.pathObject.updateSelected(true);
-    }
-
-    this.blocklyUnselectedBlock_ = Blockly.selected;
+    // Update the selection highlight.
+    blockSelection.forEach((id) => {
+      const element = this.workspace_.getBlockById(id);
+      if (element) {
+        element.pathObject.updateSelected(true);
+      }
+    });
   }
 
   /**
@@ -292,7 +293,7 @@ export class WorkspaceMultiSelect {
       }
     });
     if (this.controls_) {
-      this.controls_.updateMultiSelect(true);
+      this.controls_.updateMultiSelectIcon(true);
     }
     setSelectionMode(true);
   }
@@ -325,7 +326,7 @@ export class WorkspaceMultiSelect {
       this.hasDisableWorkspaceDrag_ = false;
     }
     if (this.controls_) {
-      this.controls_.updateMultiSelect(false);
+      this.controls_.updateMultiSelectIcon(false);
     }
   }
 }

@@ -19,8 +19,24 @@ const registerShortcutDelete = function() {
   const deleteShortcut = {
     name: Blockly.ShortcutItems.names.DELETE,
     preconditionFn: function(workspace) {
+      if (workspace.options.readOnly || Blockly.Gesture.inProgress()) {
+        return false;
+      }
       const selected = Blockly.common.getSelected();
-      return !workspace.options.readOnly && selected && selected.isDeletable();
+      if (!blockSelection.size) {
+        return deleteShortcut.check(selected);
+      }
+      for (const id of blockSelection) {
+        const block = Blockly.getMainWorkspace().getBlockById(id);
+        if (deleteShortcut.check(block)) {
+          return true;
+        }
+      }
+      return false;
+    },
+    check: function(block) {
+      return block && block.isDeletable() &&
+             !block.workspace.isFlyout && !hasSelectedParent(block);
     },
     callback: function(workspace, e) {
       // Delete or backspace.
@@ -28,15 +44,9 @@ const registerShortcutDelete = function() {
       // Do this first to prevent an error in the delete code from resulting in
       // data loss.
       e.preventDefault();
-      // Don't delete while dragging.  Jeez.
-      if (Blockly.Gesture.inProgress()) {
-        return false;
-      }
+
       const apply = function(block) {
-        if (block && block.isDeletable() && !hasSelectedParent(block)) {
-          if (block.workspace.isFlyout) {
-            return;
-          }
+        if (deleteShortcut.check(block)) {
           block.workspace.hideChaff();
           if (block.outputConnection) {
             block.dispose(false, true);
@@ -72,12 +82,27 @@ const copyData = new Set();
  * ctrl+c, cmd+c, or alt+c.
  */
 const registerCopy = function() {
-  const CopyShortcut = {
+  const copyShortcut = {
     name: Blockly.ShortcutItems.names.COPY,
     preconditionFn: function(workspace) {
+      if (workspace.options.readOnly || Blockly.Gesture.inProgress()) {
+        return false;
+      }
       const selected = Blockly.common.getSelected();
-      return !workspace.options.readOnly && !Blockly.Gesture.inProgress() &&
-      selected && selected.isDeletable() && selected.isMovable();
+      if (!blockSelection.size) {
+        return copyShortcut.check(selected);
+      }
+      for (const id of blockSelection) {
+        const block = Blockly.getMainWorkspace().getBlockById(id);
+        if (copyShortcut.check(block)) {
+          return true;
+        }
+      }
+      return false;
+    },
+    check: function(block) {
+      return block && block.isDeletable() && block.isMovable() &&
+             !hasSelectedParent(block);
     },
     callback: function(workspace, e) {
       // Prevent the default copy behavior, which may beep or
@@ -86,7 +111,7 @@ const registerCopy = function() {
       copyData.clear();
       workspace.hideChaff();
       const apply = function(block) {
-        if (block && !hasSelectedParent(block)) {
+        if (copyShortcut.check(block)) {
           copyData.add(block.toCopyData());
         }
       };
@@ -103,7 +128,7 @@ const registerCopy = function() {
       return true;
     },
   };
-  Blockly.ShortcutRegistry.registry.register(CopyShortcut);
+  Blockly.ShortcutRegistry.registry.register(copyShortcut);
 
   const ctrlC = Blockly.ShortcutRegistry.registry.createSerializedKey(
       Blockly.utils.KeyCodes.C, [Blockly.utils.KeyCodes.CTRL]);
@@ -131,21 +156,30 @@ const registerCut = function() {
   const cutShortcut = {
     name: Blockly.ShortcutItems.names.CUT,
     preconditionFn: function(workspace) {
+      if (workspace.options.readOnly || Blockly.Gesture.inProgress()) {
+        return false;
+      }
       const selected = Blockly.common.getSelected();
-      return !workspace.options.readOnly && !Blockly.Gesture.inProgress() &&
-      selected && selected.isDeletable() && selected.isMovable() &&
-          !selected.workspace.isFlyout;
+      if (!blockSelection.size) {
+        return cutShortcut.check(selected);
+      }
+      for (const id of blockSelection) {
+        const block = Blockly.getMainWorkspace().getBlockById(id);
+        if (cutShortcut.check(block)) {
+          return true;
+        }
+      }
+      return false;
+    },
+    check: function(block) {
+      return block && block.isDeletable() && block.isMovable() &&
+             !block.workspace.isFlyout && !hasSelectedParent(block);
     },
     callback: function() {
       copyData.clear();
       const apply = function(block) {
-        if (block &&
-            block.isDeletable() &&
-            !hasSelectedParent(block)) {
+        if (cutShortcut.check(block)) {
           copyData.add(block.toCopyData());
-          if (block.workspace.isFlyout) {
-            return;
-          }
           block.workspace.hideChaff();
           if (block.outputConnection) {
             block.dispose(false, true);
@@ -205,7 +239,7 @@ const registerPaste = function() {
       blockSelection.clear();
       copyData.forEach(function(data) {
         if (!data) {
-          return null;
+          return;
         }
         // Pasting always pastes to the main workspace, even if the copy
         // started in a flyout workspace.
@@ -218,9 +252,7 @@ const registerPaste = function() {
           const block = workspace.paste(data.saveInfo);
           block.pathObject.updateSelected(true);
           blockSelection.add(block.id);
-          return block;
         }
-        return null;
       });
       Blockly.Events.setGroup(false);
       return true;
@@ -251,7 +283,13 @@ const registeSelectAll = function() {
   const selectAllShortcut = {
     name: 'selectall',
     preconditionFn: function(workspace) {
-      return !workspace.options.readOnly && !Blockly.Gesture.inProgress();
+      return workspace.getTopBlocks().some(
+          (b) => selectAllShortcut.check(b)) ? true : false;
+    },
+    check: function(block) {
+      return block &&
+            (block.isDeletable() || block.isMovable()) &&
+            !block.isInsertionMarker();
     },
     callback: function(workspace, e) {
       // Prevent the default text all selection behavior.
@@ -261,10 +299,7 @@ const registeSelectAll = function() {
         Blockly.common.setSelected(null);
       }
       workspace.getTopBlocks().forEach(function(block) {
-        if (block &&
-            block.isDeletable() &&
-            block.isMovable() &&
-            !block.isInsertionMarker()) {
+        if (selectAllShortcut.check(block)) {
           blockSelection.add(block.id);
           if (!Blockly.common.getSelected()) {
             Blockly.common.setSelected(block);
