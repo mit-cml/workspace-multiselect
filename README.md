@@ -18,25 +18,26 @@ npm install blockly-plugin-workspace-multiselect --save
 
 ```js
 import * as Blockly from 'blockly';
-import {WorkspaceMultiSelect, MultiSelectBlockDragger} from 'blockly-plugin-workspace-multiselect';
+import {Multiselect, MultiselectBlockDragger} from 'blockly-plugin-workspace-multiselect';
 
 // Inject Blockly.
 const workspace = Blockly.inject('blocklyDiv', {
   toolbox: toolboxCategories,
   plugins: {
-    'blockDragger': MultiSelectBlockDragger,
+    'blockDragger': MultiselectBlockDragger,
   },
 });
 
 // Initialize plugin.
-const multiSelectPlugin = new WorkspaceMultiSelect(workspace);
-multiSelectPlugin.init();
+const multiselectPlugin = new Multiselect(workspace);
+multiselectPlugin.init();
 ```
 
 ## API
 
-- `init`: Initializes to select multiple blocks in the workspace.
-- `dispose`: Disposes of selecting multiple blocks in the workspace.
+- `Multiselect.init`: Initializes to select multiple blocks in the workspace.
+- `Multiselect.dispose`: Disposes of selecting multiple blocks in the workspace.
+- `MultiselectBlockDragger`: The customized block dragger for multiple selection.
 - `blockSelection`: Get a set of currently selected block ids.
 - `inMultipleSelectionMode`: Check whether the plugin is in multiple selection mode.
 

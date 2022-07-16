@@ -10,7 +10,7 @@
 
 import * as Blockly from 'blockly';
 import {toolboxCategories, createPlayground} from '@blockly/dev-tools';
-import {WorkspaceMultiSelect, MultiSelectBlockDragger} from '../src/index';
+import {Multiselect, MultiselectBlockDragger} from '../src/index';
 
 /**
  * Create a workspace.
@@ -21,8 +21,8 @@ import {WorkspaceMultiSelect, MultiSelectBlockDragger} from '../src/index';
 function createWorkspace(blocklyDiv, options) {
   const workspace = Blockly.inject(blocklyDiv, options);
 
-  const multiSelectPlugin = new WorkspaceMultiSelect(workspace);
-  multiSelectPlugin.init(options);
+  const multiselectPlugin = new Multiselect(workspace);
+  multiselectPlugin.init(options);
 
   return workspace;
 }
@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const defaultOptions = {
     toolbox: toolboxCategories,
     useDoubleClick: true,
-    multiSelectIcon: {
+    multiselectIcon: {
       enabled: true,
       enabledIcon: 'media/select.svg',
       disabledIcon: 'media/unselect.svg',
@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', function() {
       wheel: true,
     },
     plugins: {
-      'blockDragger': MultiSelectBlockDragger,
+      'blockDragger': MultiselectBlockDragger,
     },
   };
   createPlayground(document.getElementById('root'), createWorkspace,

@@ -16,7 +16,7 @@ import {blockSelection, inMultipleSelectionMode,
  * A block dragger that adds the functionality for multiple block to
  * be moved while someone is dragging it.
  */
-export class MultiSelectBlockDragger extends Blockly.BlockDragger {
+export class MultiselectBlockDragger extends Blockly.BlockDragger {
   /** @override */
   constructor(block, workspace) {
     super(block, workspace);
@@ -191,4 +191,4 @@ export class MultiSelectBlockDragger extends Blockly.BlockDragger {
 }
 
 Blockly.registry.register(Blockly.registry.Type.BLOCK_DRAGGER,
-    'MultiSelectBlockDragger', MultiSelectBlockDragger);
+    'MultiselectBlockDragger', MultiselectBlockDragger);

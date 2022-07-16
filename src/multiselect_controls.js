@@ -9,7 +9,6 @@
  * @fileoverview Multiple selection svg switch.
  */
 
-import {WorkspaceMultiSelect} from '../src/index';
 import * as Blockly from 'blockly/core';
 
 /**
@@ -55,24 +54,17 @@ const MARGIN_HORIZONTAL = 20;
  * Class for a multi select controls.
  * @implements {Blockly.IPositionable}
  */
-export class MultiSelectControls {
+export class MultiselectControls {
   /**
    * @param {!Blockly.WorkspaceSvg} workspace The workspace to sit in.
    * @param {Object} options The icons configuration.
-   * @param {!WorkspaceMultiSelect} plugin The plugin to sit in.
    */
-  constructor(workspace, options, plugin) {
+  constructor(workspace, options) {
     /**
      * @type {!Blockly.WorkspaceSvg} The workspace to sit in.
      * @private
      */
     this.workspace_ = workspace;
-
-    /**
-     * @type {!WorkspaceMultiSelect} The plugin this button controls.
-     * @private
-     */
-    this.plugin_ = plugin;
 
     /**
      * State of the multi select controls.
@@ -85,7 +77,7 @@ export class MultiSelectControls {
      * ComponentManager.
      * @type {string}
      */
-    this.id = 'multiSelectControls';
+    this.id = 'multiselectControls';
 
     /**
      * A handle to use to unbind the mouse down event handler for multi select
@@ -93,14 +85,14 @@ export class MultiSelectControls {
      * @type {?Blockly.browserEvents.Data}
      * @private
      */
-    this.onMultiSelectWrapper_ = null;
+    this.onMultiselectWrapper_ = null;
 
     /**
      * The multi select svg <g> element.
      * @type {SVGGElement}
      * @private
      */
-    this.multiSelectGroup_ = null;
+    this.multiselectGroup_ = null;
 
     /**
      * Whether this has been initialized.
@@ -124,7 +116,7 @@ export class MultiSelectControls {
   createDom() {
     this.svgGroup_ = Blockly.utils.dom.createSvgElement(
         Blockly.utils.Svg.G, {}, null);
-    this.createMultiSelectSvg_();
+    this.createMultiselectSvg_();
     return this.svgGroup_;
   }
   /**
@@ -148,8 +140,8 @@ export class MultiSelectControls {
     if (this.svgGroup_) {
       Blockly.utils.dom.removeNode(this.svgGroup_);
     }
-    if (this.onMultiSelectWrapper_) {
-      Blockly.browserEvents.unbind(this.onMultiSelectWrapper_);
+    if (this.onMultiselectWrapper_) {
+      Blockly.browserEvents.unbind(this.onMultiselectWrapper_);
     }
   }
   /**
@@ -192,11 +184,6 @@ export class MultiSelectControls {
     const positionRect = Blockly.uiPosition.bumpPositionRect(
         startRect, MARGIN_VERTICAL, bumpDirection, savedPositions);
 
-    if (verticalPosition === Blockly.uiPosition.verticalPosition.TOP) {
-      this.multiSelectGroup_.setAttribute(
-          'transform', 'translate(0, ' + HEIGHT + ')');
-    }
-
     this.top_ = positionRect.top;
     this.left_ = positionRect.left;
     this.svgGroup_.setAttribute(
@@ -206,39 +193,48 @@ export class MultiSelectControls {
    * Create the zoom reset icon and its event handler.
    * @private
    */
-  createMultiSelectSvg_() {
+  createMultiselectSvg_() {
     /* This markup will be generated and added to the .svgGroup_:
-    <g class="blocklyMultiSelect">
+    <g class="blocklyMultiselect">
       <image width="32" height="32" xlink:href="media/unselect.svg"></image>
     </g>
     */
-    this.multiSelectGroup_ =
+    this.multiselectGroup_ =
       Blockly.utils.dom.createSvgElement(Blockly.utils.Svg.G, {
-        'class': 'blocklyMultiSelect',
+        'class': 'blocklyMultiselect',
       }, this.svgGroup_);
-    const MultiSelectSvg = Blockly.utils.dom.createSvgElement(
+    const MultiselectSvg = Blockly.utils.dom.createSvgElement(
         Blockly.utils.Svg.IMAGE, {
           'width': WIDTH,
           'height': HEIGHT,
         },
-        this.multiSelectGroup_);
-    MultiSelectSvg.setAttributeNS(
+        this.multiselectGroup_);
+    MultiselectSvg.setAttributeNS(
         Blockly.utils.dom.XLINK_NS, 'xlink:href', DISABLED_IMG);
 
     // Attach event listeners.
-    this.onMultiSelectWrapper_ = Blockly.browserEvents.conditionalBind(
-        this.multiSelectGroup_, 'mousedown', null,
-        this.switchMultiSelect_.bind(this));
+    this.onMultiselectWrapper_ = Blockly.browserEvents.conditionalBind(
+        this.multiselectGroup_, 'mousedown', null,
+        this.switchMultiselect_.bind(this));
   }
   /**
    * Handles a mouse down event on the reset zoom button on the workspace.
    * @param {!Event} e A mouse down event.
    * @private
    */
-  switchMultiSelect_(e) {
+  switchMultiselect_(e) {
     this.workspace_.markFocused();
     this.enabled = !this.enabled;
-    this.plugin_.switchMultiSelect(this.enabled);
+    // Simulate a keyboard event to trigger the multiple selection switch.
+    if (this.enabled) {
+      this.workspace_.injectionDiv_.dispatchEvent(
+          new KeyboardEvent('keydown',
+              {'keyCode': Blockly.utils.KeyCodes.SHIFT}));
+    } else {
+      this.workspace_.injectionDiv_.dispatchEvent(
+          new KeyboardEvent('keyup',
+              {'keyCode': Blockly.utils.KeyCodes.SHIFT}));
+    }
     Blockly.Touch.clearTouchIdentifier(); // Don't block future drags.
     e.stopPropagation(); // Don't start a workspace scroll.
     e.preventDefault(); // Stop double-clicking from selecting text.
@@ -248,13 +244,13 @@ export class MultiSelectControls {
    * Updates the multi select icon.
    * @param {boolean} enable Whether the multi select is enabled.
    */
-  updateMultiSelectIcon(enable) {
+  updateMultiselectIcon(enable) {
     this.enabled = enable;
     if (enable) {
-      this.multiSelectGroup_.firstElementChild.setAttributeNS(
+      this.multiselectGroup_.firstElementChild.setAttributeNS(
           Blockly.utils.dom.XLINK_NS, 'xlink:href', ENABLED_IMG);
     } else {
-      this.multiSelectGroup_.firstElementChild.setAttributeNS(
+      this.multiselectGroup_.firstElementChild.setAttributeNS(
           Blockly.utils.dom.XLINK_NS, 'xlink:href', DISABLED_IMG);
     }
   }
@@ -264,15 +260,15 @@ export class MultiSelectControls {
  * CSS for multi select controls.  See css.js for use.
  */
 Blockly.Css.register(`
-.blocklyMultiSelect>image, .blocklyMultiSelect>svg>image {
+.blocklyMultiselect>image, .blocklyMultiselect>svg>image {
   opacity: .2;
 }
 
-.blocklyMultiSelect>image:hover, .blocklyMultiSelect>svg>image:hover {
+.blocklyMultiselect>image:hover, .blocklyMultiselect>svg>image:hover {
   opacity: .4;
 }
 
-.blocklyMultiSelect>image:active, .blocklyMultiSelect>svg>image:active {
+.blocklyMultiselect>image:active, .blocklyMultiselect>svg>image:active {
   opacity: .6;
 }
 `);
