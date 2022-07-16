@@ -238,9 +238,6 @@ const registerPaste = function() {
       });
       blockSelection.clear();
       copyData.forEach(function(data) {
-        if (!data) {
-          return;
-        }
         // Pasting always pastes to the main workspace, even if the copy
         // started in a flyout workspace.
         let workspace = data.source;
