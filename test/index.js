@@ -32,7 +32,6 @@ document.addEventListener('DOMContentLoaded', function() {
     toolbox: toolboxCategories,
     useDoubleClick: true,
     multiselectIcon: {
-      enabled: true,
       enabledIcon: 'media/select.svg',
       disabledIcon: 'media/unselect.svg',
     },

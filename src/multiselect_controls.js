@@ -11,6 +11,10 @@
 
 import * as Blockly from 'blockly/core';
 
+import DragSelect from '../lib/ds.min';
+import {blockSelection, inMultipleSelectionMode,
+  setSelectionMode} from './global';
+
 /**
  * Icon path of the multi select controls when enabled.
  * @type {string}
@@ -101,6 +105,21 @@ export class MultiselectControls {
      */
     this.initialized_ = false;
 
+    /**
+     * Store the status of workspace dragging
+     * before entering multi select mode.
+     * @type {boolean}
+     * @private
+     */
+    this.hasDisableWorkspaceDrag_ = false;
+
+    /**
+     * Store the block that just got unselected.
+     * @type {!Blockly.BlockSvg}
+     * @private
+     */
+    this.justUnselectedBlock_ = null;
+
     if (options && options.enabledIcon) {
       ENABLED_IMG = options.enabledIcon;
     }
@@ -136,6 +155,7 @@ export class MultiselectControls {
    * Unlink from all DOM elements to prevent memory leaks.
    */
   dispose() {
+    this.disableMultiselect();
     this.workspace_.getComponentManager().removeComponent(this.id);
     if (this.svgGroup_) {
       Blockly.utils.dom.removeNode(this.svgGroup_);
@@ -225,21 +245,140 @@ export class MultiselectControls {
   switchMultiselect_(e) {
     this.workspace_.markFocused();
     this.enabled = !this.enabled;
-    // Simulate a keyboard event to trigger the multiple selection switch.
+    // Multiple selection switch.
     if (this.enabled) {
-      this.workspace_.injectionDiv_.dispatchEvent(
-          new KeyboardEvent('keydown',
-              {'keyCode': Blockly.utils.KeyCodes.SHIFT}));
+      this.enableMultiselect();
     } else {
-      this.workspace_.injectionDiv_.dispatchEvent(
-          new KeyboardEvent('keyup',
-              {'keyCode': Blockly.utils.KeyCodes.SHIFT}));
+      this.disableMultiselect();
     }
     Blockly.Touch.clearTouchIdentifier(); // Don't block future drags.
     e.stopPropagation(); // Don't start a workspace scroll.
     e.preventDefault(); // Stop double-clicking from selecting text.
   }
+  /**
+   * Maintain the selected blocks set list when updating.
+   * @param {!Blockly.BlockSvg} block The block to update.
+   * @private
+   */
+  updateBlocks_(block) {
+    if (block &&
+      block.isDeletable() &&
+      block.isMovable()) {
+      if (blockSelection.has(block.id)) {
+        blockSelection.delete(block.id);
+        this.justUnselectedBlock_ = block;
+        block.pathObject.updateSelected(false);
+      } else {
+        blockSelection.add(block.id);
+        this.justUnselectedBlock_ = null;
+        block.pathObject.updateSelected(true);
+        block.bringToFront();
+      }
+    }
+  }
+  /**
+   * update the multiple selection blocks status.
+   */
+  updateMultiselect() {
+    if (!inMultipleSelectionMode) {
+      if (!Blockly.selected ||
+        (Blockly.selected && !blockSelection.has(Blockly.selected.id))) {
+        // When not in multiple selection mode and Blockly selects a block not
+        // in currently selected set or unselects, clear the selected set.
+        blockSelection.forEach((id) => {
+          const element = this.workspace_.getBlockById(id);
+          if (element) {
+            element.pathObject.updateSelected(false);
+          }
+        });
+        blockSelection.clear();
+        this.updateBlocks_(Blockly.selected);
+      }
+    } else if (this.justUnselectedBlock_ && Blockly.selected &&
+      Blockly.selected.id === this.justUnselectedBlock_.id) {
+      // Update the Blockly selected block when that block is
+      // no longer selected in our set.
+      if (blockSelection.size) {
+        Blockly.common.setSelected(
+            this.workspace_.getBlockById(blockSelection.keys().next().value));
+      } else {
+        Blockly.common.setSelected(null);
+      }
+      this.justUnselectedBlock_.pathObject.updateSelected(false);
+      this.justUnselectedBlock_ = null;
+    }
 
+    // Update the selection highlight.
+    blockSelection.forEach((id) => {
+      const element = this.workspace_.getBlockById(id);
+      if (element) {
+        element.pathObject.updateSelected(true);
+      }
+    });
+  }
+  /**
+   * Enable the multiple select mode.
+   */
+  enableMultiselect() {
+    // Ensure that we only restore drag to move the workspace behavior
+    // when it is enabled.
+    if (!this.hasDisableWorkspaceDrag_ &&
+      this.workspace_.options.moveOptions &&
+      this.workspace_.options.moveOptions.drag) {
+      this.workspace_.options.moveOptions.drag = false;
+      this.hasDisableWorkspaceDrag_ = true;
+    }
+    this.dragSelect_ = new DragSelect({
+      selectables: document.querySelectorAll(
+          'g.blocklyDraggable:not(.blocklyInsertionMarker)' +
+        '> path.blocklyPath'),
+      area: document.querySelector('.blocklyWorkspace'),
+      multiselectMode: true,
+      draggability: false,
+      usePointerEvents: true,
+    });
+    this.dragSelect_.subscribe('elementselect', (info) => {
+      const element = info.item.parentElement;
+      if (inMultipleSelectionMode && element.dataset &&
+        element.dataset.id) {
+        this.updateBlocks_(
+            this.workspace_.getBlockById(element.dataset.id));
+      }
+    });
+    this.dragSelect_.subscribe('elementunselect', (info) => {
+      const element = info.item.parentElement;
+      if (inMultipleSelectionMode && element.dataset &&
+        element.dataset.id) {
+        this.updateBlocks_(
+            this.workspace_.getBlockById(element.dataset.id));
+      }
+    });
+    this.updateMultiselectIcon(true);
+    setSelectionMode(true);
+  }
+  /**
+   * Disable the multiple select mode.
+   */
+  disableMultiselect() {
+    setSelectionMode(false);
+    if (this.dragSelect_) {
+      this.dragSelect_.stop();
+      this.dragSelect_ = null;
+    }
+    // Ensure that at least Blockly select one of the blocks in the
+    // selection set, or clear the Blockly selection if our set is empty.
+    if (!blockSelection.size && Blockly.selected) {
+      Blockly.common.setSelected(null);
+    } else if (blockSelection.size && !Blockly.selected) {
+      Blockly.common.setSelected(
+          this.workspace_.getBlockById(blockSelection.keys().next().value));
+    }
+    if (this.hasDisableWorkspaceDrag_) {
+      this.workspace_.options.moveOptions.drag = true;
+      this.hasDisableWorkspaceDrag_ = false;
+    }
+    this.updateMultiselectIcon(false);
+  }
   /**
    * Updates the multi select icon.
    * @param {boolean} enable Whether the multi select is enabled.
