@@ -43,17 +43,26 @@ function createWorkspace(blocklyDiv, options) {
             totalDelta.y / this.workspace_.scale),
         null);
   };
+  ScrollOptions.prototype.enableWheelScroll = function() {
+    if (this.wheelEvent_) {
+      // Already enabled.
+      return;
+    }
+
+    let element = this.workspace_.getBlockDragSurface().getSvgRoot();
+    if (!Blockly.utils.svgMath.is3dSupported()) {
+      element = this.workspace_.svgGroup_;
+    }
+
+    this.wheelEvent_ = Blockly.browserEvents.conditionalBind(
+        element, 'wheel', this, this.onMouseWheel_);
+  };
   // End monkey patch.
 
   const workspace = Blockly.inject(blocklyDiv, options);
 
   const scrollOptionsPlugin = new ScrollOptions(workspace);
-  // Since our multiple select plugin here disables the drag surface,
-  // "wheel scroll" will not work, and patches should be made in
-  // the scroll-options plugin upstream to get it also working without
-  // drag surface. Also, wheel scroll is also not a feature that is so
-  // neccessary currently I guess.
-  scrollOptionsPlugin.init({enableWheelScroll: false, enableEdgeScroll: true});
+  scrollOptionsPlugin.init();
 
   const multiselectPlugin = new Multiselect(workspace);
   multiselectPlugin.init(options);
@@ -68,6 +77,9 @@ document.addEventListener('DOMContentLoaded', function() {
     multiselectIcon: {
       enabledIcon: 'media/select.svg',
       disabledIcon: 'media/unselect.svg',
+    },
+    move: {
+      wheel: true,
     },
     zoom: {
       wheel: true,
