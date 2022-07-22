@@ -20,17 +20,33 @@ npm install blockly-plugin-workspace-multiselect --save
 import * as Blockly from 'blockly';
 import {Multiselect, MultiselectBlockDragger} from 'blockly-plugin-workspace-multiselect';
 
-// Inject Blockly.
-const workspace = Blockly.inject('blocklyDiv', {
+options = {
   toolbox: toolboxCategories,
   plugins: {
     'blockDragger': MultiselectBlockDragger,
   },
-});
+
+  // // For integration with other plugins that also
+  // // need to change the blockDragger above.
+  // baseBlockDragger: xxx
+
+  // Double click the blocks to collapse/expand
+  // them (A feature from MIT App Inventor).
+  useDoubleClick: false,
+
+  // Use custom icon for the multi select controls.
+  multiselectIcon: {
+    // enabledIcon: 'media/select.svg',
+    // disabledIcon: 'media/unselect.svg',
+  },
+};
+
+// Inject Blockly.
+const workspace = Blockly.inject('blocklyDiv', options);
 
 // Initialize plugin.
 const multiselectPlugin = new Multiselect(workspace);
-multiselectPlugin.init();
+multiselectPlugin.init(options);
 ```
 
 ## API

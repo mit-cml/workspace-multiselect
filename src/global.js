@@ -8,6 +8,8 @@
  * @fileoverview Global data structure.
  */
 
+import * as Blockly from 'blockly/core';
+
 /**
  * Set for storing the current selected blockSvg ids.
  */
@@ -24,6 +26,19 @@ export let inMultipleSelectionMode = false;
  */
 export const setSelectionMode = function(isMultiple) {
   inMultipleSelectionMode = isMultiple;
+};
+
+/**
+ * Store the base BlockDragger.
+ */
+export let BaseBlockDragger = Blockly.BlockDragger;
+
+/**
+ * Set the base block dragger.
+ * @param {!Blockly.BlockDragger} func to use as the base block dragger.
+ */
+export const setBaseBlockDragger = function(func) {
+  BaseBlockDragger = func;
 };
 
 /**

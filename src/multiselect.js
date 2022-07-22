@@ -13,7 +13,7 @@ import * as Blockly from 'blockly/core';
 import * as ContextMenu from './multiselect_contextmenu';
 import * as Shortcut from './multiselect_shortcut';
 import {blockSelection, inMultipleSelectionMode,
-  hasSelectedParent} from './global';
+  hasSelectedParent, setBaseBlockDragger} from './global';
 import {MultiselectControls} from './multiselect_controls';
 
 /**
@@ -55,6 +55,10 @@ export class Multiselect {
 
     if (options.useDoubleClick) {
       this.useDoubleClick_(true);
+    }
+
+    if (options.baseBlockDragger) {
+      setBaseBlockDragger(options.baseBlockDragger);
     }
 
     this.origBumpNeighbours = Blockly.BlockSvg.prototype.bumpNeighbours;

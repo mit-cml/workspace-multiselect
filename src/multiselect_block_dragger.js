@@ -10,7 +10,7 @@
 
 import * as Blockly from 'blockly/core';
 import {blockSelection, inMultipleSelectionMode,
-  hasSelectedParent} from './global';
+  hasSelectedParent, BaseBlockDragger} from './global';
 
 /**
  * A block dragger that adds the functionality for multiple block to
@@ -26,7 +26,7 @@ export class MultiselectBlockDragger extends Blockly.BlockDragger {
     this.blockDraggers_ = new Set();
     this.origHighlight_ = Blockly.RenderedConnection.prototype.highlight;
     this.origUpdateBlockAfterMove_ =
-        Blockly.BlockDragger.prototype.updateBlockAfterMove_;
+        BaseBlockDragger.prototype.updateBlockAfterMove_;
   }
 
   /**
@@ -53,7 +53,7 @@ export class MultiselectBlockDragger extends Blockly.BlockDragger {
         if (hasSelectedParent(element)) {
           return;
         }
-        blockDraggerList.push(new Blockly.BlockDragger(element,
+        blockDraggerList.push(new BaseBlockDragger(element,
             this.workspace_));
       });
     } else {
@@ -66,7 +66,7 @@ export class MultiselectBlockDragger extends Blockly.BlockDragger {
         }
       });
       blockSelection.clear();
-      blockDraggerList.push(new Blockly.BlockDragger(this.block_,
+      blockDraggerList.push(new BaseBlockDragger(this.block_,
           this.workspace_));
       this.block_.pathObject.updateSelected(true);
     }
@@ -123,15 +123,26 @@ export class MultiselectBlockDragger extends Blockly.BlockDragger {
   }
 
   /**
-   * Patch the Blockly.BlockDragger.updateBlockAfterMove_ function.
+   * Updates the location of the block that is being dragged.
+   * @param {number} deltaX Horizontal offset in pixel units.
+   * @param {number} deltaY Vertical offset in pixel units.
+   */
+  moveBlockWhileDragging(deltaX, deltaY) {
+    this.blockDraggers_.forEach(function(blockDragger_) {
+      blockDragger_.moveBlockWhileDragging(deltaX, deltaY);
+    });
+  }
+
+  /**
+   * Patch the BaseBlockDragger.updateBlockAfterMove_ function.
    * @param {boolean} on To start the patch or restore.
    */
   patchUpdateBlockAfterMove(on) {
     if (!on) {
-      Blockly.BlockDragger.prototype.updateBlockAfterMove_ =
+      BaseBlockDragger.prototype.updateBlockAfterMove_ =
           this.origUpdateBlockAfterMove_;
     } else {
-      Blockly.BlockDragger.prototype.updateBlockAfterMove_ = function(delta) {
+      BaseBlockDragger.prototype.updateBlockAfterMove_ = function(delta) {
         this.draggingBlock_.moveConnections(delta.x, delta.y);
         this.fireMoveEvent_();
         if (this.draggedConnectionManager_.wouldConnectBlock()) {
