@@ -1,34 +1,35 @@
-# blockly-plugin-workspace-multiselect [![Built on Blockly](https://tinyurl.com/built-on-blockly)](https://github.com/google/blockly)
+# @mit-app-inventor/blockly-plugin-workspace-multiselect [![Built on Blockly](https://tinyurl.com/built-on-blockly)](https://github.com/google/blockly)
 
-A [Blockly](https://www.npmjs.com/package/blockly) plugin that allows to darg, select and doing actions on multiple blocks in the workspace.
+A [Blockly](https://www.npmjs.com/package/blockly) plugin that allows to drag, select and doing actions on multiple blocks in the workspace.
 
 ## Installation
 
 ### Yarn
 ```
-yarn add blockly-plugin-workspace-multiselect
+yarn add @mit-app-inventor/blockly-plugin-workspace-multiselect
 ```
 
 ### npm
 ```
-npm install blockly-plugin-workspace-multiselect --save
+npm install @mit-app-inventor/blockly-plugin-workspace-multiselect --save
 ```
 
 ## Usage
 
 ```js
 import * as Blockly from 'blockly';
-import {Multiselect, MultiselectBlockDragger} from 'blockly-plugin-workspace-multiselect';
+import {Multiselect, MultiselectBlockDragger} from '@mit-app-inventor/blockly-plugin-workspace-multiselect';
 
 options = {
   toolbox: toolboxCategories,
   plugins: {
-    'blockDragger': MultiselectBlockDragger,
+    'blockDragger': MultiselectBlockDragger, // Required to work
   },
 
   // // For integration with other plugins that also
-  // // need to change the blockDragger above.
-  // baseBlockDragger: xxx
+  // // need to change the blockDragger above (such as
+  // // scroll-options).
+  // baseBlockDragger: ScrollBlockDragger
 
   // Double click the blocks to collapse/expand
   // them (A feature from MIT App Inventor).
@@ -36,8 +37,8 @@ options = {
 
   // Use custom icon for the multi select controls.
   multiselectIcon: {
-    // enabledIcon: 'media/select.svg',
-    // disabledIcon: 'media/unselect.svg',
+    enabledIcon: 'https://github.com/mit-cml/workspace-multiselect/raw/main/test/media/select.svg',
+    disabledIcon: 'https://github.com/mit-cml/workspace-multiselect/raw/main/test/media/unselect.svg',
   },
 };
 
@@ -51,10 +52,10 @@ multiselectPlugin.init(options);
 
 ## API
 
-- `Multiselect.init`: Initializes to select multiple blocks in the workspace.
-- `Multiselect.dispose`: Disposes of selecting multiple blocks in the workspace.
+- `Multiselect.init`: Initialize the plugin.
+- `Multiselect.dispose`: Dispose the plugin.
 - `MultiselectBlockDragger`: The customized block dragger for multiple selection.
-- `blockSelection`: Get a set of currently selected block ids.
+- `blockSelection`: The set of currently selected block ids.
 - `inMultipleSelectionMode`: Check whether the plugin is in multiple selection mode.
 
 ## Credit
