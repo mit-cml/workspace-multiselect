@@ -61,8 +61,10 @@ export class Multiselect {
       setBaseBlockDragger(options.baseBlockDragger);
     }
 
-    this.origBumpNeighbours = Blockly.BlockSvg.prototype.bumpNeighbours;
-    Blockly.BlockSvg.prototype.bumpNeighbours = function() {};
+    if (!options.bumpNeighbours) {
+      this.origBumpNeighbours = Blockly.BlockSvg.prototype.bumpNeighbours;
+      Blockly.BlockSvg.prototype.bumpNeighbours = function() {};
+    }
   }
 
   /**

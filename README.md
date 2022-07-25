@@ -34,6 +34,8 @@ options = {
   // Double click the blocks to collapse/expand
   // them (A feature from MIT App Inventor).
   useDoubleClick: false,
+  // Bump neighbours after dragging to avoid overlapping.
+  bumpNeighbours: false,
 
   // Use custom icon for the multi select controls.
   multiselectIcon: {

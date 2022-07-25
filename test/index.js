@@ -32,9 +32,13 @@ function createWorkspace(blocklyDiv, options) {
     // The total amount the block has moved since being picked up.
     const totalDelta =
         Blockly.utils.Coordinate.sum(this.scrollDelta_, this.dragDelta_);
-    const newLoc = Blockly.utils.Coordinate.sum(this.startXY_, totalDelta);
 
+    const delta = this.pixelsToWorkspaceUnits_(totalDelta);
+    const newLoc = Blockly.utils.Coordinate.sum(this.startXY_, delta);
+
+    // Make the block stay under the cursor.
     this.draggingBlock_.moveDuringDrag(newLoc);
+
     this.dragIcons_(totalDelta);
 
     this.draggedConnectionManager_.update(
@@ -74,9 +78,16 @@ document.addEventListener('DOMContentLoaded', function() {
   const defaultOptions = {
     toolbox: toolboxCategories,
     useDoubleClick: true,
+    bumpNeighbours: false,
     multiselectIcon: {
       enabledIcon: 'media/select.svg',
       disabledIcon: 'media/unselect.svg',
+    },
+    grid: {
+      spacing: 25,
+      length: 3,
+      colour: '#ccc',
+      snap: true,
     },
     move: {
       wheel: true,
