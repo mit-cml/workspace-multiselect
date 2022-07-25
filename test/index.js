@@ -80,6 +80,7 @@ document.addEventListener('DOMContentLoaded', function() {
     useDoubleClick: true,
     bumpNeighbours: false,
     multiselectIcon: {
+      hideIcon: false,
       enabledIcon: 'media/select.svg',
       disabledIcon: 'media/unselect.svg',
     },

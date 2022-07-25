@@ -206,8 +206,10 @@ export class MultiselectControls {
 
     this.top_ = positionRect.top;
     this.left_ = positionRect.left;
-    this.svgGroup_.setAttribute(
-        'transform', 'translate(' + this.left_ + ',' + this.top_ + ')');
+    if (this.svgGroup_) {
+      this.svgGroup_.setAttribute(
+          'transform', 'translate(' + this.left_ + ',' + this.top_ + ')');
+    }
   }
   /**
    * Create the zoom reset icon and its event handler.
@@ -384,6 +386,9 @@ export class MultiselectControls {
    * @param {boolean} enable Whether the multi select is enabled.
    */
   updateMultiselectIcon(enable) {
+    if (!this.multiselectGroup_) {
+      return;
+    }
     this.enabled = enable;
     if (enable) {
       this.multiselectGroup_.firstElementChild.setAttributeNS(

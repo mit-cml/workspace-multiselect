@@ -49,8 +49,10 @@ export class Multiselect {
 
     this.controls_ = new MultiselectControls(
         this.workspace_, options.multiselectIcon, this);
-    const svgControls = this.controls_.createDom();
-    this.workspace_.getParentSvg().appendChild(svgControls);
+    if (!options.multiselectIcon || !options.multiselectIcon.hideIcon) {
+      const svgControls = this.controls_.createDom();
+      this.workspace_.getParentSvg().appendChild(svgControls);
+    }
     this.controls_.init();
 
     if (options.useDoubleClick) {
