@@ -10,7 +10,7 @@
 
 import * as Blockly from 'blockly/core';
 import {blockSelectionWeakMap, inMultipleSelectionModeWeakMap,
-    hasSelectedParent, BaseBlockDraggerWeakMap} from './global';
+  hasSelectedParent, BaseBlockDraggerWeakMap} from './global';
 
 /**
  * A block dragger that adds the functionality for multiple block to

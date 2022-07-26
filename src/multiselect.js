@@ -13,7 +13,7 @@ import * as Blockly from 'blockly/core';
 import * as ContextMenu from './multiselect_contextmenu';
 import * as Shortcut from './multiselect_shortcut';
 import {blockSelectionWeakMap, inMultipleSelectionModeWeakMap,
-    hasSelectedParent, BaseBlockDraggerWeakMap} from './global';
+  hasSelectedParent, BaseBlockDraggerWeakMap} from './global';
 import {MultiselectControls} from './multiselect_controls';
 
 /**
