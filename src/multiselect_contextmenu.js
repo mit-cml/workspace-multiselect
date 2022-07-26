@@ -28,8 +28,11 @@ const registerDuplicate = function() {
       if (workableBlocksLength <= 1) {
         return Blockly.Msg['DUPLICATE_BLOCK'];
       } else {
-        return Blockly.Msg['DUPLICATE_BLOCK'] + ' (' +
-        workableBlocksLength + ')';
+        return Blockly.Msg['DUPLICATE_X_BLOCKS']?
+            Blockly.Msg['DUPLICATE_X_BLOCKS'].replace(
+                '%1', workableBlocksLength) :
+            Blockly.Msg['DUPLICATE_BLOCK'] + ' (' +
+            workableBlocksLength + ')';
       }
     },
     preconditionFn: function(scope) {
@@ -100,15 +103,21 @@ const registerComment = function() {
         if (workableBlocksLength <= 1) {
           return Blockly.Msg['REMOVE_COMMENT'];
         } else {
-          return Blockly.Msg['REMOVE_COMMENT'] + ' (' +
-          workableBlocksLength + ')';
+          return Blockly.Msg['REMOVE_X_COMMENTS']?
+            Blockly.Msg['REMOVE_X_COMMENTS'].replace(
+                '%1', workableBlocksLength) :
+            Blockly.Msg['REMOVE_COMMENT'] + ' (' +
+            workableBlocksLength + ')';
         }
       } else {
         if (workableBlocksLength <= 1) {
           return Blockly.Msg['ADD_COMMENT'];
         } else {
-          return Blockly.Msg['ADD_COMMENT'] + ' (' +
-          workableBlocksLength + ')';
+          return Blockly.Msg['ADD_X_COMMENTS']?
+            Blockly.Msg['ADD_X_COMMENTS'].replace(
+                '%1', workableBlocksLength) :
+            Blockly.Msg['ADD_COMMENT'] + ' (' +
+            workableBlocksLength + ')';
         }
       }
     },
@@ -172,15 +181,21 @@ const registerInline = function() {
         if (workableBlocksLength <= 1) {
           return Blockly.Msg['EXTERNAL_INPUTS'];
         } else {
-          return Blockly.Msg['EXTERNAL_INPUTS'] + ' (' +
-          workableBlocksLength + ')';
+          return Blockly.Msg['EXTERNAL_X_INPUTS']?
+            Blockly.Msg['EXTERNAL_X_INPUTS'].replace(
+                '%1', workableBlocksLength) :
+            Blockly.Msg['EXTERNAL_INPUTS'] + ' (' +
+            workableBlocksLength + ')';
         }
       } else {
         if (workableBlocksLength <= 1) {
           return Blockly.Msg['INLINE_INPUTS'];
         } else {
-          return Blockly.Msg['INLINE_INPUTS'] + ' (' +
-          workableBlocksLength + ')';
+          return Blockly.Msg['INLINE_X_INPUTS']?
+            Blockly.Msg['INLINE_X_INPUTS'].replace(
+                '%1', workableBlocksLength) :
+            Blockly.Msg['INLINE_INPUTS'] + ' (' +
+            workableBlocksLength + ')';
         }
       }
     },
@@ -246,15 +261,21 @@ const registerCollapseExpandBlock = function() {
         if (workableBlocksLength <= 1) {
           return Blockly.Msg['EXPAND_BLOCK'];
         } else {
-          return Blockly.Msg['EXPAND_BLOCK'] + ' (' +
-          workableBlocksLength + ')';
+          return Blockly.Msg['EXPAND_X_BLOCKS']?
+            Blockly.Msg['EXPAND_X_BLOCKS'].replace(
+                '%1', workableBlocksLength) :
+            Blockly.Msg['EXPAND_BLOCK'] + ' (' +
+            workableBlocksLength + ')';
         }
       } else {
         if (workableBlocksLength <= 1) {
           return Blockly.Msg['COLLAPSE_BLOCK'];
         } else {
-          return Blockly.Msg['COLLAPSE_BLOCK'] + ' (' +
-          workableBlocksLength + ')';
+          return Blockly.Msg['COLLAPSE_X_BLOCKS']?
+            Blockly.Msg['COLLAPSE_X_BLOCKS'].replace(
+                '%1', workableBlocksLength) :
+            Blockly.Msg['COLLAPSE_BLOCK'] + ' (' +
+            workableBlocksLength + ')';
         }
       }
     },
@@ -314,15 +335,21 @@ const registerDisable = function() {
         if (workableBlocksLength <= 1) {
           return Blockly.Msg['DISABLE_BLOCK'];
         } else {
-          return Blockly.Msg['DISABLE_BLOCK'] + ' (' +
-          workableBlocksLength + ')';
+          return Blockly.Msg['DISABLE_X_BLOCKS']?
+            Blockly.Msg['DISABLE_X_BLOCKS'].replace(
+                '%1', workableBlocksLength) :
+            Blockly.Msg['DISABLE_BLOCK'] + ' (' +
+            workableBlocksLength + ')';
         }
       } else {
         if (workableBlocksLength <= 1) {
           return Blockly.Msg['ENABLE_BLOCK'];
         } else {
-          return Blockly.Msg['ENABLE_BLOCK'] + ' (' +
-          workableBlocksLength + ')';
+          return Blockly.Msg['ENABLE_X_BLOCKS']?
+            Blockly.Msg['ENABLE_X_BLOCKS'].replace(
+                '%1', workableBlocksLength) :
+            Blockly.Msg['ENABLE_BLOCK'] + ' (' +
+            workableBlocksLength + ')';
         }
       }
     },

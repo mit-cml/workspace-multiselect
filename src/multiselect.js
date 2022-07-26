@@ -13,7 +13,7 @@ import * as Blockly from 'blockly/core';
 import * as ContextMenu from './multiselect_contextmenu';
 import * as Shortcut from './multiselect_shortcut';
 import {blockSelection, inMultipleSelectionMode,
-  hasSelectedParent, setBaseBlockDragger} from './global';
+    hasSelectedParent, setBaseBlockDragger} from './global';
 import {MultiselectControls} from './multiselect_controls';
 
 /**
@@ -37,6 +37,8 @@ export class Multiselect {
   init(options) {
     this.onKeyDownWrapper_ = Blockly.browserEvents.conditionalBind(
         this.workspace_.getInjectionDiv(), 'keydown', this, this.onKeyDown_);
+    this.onKeyUpWrapper_ = Blockly.browserEvents.conditionalBind(
+        globalThis['window'], 'blur', this, this.onBlur_);
     this.onKeyUpWrapper_ = Blockly.browserEvents.conditionalBind(
         this.workspace_.getInjectionDiv(), 'keyup', this, this.onKeyUp_);
     this.eventListenerWrapper_ = this.eventListener_.bind(this);
@@ -87,8 +89,9 @@ export class Multiselect {
     }
 
     ContextMenu.unregisterContextMenu();
-    ContextMenu.registerOrigContextMenu();
     Blockly.ContextMenuRegistry.registry.unregister('workspaceSelectAll');
+    ContextMenu.registerOrigContextMenu();
+
     Shortcut.unregisterShortcut();
     Blockly.ShortcutRegistry.registry.unregister('selectall');
     Shortcut.registerOrigShortcut();
@@ -119,53 +122,53 @@ export class Multiselect {
     Blockly.Gesture.prototype.handleWsStart = (function(func) {
       if (func.isWrapped) {
         return func;
-      } else {
-        const wrappedFunc = function(e, ws) {
-          func.call(this, e, ws);
-          if (this.targetBlock_ && e.buttons === 1 &&
-              !inMultipleSelectionMode) {
-            const preCondition = function(block) {
-              return !block.isInFlyout && block.isMovable() &&
-              block.workspace.options.collapse;
-            };
-            if (Blockly.selected && preCondition(Blockly.selected)) {
-              if (ws.doubleClickPid_) {
-                clearTimeout(ws.doubleClickPid_);
-                ws.doubleClickPid_ = undefined;
-                if (Blockly.selected.id === ws.doubleClickBlock_) {
-                  const state = !Blockly.selected.isCollapsed();
-                  const apply = function(block) {
-                    if (block && preCondition(block) &&
-                    !hasSelectedParent(block)) {
-                      block.setCollapsed(state);
-                    }
-                  };
-                  Blockly.Events.setGroup(true);
-                  if (Blockly.selected && !blockSelection.size) {
-                    apply(Blockly.selected);
+      }
+
+      const wrappedFunc = function(e, ws) {
+        func.call(this, e, ws);
+        if (this.targetBlock_ && e.buttons === 1 &&
+            !inMultipleSelectionMode) {
+          const preCondition = function(block) {
+            return !block.isInFlyout && block.isMovable() &&
+            block.workspace.options.collapse;
+          };
+          if (Blockly.selected && preCondition(Blockly.selected)) {
+            if (ws.doubleClickPid_) {
+              clearTimeout(ws.doubleClickPid_);
+              ws.doubleClickPid_ = undefined;
+              if (Blockly.selected.id === ws.doubleClickBlock_) {
+                const state = !Blockly.selected.isCollapsed();
+                const maybeCollapse = function(block) {
+                  if (block && preCondition(block) &&
+                  !hasSelectedParent(block)) {
+                    block.setCollapsed(state);
                   }
-                  blockSelection.forEach(function(id) {
-                    const block = ws.getBlockById(id);
-                    if (block) {
-                      apply(block);
-                    }
-                  });
-                  Blockly.Events.setGroup(false);
-                  return;
+                };
+                Blockly.Events.setGroup(true);
+                if (Blockly.selected && !blockSelection.size) {
+                  maybeCollapse(Blockly.selected);
                 }
-              }
-              if (!ws.doubleClickPid_) {
-                ws.doubleClickBlock_ = Blockly.selected.id;
-                ws.doubleClickPid_ = setTimeout(function() {
-                  ws.doubleClickPid_ = undefined;
-                }, 500);
+                blockSelection.forEach(function(id) {
+                  const block = ws.getBlockById(id);
+                  if (block) {
+                    maybeCollapse(block);
+                  }
+                });
+                Blockly.Events.setGroup(false);
+                return;
               }
             }
+            if (!ws.doubleClickPid_) {
+              ws.doubleClickBlock_ = Blockly.selected.id;
+              ws.doubleClickPid_ = setTimeout(function() {
+                ws.doubleClickPid_ = undefined;
+              }, 500);
+            }
           }
-        };
-        wrappedFunc.isWrapped = true;
-        return wrappedFunc;
-      }
+        }
+      };
+      wrappedFunc.isWrapped = true;
+      return wrappedFunc;
     })(Blockly.Gesture.prototype.handleWsStart);
   }
 
@@ -200,6 +203,16 @@ export class Multiselect {
    */
   onKeyUp_(e) {
     if (e.keyCode === Blockly.utils.KeyCodes.SHIFT) {
+      this.controls_.disableMultiselect();
+    }
+  }
+
+  /**
+   * Handle a blur on the workspace.
+   * @private
+   */
+  onBlur_() {
+    if (inMultipleSelectionMode) {
       this.controls_.disableMultiselect();
     }
   }

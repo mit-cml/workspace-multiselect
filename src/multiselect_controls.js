@@ -13,19 +13,7 @@ import * as Blockly from 'blockly/core';
 
 import DragSelect from '../lib/ds.min';
 import {blockSelection, inMultipleSelectionMode,
-  setSelectionMode} from './global';
-
-/**
- * Icon path of the multi select controls when enabled.
- * @type {string}
- */
-let ENABLED_IMG = 'https://github.com/mit-cml/workspace-multiselect/raw/main/test/media/select.svg';
-
-/**
- * Icon path of the multi select controls when disabled.
- * @type {string}
- */
-let DISABLED_IMG = 'https://github.com/mit-cml/workspace-multiselect/raw/main/test/media/unselect.svg';
+    setSelectionMode} from './global';
 
 /**
  * Width of the multi select controls.
@@ -64,6 +52,22 @@ export class MultiselectControls {
    * @param {Object} options The icons configuration.
    */
   constructor(workspace, options) {
+    /**
+     * Icon path of the multi select controls when enabled.
+     * @type {string}
+     */
+    this.enabled_img =
+        'https://github.com/mit-cml/workspace-multiselect' +
+        '/raw/main/test/media/select.svg';
+
+    /**
+     * Icon path of the multi select controls when disabled.
+     * @type {string}
+     */
+    this.disabled_img =
+        'https://github.com/mit-cml/workspace-multiselect' +
+        '/raw/main/test/media/unselect.svg';
+
     /**
      * @type {!Blockly.WorkspaceSvg} The workspace to sit in.
      * @private
@@ -121,13 +125,14 @@ export class MultiselectControls {
     this.justUnselectedBlock_ = null;
 
     if (options && options.enabledIcon) {
-      ENABLED_IMG = options.enabledIcon;
+      this.enabled_img = options.enabledIcon;
     }
 
     if (options && options.disabledIcon) {
-      DISABLED_IMG = options.disabledIcon;
+      this.disabled_img = options.disabledIcon;
     }
   }
+
   /**
    * Create the multi select controls.
    * @return {!SVGElement} The multi select controls SVG group.
@@ -138,6 +143,7 @@ export class MultiselectControls {
     this.createMultiselectSvg_();
     return this.svgGroup_;
   }
+
   /**
    * Initializes the multi select controls.
    */
@@ -150,6 +156,7 @@ export class MultiselectControls {
     this.initialized_ = true;
     this.workspace_.resize();
   }
+
   /**
    * Disposes of this multi select controls.
    * Unlink from all DOM elements to prevent memory leaks.
@@ -164,6 +171,7 @@ export class MultiselectControls {
       Blockly.browserEvents.unbind(this.onMultiselectWrapper_);
     }
   }
+
   /**
    * Returns the bounding rectangle of the UI element in pixel units relative to
    * the Blockly injection div.
@@ -175,6 +183,7 @@ export class MultiselectControls {
     const right = this.left_ + WIDTH;
     return new Blockly.utils.Rect(this.top_, bottom, this.left_, right);
   }
+
   /**
    * Positions the multi select controls.
    * It is positioned in the opposite corner to the corner the
@@ -211,6 +220,7 @@ export class MultiselectControls {
           'transform', 'translate(' + this.left_ + ',' + this.top_ + ')');
     }
   }
+
   /**
    * Create the zoom reset icon and its event handler.
    * @private
@@ -232,13 +242,14 @@ export class MultiselectControls {
         },
         this.multiselectGroup_);
     MultiselectSvg.setAttributeNS(
-        Blockly.utils.dom.XLINK_NS, 'xlink:href', DISABLED_IMG);
+        Blockly.utils.dom.XLINK_NS, 'xlink:href', this.disabled_img);
 
     // Attach event listeners.
     this.onMultiselectWrapper_ = Blockly.browserEvents.conditionalBind(
         this.multiselectGroup_, 'mousedown', null,
         this.switchMultiselect_.bind(this));
   }
+
   /**
    * Handles a mouse down event on the reset zoom button on the workspace.
    * @param {!Event} e A mouse down event.
@@ -257,6 +268,7 @@ export class MultiselectControls {
     e.stopPropagation(); // Don't start a workspace scroll.
     e.preventDefault(); // Stop double-clicking from selecting text.
   }
+
   /**
    * Maintain the selected blocks set list when updating.
    * @param {!Blockly.BlockSvg} block The block to update.
@@ -278,6 +290,7 @@ export class MultiselectControls {
       }
     }
   }
+
   /**
    * update the multiple selection blocks status.
    */
@@ -318,6 +331,7 @@ export class MultiselectControls {
       }
     });
   }
+
   /**
    * Enable the multiple select mode.
    */
@@ -358,6 +372,7 @@ export class MultiselectControls {
     this.updateMultiselectIcon(true);
     setSelectionMode(true);
   }
+
   /**
    * Disable the multiple select mode.
    */
@@ -381,6 +396,7 @@ export class MultiselectControls {
     }
     this.updateMultiselectIcon(false);
   }
+
   /**
    * Updates the multi select icon.
    * @param {boolean} enable Whether the multi select is enabled.
@@ -392,10 +408,10 @@ export class MultiselectControls {
     this.enabled = enable;
     if (enable) {
       this.multiselectGroup_.firstElementChild.setAttributeNS(
-          Blockly.utils.dom.XLINK_NS, 'xlink:href', ENABLED_IMG);
+          Blockly.utils.dom.XLINK_NS, 'xlink:href', this.enabled_img);
     } else {
       this.multiselectGroup_.firstElementChild.setAttributeNS(
-          Blockly.utils.dom.XLINK_NS, 'xlink:href', DISABLED_IMG);
+          Blockly.utils.dom.XLINK_NS, 'xlink:href', this.disabled_img);
     }
   }
 }

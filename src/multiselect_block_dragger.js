@@ -10,7 +10,7 @@
 
 import * as Blockly from 'blockly/core';
 import {blockSelection, inMultipleSelectionMode,
-  hasSelectedParent, BaseBlockDragger} from './global';
+    hasSelectedParent, BaseBlockDragger} from './global';
 
 /**
  * A block dragger that adds the functionality for multiple block to
