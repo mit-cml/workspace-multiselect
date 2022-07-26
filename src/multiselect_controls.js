@@ -12,8 +12,7 @@
 import * as Blockly from 'blockly/core';
 
 import DragSelect from '../lib/ds.min';
-import {blockSelection, inMultipleSelectionMode,
-    setSelectionMode} from './global';
+import {blockSelectionWeakMap, inMultipleSelectionModeWeakMap} from './global';
 
 /**
  * Width of the multi select controls.
@@ -131,6 +130,8 @@ export class MultiselectControls {
     if (options && options.disabledIcon) {
       this.disabled_img = options.disabledIcon;
     }
+
+    this.blockSelection = blockSelectionWeakMap.get(workspace);
   }
 
   /**
@@ -278,12 +279,12 @@ export class MultiselectControls {
     if (block &&
       block.isDeletable() &&
       block.isMovable()) {
-      if (blockSelection.has(block.id)) {
-        blockSelection.delete(block.id);
+      if (this.blockSelection.has(block.id)) {
+        this.blockSelection.delete(block.id);
         this.justUnselectedBlock_ = block;
         block.pathObject.updateSelected(false);
       } else {
-        blockSelection.add(block.id);
+        this.blockSelection.add(block.id);
         this.justUnselectedBlock_ = null;
         block.pathObject.updateSelected(true);
         block.bringToFront();
@@ -295,27 +296,28 @@ export class MultiselectControls {
    * update the multiple selection blocks status.
    */
   updateMultiselect() {
-    if (!inMultipleSelectionMode) {
+    if (!inMultipleSelectionModeWeakMap.get(this.workspace_)) {
       if (!Blockly.selected ||
-        (Blockly.selected && !blockSelection.has(Blockly.selected.id))) {
+        (Blockly.selected && !this.blockSelection.has(Blockly.selected.id))) {
         // When not in multiple selection mode and Blockly selects a block not
         // in currently selected set or unselects, clear the selected set.
-        blockSelection.forEach((id) => {
+        this.blockSelection.forEach((id) => {
           const element = this.workspace_.getBlockById(id);
           if (element) {
             element.pathObject.updateSelected(false);
           }
         });
-        blockSelection.clear();
+        this.blockSelection.clear();
         this.updateBlocks_(Blockly.selected);
       }
     } else if (this.justUnselectedBlock_ && Blockly.selected &&
       Blockly.selected.id === this.justUnselectedBlock_.id) {
       // Update the Blockly selected block when that block is
       // no longer selected in our set.
-      if (blockSelection.size) {
+      if (this.blockSelection.size) {
         Blockly.common.setSelected(
-            this.workspace_.getBlockById(blockSelection.keys().next().value));
+            this.workspace_.getBlockById(
+                this.blockSelection.keys().next().value));
       } else {
         Blockly.common.setSelected(null);
       }
@@ -324,7 +326,7 @@ export class MultiselectControls {
     }
 
     // Update the selection highlight.
-    blockSelection.forEach((id) => {
+    this.blockSelection.forEach((id) => {
       const element = this.workspace_.getBlockById(id);
       if (element) {
         element.pathObject.updateSelected(true);
@@ -355,40 +357,41 @@ export class MultiselectControls {
     });
     this.dragSelect_.subscribe('elementselect', (info) => {
       const element = info.item.parentElement;
-      if (inMultipleSelectionMode && element.dataset &&
-        element.dataset.id) {
+      if (inMultipleSelectionModeWeakMap.get(this.workspace_) &&
+          element.dataset && element.dataset.id) {
         this.updateBlocks_(
             this.workspace_.getBlockById(element.dataset.id));
       }
     });
     this.dragSelect_.subscribe('elementunselect', (info) => {
       const element = info.item.parentElement;
-      if (inMultipleSelectionMode && element.dataset &&
-        element.dataset.id) {
+      if (inMultipleSelectionModeWeakMap.get(this.workspace_) &&
+          element.dataset && element.dataset.id) {
         this.updateBlocks_(
             this.workspace_.getBlockById(element.dataset.id));
       }
     });
     this.updateMultiselectIcon(true);
-    setSelectionMode(true);
+    inMultipleSelectionModeWeakMap.set(this.workspace_, true);
   }
 
   /**
    * Disable the multiple select mode.
    */
   disableMultiselect() {
-    setSelectionMode(false);
+    inMultipleSelectionModeWeakMap.set(this.workspace_, false);
     if (this.dragSelect_) {
       this.dragSelect_.stop();
       this.dragSelect_ = null;
     }
     // Ensure that at least Blockly select one of the blocks in the
     // selection set, or clear the Blockly selection if our set is empty.
-    if (!blockSelection.size && Blockly.selected) {
+    if (!this.blockSelection.size && Blockly.selected) {
       Blockly.common.setSelected(null);
-    } else if (blockSelection.size && !Blockly.selected) {
+    } else if (this.blockSelection.size && !Blockly.selected) {
       Blockly.common.setSelected(
-          this.workspace_.getBlockById(blockSelection.keys().next().value));
+          this.workspace_.getBlockById(
+              this.blockSelection.keys().next().value));
     }
     if (this.hasDisableWorkspaceDrag_) {
       this.workspace_.options.moveOptions.drag = true;

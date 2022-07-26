@@ -12,8 +12,8 @@ import * as Blockly from 'blockly/core';
 
 import * as ContextMenu from './multiselect_contextmenu';
 import * as Shortcut from './multiselect_shortcut';
-import {blockSelection, inMultipleSelectionMode,
-    hasSelectedParent, setBaseBlockDragger} from './global';
+import {blockSelectionWeakMap, inMultipleSelectionModeWeakMap,
+    hasSelectedParent, BaseBlockDraggerWeakMap} from './global';
 import {MultiselectControls} from './multiselect_controls';
 
 /**
@@ -27,6 +27,10 @@ export class Multiselect {
   constructor(workspace) {
     this.workspace_ = workspace;
     this.origHandleWsStart_ = Blockly.Gesture.prototype.handleWsStart;
+
+    blockSelectionWeakMap.set(this.workspace_, new Set());
+    inMultipleSelectionModeWeakMap.set(this.workspace_, false);
+    BaseBlockDraggerWeakMap.set(this.workspace_, Blockly.BlockDragger);
   }
 
   /**
@@ -44,10 +48,12 @@ export class Multiselect {
     this.eventListenerWrapper_ = this.eventListener_.bind(this);
     this.workspace_.addChangeListener(this.eventListenerWrapper_);
 
-    ContextMenu.unregisterContextMenu();
-    ContextMenu.registerOurContextMenu();
-    Shortcut.unregisterShortcut();
-    Shortcut.registerOurShortcut();
+    if (!Blockly.ContextMenuRegistry.registry.registry_.workspaceSelectAll) {
+      ContextMenu.unregisterContextMenu();
+      ContextMenu.registerOurContextMenu();
+      Shortcut.unregisterShortcut();
+      Shortcut.registerOurShortcut();
+    }
 
     this.controls_ = new MultiselectControls(
         this.workspace_, options.multiselectIcon, this);
@@ -62,7 +68,7 @@ export class Multiselect {
     }
 
     if (options.baseBlockDragger) {
-      setBaseBlockDragger(options.baseBlockDragger);
+      BaseBlockDraggerWeakMap.set(this.workspace_, options.baseBlockDragger);
     }
 
     if (!options.bumpNeighbours) {
@@ -73,8 +79,9 @@ export class Multiselect {
 
   /**
    * Unbind the events and replace with original registration.
+   * @param {boolean} keepRegistry Keep the context menu and shortcut registry.
    */
-  dispose() {
+  dispose(keepRegistry = false) {
     if (this.onKeyDownWrapper_) {
       Blockly.browserEvents.unbind(this.onKeyDownWrapper_);
       this.onKeyDownWrapper_ = null;
@@ -87,14 +94,15 @@ export class Multiselect {
       this.workspace_.removeChangeListener(this.eventListenerWrapper_);
       this.eventListenerWrapper_ = null;
     }
+    if (!keepRegistry) {
+      ContextMenu.unregisterContextMenu();
+      Blockly.ContextMenuRegistry.registry.unregister('workspaceSelectAll');
+      ContextMenu.registerOrigContextMenu();
 
-    ContextMenu.unregisterContextMenu();
-    Blockly.ContextMenuRegistry.registry.unregister('workspaceSelectAll');
-    ContextMenu.registerOrigContextMenu();
-
-    Shortcut.unregisterShortcut();
-    Blockly.ShortcutRegistry.registry.unregister('selectall');
-    Shortcut.registerOrigShortcut();
+      Shortcut.unregisterShortcut();
+      Blockly.ShortcutRegistry.registry.unregister('selectall');
+      Shortcut.registerOrigShortcut();
+    }
 
     if (this.controls_) {
       this.controls_.dispose();
@@ -127,7 +135,7 @@ export class Multiselect {
       const wrappedFunc = function(e, ws) {
         func.call(this, e, ws);
         if (this.targetBlock_ && e.buttons === 1 &&
-            !inMultipleSelectionMode) {
+            !inMultipleSelectionModeWeakMap.get(this.workspace_)) {
           const preCondition = function(block) {
             return !block.isInFlyout && block.isMovable() &&
             block.workspace.options.collapse;
@@ -145,6 +153,7 @@ export class Multiselect {
                   }
                 };
                 Blockly.Events.setGroup(true);
+                const blockSelection = blockSelectionWeakMap.get(ws);
                 if (Blockly.selected && !blockSelection.size) {
                   maybeCollapse(Blockly.selected);
                 }
@@ -191,7 +200,7 @@ export class Multiselect {
    */
   onKeyDown_(e) {
     if (e.keyCode === Blockly.utils.KeyCodes.SHIFT &&
-        !inMultipleSelectionMode) {
+        !inMultipleSelectionModeWeakMap.get(this.workspace_)) {
       this.controls_.enableMultiselect();
     }
   }
@@ -212,7 +221,7 @@ export class Multiselect {
    * @private
    */
   onBlur_() {
-    if (inMultipleSelectionMode) {
+    if (inMultipleSelectionModeWeakMap.get(this.workspace_)) {
       this.controls_.disableMultiselect();
     }
   }

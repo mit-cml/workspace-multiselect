@@ -11,4 +11,4 @@
 export * from './multiselect_patch';
 export {Multiselect} from './multiselect';
 export {MultiselectBlockDragger} from './multiselect_block_dragger';
-export {blockSelection, inMultipleSelectionMode} from './global';
+export {blockSelectionWeakMap, inMultipleSelectionModeWeakMap} from './global';

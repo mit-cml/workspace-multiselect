@@ -9,7 +9,7 @@
  */
 
 import * as Blockly from 'blockly/core';
-import {blockSelection, hasSelectedParent} from './global';
+import {blockSelectionWeakMap, hasSelectedParent} from './global';
 
 /**
  * Modification for context menu 'Duplicate' to be available for
@@ -17,10 +17,11 @@ import {blockSelection, hasSelectedParent} from './global';
  */
 const registerDuplicate = function() {
   const duplicateOption = {
-    displayText: function() {
+    displayText: function(scope) {
       let workableBlocksLength = 0;
+      const blockSelection = blockSelectionWeakMap.get(scope.block.workspace);
       blockSelection.forEach(function(id) {
-        const block = Blockly.getMainWorkspace().getBlockById(id);
+        const block = scope.block.workspace.getBlockById(id);
         if (duplicateOption.check(block)) {
           workableBlocksLength++;
         }
@@ -59,12 +60,13 @@ const registerDuplicate = function() {
         }
         block.pathObject.updateSelected(false);
       };
+      const blockSelection = blockSelectionWeakMap.get(scope.block.workspace);
       Blockly.Events.setGroup(true);
       if (!blockSelection.size) {
         apply(scope.block);
       }
       blockSelection.forEach(function(id) {
-        const block = Blockly.getMainWorkspace().getBlockById(id);
+        const block = scope.block.workspace.getBlockById(id);
         apply(block);
       });
       Blockly.Events.setGroup(false);
@@ -91,8 +93,9 @@ const registerComment = function() {
     displayText: function(scope) {
       let workableBlocksLength = 0;
       const state = scope.block.getCommentIcon();
+      const blockSelection = blockSelectionWeakMap.get(scope.block.workspace);
       blockSelection.forEach(function(id) {
-        const block = Blockly.getMainWorkspace().getBlockById(id);
+        const block = scope.block.workspace.getBlockById(id);
         if (commentOption.check(block) &&
             (block.getCommentIcon() instanceof Blockly.Comment) ===
             (state instanceof Blockly.Comment)) {
@@ -145,12 +148,13 @@ const registerComment = function() {
           }
         }
       };
+      const blockSelection = blockSelectionWeakMap.get(scope.block.workspace);
       Blockly.Events.setGroup(true);
       if (!blockSelection.size) {
         apply(scope.block);
       }
       blockSelection.forEach(function(id) {
-        const block = Blockly.getMainWorkspace().getBlockById(id);
+        const block = scope.block.workspace.getBlockById(id);
         apply(block);
       });
       Blockly.Events.setGroup(false);
@@ -170,8 +174,9 @@ const registerInline = function() {
     displayText: function(scope) {
       let workableBlocksLength = 0;
       const state = scope.block.getInputsInline();
+      const blockSelection = blockSelectionWeakMap.get(scope.block.workspace);
       blockSelection.forEach(function(id) {
-        const block = Blockly.getMainWorkspace().getBlockById(id);
+        const block = scope.block.workspace.getBlockById(id);
         if (inlineOption.check(block) &&
             block.getInputsInline() === state) {
           workableBlocksLength++;
@@ -224,12 +229,13 @@ const registerInline = function() {
           block.setInputsInline(state);
         }
       };
+      const blockSelection = blockSelectionWeakMap.get(scope.block.workspace);
       Blockly.Events.setGroup(true);
       if (!blockSelection.size) {
         apply(scope.block);
       }
       blockSelection.forEach(function(id) {
-        const block = Blockly.getMainWorkspace().getBlockById(id);
+        const block = scope.block.workspace.getBlockById(id);
         apply(block);
       });
       Blockly.Events.setGroup(false);
@@ -250,8 +256,9 @@ const registerCollapseExpandBlock = function() {
     displayText: function(scope) {
       let workableBlocksLength = 0;
       const state = scope.block.isCollapsed();
+      const blockSelection = blockSelectionWeakMap.get(scope.block.workspace);
       blockSelection.forEach(function(id) {
-        const block = Blockly.getMainWorkspace().getBlockById(id);
+        const block = scope.block.workspace.getBlockById(id);
         if (collapseExpandOption.check(block) &&
             block.isCollapsed() === state) {
           workableBlocksLength++;
@@ -290,7 +297,8 @@ const registerCollapseExpandBlock = function() {
     check: function(block) {
       return block &&
              collapseExpandOption.preconditionFn({block: block}) ===
-             'enabled' && (!hasSelectedParent(block) || block.isCollapsed());
+             'enabled' && (!hasSelectedParent(block) ||
+             block.isCollapsed());
     },
     callback: function(scope) {
       const state = !scope.block.isCollapsed();
@@ -299,12 +307,13 @@ const registerCollapseExpandBlock = function() {
           block.setCollapsed(state);
         }
       };
+      const blockSelection = blockSelectionWeakMap.get(scope.block.workspace);
       Blockly.Events.setGroup(true);
       if (!blockSelection.size) {
         apply(scope.block);
       }
       blockSelection.forEach(function(id) {
-        const block = Blockly.getMainWorkspace().getBlockById(id);
+        const block = scope.block.workspace.getBlockById(id);
         apply(block);
       });
       Blockly.Events.setGroup(false);
@@ -324,8 +333,9 @@ const registerDisable = function() {
     displayText: function(scope) {
       let workableBlocksLength = 0;
       const state = scope.block.isEnabled();
+      const blockSelection = blockSelectionWeakMap.get(scope.block.workspace);
       blockSelection.forEach(function(id) {
-        const block = Blockly.getMainWorkspace().getBlockById(id);
+        const block = scope.block.workspace.getBlockById(id);
         if (disableOption.check(block) &&
             block.isEnabled() === state) {
           workableBlocksLength++;
@@ -376,12 +386,13 @@ const registerDisable = function() {
           block.setEnabled(state);
         }
       };
+      const blockSelection = blockSelectionWeakMap.get(scope.block.workspace);
       Blockly.Events.setGroup(true);
       if (!blockSelection.size) {
         apply(scope.block);
       }
       blockSelection.forEach(function(id) {
-        const block = Blockly.getMainWorkspace().getBlockById(id);
+        const block = scope.block.workspace.getBlockById(id);
         apply(block);
       });
       Blockly.Events.setGroup(false);
@@ -398,10 +409,11 @@ const registerDisable = function() {
  */
 const registerDelete = function() {
   const deleteOption = {
-    displayText: function() {
+    displayText: function(scope) {
       let descendantCount = 0;
+      const blockSelection = blockSelectionWeakMap.get(scope.block.workspace);
       blockSelection.forEach(function(id) {
-        const block = Blockly.getMainWorkspace().getBlockById(id);
+        const block = scope.block.workspace.getBlockById(id);
         if (block && !hasSelectedParent(block)) {
           // Count the number of blocks that are nested in this block.
           descendantCount += block.getDescendants(false).length;
@@ -438,12 +450,13 @@ const registerDelete = function() {
           }
         }
       };
+      const blockSelection = blockSelectionWeakMap.get(scope.block.workspace);
       Blockly.Events.setGroup(true);
       if (!blockSelection.size) {
         apply(scope.block);
       }
       blockSelection.forEach(function(id) {
-        const block = Blockly.getMainWorkspace().getBlockById(id);
+        const block = scope.block.workspace.getBlockById(id);
         apply(block);
       });
       Blockly.Events.setGroup(false);
@@ -473,6 +486,7 @@ const registerSelectAll = function() {
              !block.isInsertionMarker();
     },
     callback: function(scope) {
+      const blockSelection = blockSelectionWeakMap.get(scope.workspace);
       if (Blockly.selected && !blockSelection.has(Blockly.selected.id)) {
         Blockly.selected.pathObject.updateSelected(false);
         Blockly.common.setSelected(null);
@@ -480,7 +494,7 @@ const registerSelectAll = function() {
 
       scope.workspace.getTopBlocks().forEach(function(block) {
         if (selectAllOption.check(block)) {
-          blockSelection.add(block.id);
+          blockSelectionWeakMap.get(block.workspace).add(block.id);
           if (!Blockly.common.getSelected()) {
             Blockly.common.setSelected(block);
           }

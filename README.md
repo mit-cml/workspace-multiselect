@@ -81,8 +81,8 @@ multiselectPlugin.init(options);
 - `Multiselect.init`: Initialize the plugin.
 - `Multiselect.dispose`: Dispose the plugin.
 - `MultiselectBlockDragger`: The customized block dragger for multiple selection.
-- `blockSelection`: The set of currently selected block ids.
-- `inMultipleSelectionMode`: Check whether the plugin is in multiple selection mode.
+- `blockSelectionWeakMap`: The WeakMap storing set of currently selected block ids by workspace svg.
+- `inMultipleSelectionModeWeakMap`: The WeakMap storing whether the plugin is in multiple selection mode by workspace svg.
 
 ## Credit
 - [ds.min.js](lib/ds.min.js): This plugin uses [a patched version of DragSelect](https://github.com/ThibaultJanBeyer/DragSelect/pull/128) to realize "drag a rectangle to select multiple blocks" feature.

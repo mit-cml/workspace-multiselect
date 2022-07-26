@@ -9,8 +9,8 @@
  */
 
 import * as Blockly from 'blockly/core';
-import {blockSelection, inMultipleSelectionMode,
-    hasSelectedParent, BaseBlockDragger} from './global';
+import {blockSelectionWeakMap, inMultipleSelectionModeWeakMap,
+    hasSelectedParent, BaseBlockDraggerWeakMap} from './global';
 
 /**
  * A block dragger that adds the functionality for multiple block to
@@ -25,8 +25,10 @@ export class MultiselectBlockDragger extends Blockly.BlockDragger {
     this.group_ = '';
     this.blockDraggers_ = new Set();
     this.origHighlight_ = Blockly.RenderedConnection.prototype.highlight;
+    this.BaseBlockDragger = BaseBlockDraggerWeakMap.get(workspace);
     this.origUpdateBlockAfterMove_ =
-        BaseBlockDragger.prototype.updateBlockAfterMove_;
+        this.BaseBlockDragger.prototype.updateBlockAfterMove_;
+    this.blockSelection = blockSelectionWeakMap.get(workspace);
   }
 
   /**
@@ -37,36 +39,36 @@ export class MultiselectBlockDragger extends Blockly.BlockDragger {
    *     disconnecting.
    */
   startDrag(currentDragDeltaXY, healStack) {
-    if (inMultipleSelectionMode) {
+    if (inMultipleSelectionModeWeakMap.get(this.workspace_)) {
       return;
     }
 
     const blockDraggerList = [];
-    if (blockSelection.has(this.block_.id)) {
-      blockSelection.forEach((id) => {
+    if (this.blockSelection.has(this.block_.id)) {
+      this.blockSelection.forEach((id) => {
         const element = this.workspace_.getBlockById(id);
         if (!element) {
-          blockSelection.delete(id);
+          this.blockSelection.delete(id);
           return;
         }
         // Only drag the parent if it is selected.
         if (hasSelectedParent(element)) {
           return;
         }
-        blockDraggerList.push(new BaseBlockDragger(element,
+        blockDraggerList.push(new this.BaseBlockDragger(element,
             this.workspace_));
       });
     } else {
       // Dragging a new block that not in the selection list would
       // clear the multiple selections and only drag that block.
-      blockSelection.forEach((id) => {
+      this.blockSelection.forEach((id) => {
         const element = this.workspace_.getBlockById(id);
         if (element) {
           element.pathObject.updateSelected(false);
         }
       });
-      blockSelection.clear();
-      blockDraggerList.push(new BaseBlockDragger(this.block_,
+      this.blockSelection.clear();
+      blockDraggerList.push(new this.BaseBlockDragger(this.block_,
           this.workspace_));
       this.block_.pathObject.updateSelected(true);
     }
@@ -134,21 +136,21 @@ export class MultiselectBlockDragger extends Blockly.BlockDragger {
   }
 
   /**
-   * Patch the BaseBlockDragger.updateBlockAfterMove_ function.
+   * Patch the this.BaseBlockDragger.updateBlockAfterMove_ function.
    * @param {boolean} on To start the patch or restore.
    */
   patchUpdateBlockAfterMove(on) {
     if (!on) {
-      BaseBlockDragger.prototype.updateBlockAfterMove_ =
+      this.BaseBlockDragger.prototype.updateBlockAfterMove_ =
           this.origUpdateBlockAfterMove_;
     } else {
-      BaseBlockDragger.prototype.updateBlockAfterMove_ = function(delta) {
+      this.BaseBlockDragger.prototype.updateBlockAfterMove_ = function(delta) {
         this.draggingBlock_.moveConnections(delta.x, delta.y);
         this.fireMoveEvent_();
         if (this.draggedConnectionManager_.wouldConnectBlock()) {
           // We have to ensure that we can't connect to a block
           // that is in dragging.
-          if (!blockSelection.has(
+          if (!this.blockSelection.has(
               this.draggedConnectionManager_.closestConnection_.
                   sourceBlock_.id)) {
             // Applying connections also rerenders the relevant blocks.

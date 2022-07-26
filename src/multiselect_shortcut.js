@@ -9,7 +9,7 @@
  */
 
 import * as Blockly from 'blockly/core';
-import {blockSelection, hasSelectedParent} from './global';
+import {blockSelectionWeakMap, hasSelectedParent} from './global';
 
 /**
  * Modification for keyboard shortcut 'Delete' to be available
@@ -23,11 +23,12 @@ const registerShortcutDelete = function() {
         return false;
       }
       const selected = Blockly.common.getSelected();
+      const blockSelection = blockSelectionWeakMap.get(workspace);
       if (!blockSelection.size) {
         return deleteShortcut.check(selected);
       }
       for (const id of blockSelection) {
-        const block = Blockly.getMainWorkspace().getBlockById(id);
+        const block = workspace.getBlockById(id);
         if (deleteShortcut.check(block)) {
           return true;
         }
@@ -36,7 +37,8 @@ const registerShortcutDelete = function() {
     },
     check: function(block) {
       return block && block.isDeletable() &&
-             !block.workspace.isFlyout && !hasSelectedParent(block);
+             !block.workspace.isFlyout &&
+             !hasSelectedParent(block);
     },
     callback: function(workspace, e) {
       // Delete or backspace.
@@ -57,11 +59,12 @@ const registerShortcutDelete = function() {
       };
       const selected = Blockly.common.getSelected();
       Blockly.Events.setGroup(true);
+      const blockSelection = blockSelectionWeakMap.get(workspace);
       if (!blockSelection.size) {
         apply(selected);
       }
       blockSelection.forEach(function(id) {
-        const block = Blockly.getMainWorkspace().getBlockById(id);
+        const block = workspace.getBlockById(id);
         apply(block);
       });
       Blockly.Events.setGroup(false);
@@ -89,11 +92,12 @@ const registerCopy = function() {
         return false;
       }
       const selected = Blockly.common.getSelected();
+      const blockSelection = blockSelectionWeakMap.get(workspace);
       if (!blockSelection.size) {
         return copyShortcut.check(selected);
       }
       for (const id of blockSelection) {
-        const block = Blockly.getMainWorkspace().getBlockById(id);
+        const block = workspace.getBlockById(id);
         if (copyShortcut.check(block)) {
           return true;
         }
@@ -116,12 +120,13 @@ const registerCopy = function() {
         }
       };
       const selected = Blockly.common.getSelected();
+      const blockSelection = blockSelectionWeakMap.get(workspace);
       Blockly.Events.setGroup(true);
       if (!blockSelection.size) {
         apply(selected);
       }
       blockSelection.forEach(function(id) {
-        const block = Blockly.getMainWorkspace().getBlockById(id);
+        const block = workspace.getBlockById(id);
         apply(block);
       });
       Blockly.Events.setGroup(false);
@@ -160,11 +165,12 @@ const registerCut = function() {
         return false;
       }
       const selected = Blockly.common.getSelected();
+      const blockSelection = blockSelectionWeakMap.get(workspace);
       if (!blockSelection.size) {
         return cutShortcut.check(selected);
       }
       for (const id of blockSelection) {
-        const block = Blockly.getMainWorkspace().getBlockById(id);
+        const block = workspace.getBlockById(id);
         if (cutShortcut.check(block)) {
           return true;
         }
@@ -173,9 +179,10 @@ const registerCut = function() {
     },
     check: function(block) {
       return block && block.isDeletable() && block.isMovable() &&
-             !block.workspace.isFlyout && !hasSelectedParent(block);
+             !block.workspace.isFlyout &&
+             !hasSelectedParent(block);
     },
-    callback: function() {
+    callback: function(workspace) {
       copyData.clear();
       const apply = function(block) {
         if (cutShortcut.check(block)) {
@@ -189,12 +196,13 @@ const registerCut = function() {
         }
       };
       const selected = Blockly.common.getSelected();
+      const blockSelection = blockSelectionWeakMap.get(workspace);
       Blockly.Events.setGroup(true);
       if (!blockSelection.size) {
         apply(selected);
       }
       blockSelection.forEach(function(id) {
-        const block = Blockly.getMainWorkspace().getBlockById(id);
+        const block = workspace.getBlockById(id);
         apply(block);
       });
       Blockly.Events.setGroup(false);
@@ -228,10 +236,11 @@ const registerPaste = function() {
     preconditionFn: function(workspace) {
       return !workspace.options.readOnly && !Blockly.Gesture.inProgress();
     },
-    callback: function() {
+    callback: function(workspace) {
+      const blockSelection = blockSelectionWeakMap.get(workspace);
       Blockly.Events.setGroup(true);
       blockSelection.forEach(function(id) {
-        const block = Blockly.getMainWorkspace().getBlockById(id);
+        const block = workspace.getBlockById(id);
         if (block) {
           block.pathObject.updateSelected(false);
         }
@@ -248,7 +257,7 @@ const registerPaste = function() {
             workspace.isCapacityAvailable(data.typeCounts)) {
           const block = workspace.paste(data.saveInfo);
           block.pathObject.updateSelected(true);
-          blockSelection.add(block.id);
+          blockSelectionWeakMap.get(block.workspace).add(block.id);
         }
       });
       Blockly.Events.setGroup(false);
@@ -291,6 +300,7 @@ const registeSelectAll = function() {
     callback: function(workspace, e) {
       // Prevent the default text all selection behavior.
       e.preventDefault();
+      const blockSelection = blockSelectionWeakMap.get(workspace);
       if (Blockly.selected && !blockSelection.has(Blockly.selected.id)) {
         Blockly.selected.pathObject.updateSelected(false);
         Blockly.common.setSelected(null);

@@ -13,33 +13,17 @@ import * as Blockly from 'blockly/core';
 /**
  * Set for storing the current selected blockSvg ids.
  */
-export const blockSelection = new Set();
+export const blockSelectionWeakMap = new WeakMap();
 
 /**
  * Store the current selection mode.
  */
-export let inMultipleSelectionMode = false;
-
-/**
- * Set the inMultipleSelectionMode.
- * @param {boolean} isMultiple selection mode.
- */
-export const setSelectionMode = function(isMultiple) {
-  inMultipleSelectionMode = isMultiple;
-};
+export const inMultipleSelectionModeWeakMap = new WeakMap();
 
 /**
  * Store the base BlockDragger.
  */
-export let BaseBlockDragger = Blockly.BlockDragger;
-
-/**
- * Set the base block dragger.
- * @param {!Blockly.BlockDragger} func to use as the base block dragger.
- */
-export const setBaseBlockDragger = function(func) {
-  BaseBlockDragger = func;
-};
+export const BaseBlockDraggerWeakMap = new WeakMap();
 
 /**
  * Check if the current selected blockSvg set already contains the parents.
@@ -49,7 +33,7 @@ export const setBaseBlockDragger = function(func) {
 export const hasSelectedParent = function(block) {
   while (block) {
     block = block.getParent();
-    if (block && blockSelection.has(block.id)) {
+    if (block && blockSelectionWeakMap.get(block.workspace).has(block.id)) {
       return true;
     }
   }
