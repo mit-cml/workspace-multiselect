@@ -150,7 +150,7 @@ export class MultiselectBlockDragger extends Blockly.BlockDragger {
         if (this.draggedConnectionManager_.wouldConnectBlock()) {
           // We have to ensure that we can't connect to a block
           // that is in dragging.
-          if (!this.blockSelection.has(
+          if (!blockSelectionWeakMap.get(this.workspace_).has(
               this.draggedConnectionManager_.closestConnection_.
                   sourceBlock_.id)) {
             // Applying connections also rerenders the relevant blocks.
