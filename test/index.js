@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2022 Google LLC
+ * Copyright 2022 MIT
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -10,7 +10,7 @@
 
 import * as Blockly from 'blockly';
 import {toolboxCategories, createPlayground} from '@blockly/dev-tools';
-import {Plugin} from '../src/index';
+import {Multiselect, MultiselectBlockDragger} from '../src/index';
 
 /**
  * Create a workspace.
@@ -21,9 +21,8 @@ import {Plugin} from '../src/index';
 function createWorkspace(blocklyDiv, options) {
   const workspace = Blockly.inject(blocklyDiv, options);
 
-  // TODO: Initialize your plugin here.
-  const plugin = new Plugin(workspace);
-  plugin.init();
+  const multiselectPlugin = new Multiselect(workspace);
+  multiselectPlugin.init(options);
 
   return workspace;
 }
@@ -31,6 +30,28 @@ function createWorkspace(blocklyDiv, options) {
 document.addEventListener('DOMContentLoaded', function() {
   const defaultOptions = {
     toolbox: toolboxCategories,
+    useDoubleClick: true,
+    bumpNeighbours: false,
+    multiselectIcon: {
+      hideIcon: false,
+      enabledIcon: 'media/select.svg',
+      disabledIcon: 'media/unselect.svg',
+    },
+    grid: {
+      spacing: 25,
+      length: 3,
+      colour: '#ccc',
+      snap: true,
+    },
+    move: {
+      wheel: true,
+    },
+    zoom: {
+      wheel: true,
+    },
+    plugins: {
+      'blockDragger': MultiselectBlockDragger,
+    },
   };
   createPlayground(document.getElementById('root'), createWorkspace,
       defaultOptions);
