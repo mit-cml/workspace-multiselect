@@ -261,9 +261,9 @@ export class MultiselectControls {
     this.enabled = !this.enabled;
     // Multiple selection switch.
     if (this.enabled) {
-      this.enableMultiselect();
+      this.enableMultiselect(true);
     } else {
-      this.disableMultiselect();
+      this.disableMultiselect(true);
     }
     Blockly.Touch.clearTouchIdentifier(); // Don't block future drags.
     e.stopPropagation(); // Don't start a workspace scroll.
@@ -336,8 +336,9 @@ export class MultiselectControls {
 
   /**
    * Enable the multiple select mode.
+   * @param {!boolean} byIcon Whether to simulate a keyboard event.
    */
-  enableMultiselect() {
+  enableMultiselect(byIcon = false) {
     // Ensure that we only restore drag to move the workspace behavior
     // when it is enabled.
     if (!this.hasDisableWorkspaceDrag_ &&
@@ -371,16 +372,23 @@ export class MultiselectControls {
             this.workspace_.getBlockById(element.dataset.id));
       }
     });
+    if (byIcon) {
+      document.dispatchEvent(new KeyboardEvent('keydown', {'key': 'meta'}));
+    }
     this.updateMultiselectIcon(true);
     inMultipleSelectionModeWeakMap.set(this.workspace_, true);
   }
 
   /**
    * Disable the multiple select mode.
+   * @param {!boolean} byIcon Whether to simulate a keyboard event.
    */
-  disableMultiselect() {
+  disableMultiselect(byIcon = false) {
     inMultipleSelectionModeWeakMap.set(this.workspace_, false);
     if (this.dragSelect_) {
+      if (byIcon) {
+        document.dispatchEvent(new KeyboardEvent('keyup', {'key': 'meta'}));
+      }
       this.dragSelect_.stop();
       this.dragSelect_ = null;
     }
