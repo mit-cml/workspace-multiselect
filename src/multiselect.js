@@ -27,8 +27,10 @@ export class Multiselect {
   constructor(workspace) {
     this.workspace_ = workspace;
     this.origHandleWsStart_ = Blockly.Gesture.prototype.handleWsStart;
+    this.isUpdatingBlocks_ = false;
 
     blockSelectionWeakMap.set(this.workspace_, new Set());
+    this.blockSelection_ = blockSelectionWeakMap.get(this.workspace_);
     inMultipleSelectionModeWeakMap.set(this.workspace_, false);
     BaseBlockDraggerWeakMap.set(this.workspace_, Blockly.BlockDragger);
   }
@@ -190,6 +192,20 @@ export class Multiselect {
     // on Block Selected
     if (e.type === Blockly.Events.SELECTED) {
       this.controls_.updateMultiselect();
+    // on Block field changed
+    } else if (!this.isUpdatingBlocks_ && e.type === Blockly.Events.CHANGE &&
+        e.element === 'field' && this.blockSelection_.has(e.blockId)) {
+      this.isUpdatingBlocks_ = true;
+      const blockType = this.workspace_.getBlockById(e.blockId).type;
+      // Update the fields to the same value for
+      // the selected blocks with same type.
+      this.blockSelection_.forEach((id) => {
+        const block = this.workspace_.getBlockById(id);
+        if (block.type === blockType) {
+          block.setFieldValue(e.newValue, e.name);
+        }
+      });
+      this.isUpdatingBlocks_ = false;
     }
   }
 
