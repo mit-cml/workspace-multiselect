@@ -11,7 +11,7 @@
 
 import * as Blockly from 'blockly/core';
 
-import DragSelect from '../lib/ds.min';
+import DragSelect from './lib/ds.min';
 import {blockSelectionWeakMap, inMultipleSelectionModeWeakMap} from './global';
 
 /**
@@ -277,8 +277,7 @@ export class MultiselectControls {
    */
   updateBlocks_(block) {
     if (block &&
-      block.isDeletable() &&
-      block.isMovable()) {
+        (block.isDeletable() || block.isMovable())) {
       if (this.blockSelection.has(block.id)) {
         this.blockSelection.delete(block.id);
         this.justUnselectedBlock_ = block;
