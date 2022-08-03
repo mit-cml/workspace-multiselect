@@ -195,20 +195,26 @@ export class Multiselect {
     } else if (e.type === Blockly.Events.CHANGE &&
         e.element === 'field' && e.recordUndo &&
         this.blockSelection_.has(e.blockId)) {
-      Blockly.Events.setGroup(true);
-      const blockType = this.workspace_.getBlockById(e.blockId).type;
-      // Update the fields to the same value for
-      // the selected blocks with same type.
-      this.blockSelection_.forEach((id) => {
-        const block = this.workspace_.getBlockById(id);
-        if (block.type === blockType) {
-          block.setFieldValue(e.newValue, e.name);
-        }
-      });
-      if (!e.group) {
+      const inGroup = !!e.group;
+      if (!inGroup) {
+        Blockly.Events.setGroup(true);
         e.group = Blockly.Events.getGroup();
       }
-      Blockly.Events.setGroup(false);
+      try {
+        const blockType = this.workspace_.getBlockById(e.blockId).type;
+        // Update the fields to the same value for
+        // the selected blocks with same type.
+        this.blockSelection_.forEach((id) => {
+          const block = this.workspace_.getBlockById(id);
+          if (block.type === blockType) {
+            block.setFieldValue(e.newValue, e.name);
+          }
+        });
+      } finally {
+        if (!inGroup) {
+          Blockly.Events.setGroup(false);
+        }
+      }
     }
   }
 
