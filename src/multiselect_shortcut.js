@@ -301,8 +301,9 @@ const registeSelectAll = function() {
       // Prevent the default text all selection behavior.
       e.preventDefault();
       const blockSelection = blockSelectionWeakMap.get(workspace);
-      if (Blockly.selected && !blockSelection.has(Blockly.selected.id)) {
-        Blockly.selected.pathObject.updateSelected(false);
+      if (Blockly.getSelected() &&
+        !blockSelection.has(Blockly.getSelected().id)) {
+        Blockly.getSelected().pathObject.updateSelected(false);
         Blockly.common.setSelected(null);
       }
       workspace.getTopBlocks().forEach(function(block) {

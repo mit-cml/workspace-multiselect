@@ -499,8 +499,9 @@ const registerSelectAll = function() {
     },
     callback: function(scope) {
       const blockSelection = blockSelectionWeakMap.get(scope.workspace);
-      if (Blockly.selected && !blockSelection.has(Blockly.selected.id)) {
-        Blockly.selected.pathObject.updateSelected(false);
+      if (Blockly.getSelected() &&
+        !blockSelection.has(Blockly.getSelected().id)) {
+        Blockly.getSelected().pathObject.updateSelected(false);
         Blockly.common.setSelected(null);
       }
 
