@@ -39,15 +39,15 @@
     "src"
   ],
   "dependencies": {
-    "dragselect": "^2.4.4"
+    "dragselect": "^2.5.4"
   },
   "devDependencies": {
     "@blockly/dev-scripts": "^1.2.28",
     "@blockly/dev-tools": "^5.0.2",
-    "blockly": "^9.0.1"
+    "blockly": "^9.1.0"
   },
   "peerDependencies": {
-    "blockly": "^9.0.1"
+    "blockly": "^9.1.0"
   },
   "publishConfig": {},
   "eslintConfig": {

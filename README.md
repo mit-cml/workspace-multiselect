@@ -51,6 +51,10 @@ const workspace = Blockly.inject('blocklyDiv', options);
 // Initialize plugin.
 const multiselectPlugin = new Multiselect(workspace);
 multiselectPlugin.init(options);
+
+// Focus on the workspace.
+// The shift drag will only work on the workspace that gets focused.
+workspace.getInjectionDiv().focus();
 ```
 
 ## User behavior
@@ -76,6 +80,9 @@ multiselectPlugin.init(options);
 20. When you use `Ctrl/Alt + A`, you can select all the blocks in the current workspace. `Ctrl/Alt + C` to copy the selected blocks, `Ctrl/Alt + X` to cut the selected blocks to the clipboard, and `Ctrl/Alt + V` to paste all the blocks currently in the clipboard and get all the newly pasted blocks selected, these will only apply to the selected most top block in the block stack.
 21. When you edit the fields while selecting multiple blocks, we will automatically apply that to all the blocks with the same type.
 22. (MIT App Inventor-only feature) Double click to collapse/expand currently selected blocks, enable with Blockly option `useDoubleClick: true`.
+
+## Known issues
+- [ ] Currently, we rely on DragSelect to know which block gets selected. DragSelect seems to listen to the "blocks". However, it actually works by listening to the SVG path element, which is always a rectangle with some transparent parts forming a block. For irregularly shaped blocks, the two blocks' SVG path elements can overlap with each other, so if you shift-click on that area, DragSelect will make both blocks selected. (A fix should be that Blockly implements some kind of API, so that we can know for sure where the block actually locates.)
 
 ## API
 
