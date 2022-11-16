@@ -14,6 +14,6 @@ import * as Blockly from 'blockly/core';
  * Disable the drag surface.
  * @override
  */
-Blockly.utils.svgMath.is3dSupported = function() {
-  return false;
+Blockly.WorkspaceSvg.prototype.getBlockDragSurface = function() {
+  return null;
 };

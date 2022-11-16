@@ -141,12 +141,12 @@ export class Multiselect {
             return !block.isInFlyout && block.isMovable() &&
             block.workspace.options.collapse;
           };
-          if (Blockly.selected && preCondition(Blockly.selected)) {
+          if (Blockly.getSelected() && preCondition(Blockly.getSelected())) {
             if (ws.doubleClickPid_) {
               clearTimeout(ws.doubleClickPid_);
               ws.doubleClickPid_ = undefined;
-              if (Blockly.selected.id === ws.doubleClickBlock_) {
-                const state = !Blockly.selected.isCollapsed();
+              if (Blockly.getSelected().id === ws.doubleClickBlock_) {
+                const state = !Blockly.getSelected().isCollapsed();
                 const maybeCollapse = function(block) {
                   if (block && preCondition(block) &&
                   !hasSelectedParent(block)) {
@@ -155,8 +155,8 @@ export class Multiselect {
                 };
                 Blockly.Events.setGroup(true);
                 const blockSelection = blockSelectionWeakMap.get(ws);
-                if (Blockly.selected && !blockSelection.size) {
-                  maybeCollapse(Blockly.selected);
+                if (Blockly.getSelected() && !blockSelection.size) {
+                  maybeCollapse(Blockly.getSelected());
                 }
                 blockSelection.forEach(function(id) {
                   const block = ws.getBlockById(id);
@@ -169,7 +169,7 @@ export class Multiselect {
               }
             }
             if (!ws.doubleClickPid_) {
-              ws.doubleClickBlock_ = Blockly.selected.id;
+              ws.doubleClickBlock_ = Blockly.getSelected().id;
               ws.doubleClickPid_ = setTimeout(function() {
                 ws.doubleClickPid_ = undefined;
               }, 500);

@@ -11,7 +11,7 @@
 
 import * as Blockly from 'blockly/core';
 
-import DragSelect from './lib/ds.min';
+import DragSelect from 'dragselect';
 import {blockSelectionWeakMap, inMultipleSelectionModeWeakMap} from './global';
 
 /**
@@ -296,8 +296,9 @@ export class MultiselectControls {
    */
   updateMultiselect() {
     if (!inMultipleSelectionModeWeakMap.get(this.workspace_)) {
-      if (!Blockly.selected ||
-        (Blockly.selected && !this.blockSelection.has(Blockly.selected.id))) {
+      if (!Blockly.getSelected() ||
+        (Blockly.getSelected() &&
+         !this.blockSelection.has(Blockly.getSelected().id))) {
         // When not in multiple selection mode and Blockly selects a block not
         // in currently selected set or unselects, clear the selected set.
         this.blockSelection.forEach((id) => {
@@ -307,10 +308,10 @@ export class MultiselectControls {
           }
         });
         this.blockSelection.clear();
-        this.updateBlocks_(Blockly.selected);
+        this.updateBlocks_(Blockly.getSelected());
       }
-    } else if (this.justUnselectedBlock_ && Blockly.selected &&
-      Blockly.selected.id === this.justUnselectedBlock_.id) {
+    } else if (this.justUnselectedBlock_ && Blockly.getSelected() &&
+      Blockly.getSelected().id === this.justUnselectedBlock_.id) {
       // Update the Blockly selected block when that block is
       // no longer selected in our set.
       if (this.blockSelection.size) {
@@ -393,9 +394,9 @@ export class MultiselectControls {
     }
     // Ensure that at least Blockly select one of the blocks in the
     // selection set, or clear the Blockly selection if our set is empty.
-    if (!this.blockSelection.size && Blockly.selected) {
+    if (!this.blockSelection.size && Blockly.getSelected()) {
       Blockly.common.setSelected(null);
-    } else if (this.blockSelection.size && !Blockly.selected) {
+    } else if (this.blockSelection.size && !Blockly.getSelected()) {
       Blockly.common.setSelected(
           this.workspace_.getBlockById(
               this.blockSelection.keys().next().value));
