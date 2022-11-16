@@ -44,10 +44,10 @@
   "devDependencies": {
     "@blockly/dev-scripts": "^1.2.28",
     "@blockly/dev-tools": "^5.0.2",
-    "blockly": "^9.1.0"
+    "blockly": "^9.0.0"
   },
   "peerDependencies": {
-    "blockly": "^9.1.0"
+    "blockly": "^9.0.0"
   },
   "publishConfig": {},
   "eslintConfig": {
