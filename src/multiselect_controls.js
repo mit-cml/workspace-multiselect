@@ -368,7 +368,7 @@ export class MultiselectControls {
                   parent.parentNode === child.parentNode) continue;
           else if (parent.parentNode.contains(child.parentNode) &&
                   // Continue to select if user draws a rectangle that
-                  // covers more than then child ifself
+                  // covers more than the child itself
                   DragSelect.isCollision(rect, childRect, 1)) {
             toRemove.push(parent);
             break;
