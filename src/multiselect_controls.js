@@ -356,6 +356,39 @@ export class MultiselectControls {
       draggability: false,
       usePointerEvents: true,
     });
+    // Filter out the parent block when selecting child blocks
+    // to mitigate the invisible rectangles issue.
+    const filterParent = (list, rect) => {
+      const toRemove = [];
+      for (const [parent, parentRect] of list.entries()) {
+        for (const [child, childRect] of list.entries()) {
+          if (parent === child ||
+            !DragSelect.isCollision(childRect, parentRect, 0) ||
+                  parent.parentNode === null || child.parentNode === null ||
+                  parent.parentNode === child.parentNode) continue;
+          else if (parent.parentNode.contains(child.parentNode) &&
+                  // Continue to select if user draws a rectangle that
+                  // covers more than the child itself
+                  DragSelect.isCollision(rect, childRect, 1)) {
+            toRemove.push(parent);
+            break;
+          }
+        }
+      }
+      return toRemove;
+    };
+    this.dragSelect_.Selection.filterSelected = (
+        {selectorRect, select: _select, unselect: _unselect}) => {
+      const select = _select; const unselect = _unselect;
+      const toRemove = filterParent(select, selectorRect);
+      toRemove.forEach((el) => {
+        const rect = select.get(el);
+        select.delete(el);
+        unselect.set(el, rect);
+      });
+      return {select, unselect};
+    };
+
     this.dragSelect_.subscribe('elementselect', (info) => {
       const element = info.item.parentElement;
       if (inMultipleSelectionModeWeakMap.get(this.workspace_) &&
