@@ -54,10 +54,11 @@ const registerDuplicate = function() {
              !hasSelectedParent(block);
     },
     callback: function(scope) {
-      const duplicatedBlocks = [];
+      const duplicatedBlocks = {};
+      const connectionDBList = [];
       const apply = function(block) {
         if (duplicateOption.check(block)) {
-          duplicatedBlocks.push(Blockly.clipboard.duplicate(block));
+          duplicatedBlocks[block.id] = Blockly.clipboard.duplicate(block);
         }
         block.pathObject.updateSelected(false);
       };
@@ -71,14 +72,25 @@ const registerDuplicate = function() {
         const block = workspace.getBlockById(id);
         apply(block);
       });
-      Blockly.Events.setGroup(false);
       blockSelection.clear();
-      duplicatedBlocks.forEach(function(block) {
+      for (const [id, block] of Object.entries(duplicatedBlocks)) {
+        const origBlock = workspace.getBlockById(id);
+        const origParentBlock = origBlock.getParent();
         if (block.id) {
+          if (origParentBlock && origParentBlock.id in duplicatedBlocks &&
+            origParentBlock.getNextBlock() === origBlock) {
+            connectionDBList.push([
+              duplicatedBlocks[origParentBlock.id].nextConnection,
+              block.previousConnection]);
+          }
           blockSelection.add(block.id);
           block.pathObject.updateSelected(true);
         }
+      }
+      connectionDBList.forEach(function(connectionDB) {
+        connectionDB[0].connect(connectionDB[1]);
       });
+      Blockly.Events.setGroup(false);
     },
     scopeType: Blockly.ContextMenuRegistry.ScopeType.BLOCK,
     id: 'blockDuplicate',
@@ -504,15 +516,23 @@ const registerSelectAll = function() {
         Blockly.getSelected().pathObject.updateSelected(false);
         Blockly.common.setSelected(null);
       }
-
+      const blockList = [];
       scope.workspace.getTopBlocks().forEach(function(block) {
         if (selectAllOption.check(block)) {
-          blockSelectionWeakMap.get(block.workspace).add(block.id);
-          if (!Blockly.common.getSelected()) {
-            Blockly.common.setSelected(block);
+          blockList.push(block);
+          let nextBlock = block.getNextBlock();
+          while (nextBlock) {
+            blockList.push(nextBlock);
+            nextBlock = nextBlock.getNextBlock();
           }
-          block.pathObject.updateSelected(true);
         }
+      });
+      blockList.forEach(function(block) {
+        blockSelectionWeakMap.get(block.workspace).add(block.id);
+        if (!Blockly.common.getSelected()) {
+          Blockly.common.setSelected(block);
+        }
+        block.pathObject.updateSelected(true);
       });
     },
     scopeType: Blockly.ContextMenuRegistry.ScopeType.WORKSPACE,

@@ -79,6 +79,7 @@ const registerShortcutDelete = function() {
 };
 
 const copyData = new Set();
+const connectionDBList = [];
 
 /**
  * Keyboard shortcut to copy multiple selected blocks on
@@ -114,9 +115,11 @@ const registerCopy = function() {
       e.preventDefault();
       copyData.clear();
       workspace.hideChaff();
+      const blockList = [];
       const apply = function(block) {
         if (copyShortcut.check(block)) {
           copyData.add(block.toCopyData());
+          blockList.push(block.id);
         }
       };
       const selected = Blockly.common.getSelected();
@@ -128,6 +131,17 @@ const registerCopy = function() {
       blockSelection.forEach(function(id) {
         const block = workspace.getBlockById(id);
         apply(block);
+      });
+      connectionDBList.length = 0;
+      blockList.forEach(function(id) {
+        const block = workspace.getBlockById(id);
+        const parentBlock = block.getParent();
+        if (parentBlock && blockList.indexOf(parentBlock.id) !== -1 &&
+          parentBlock.getNextBlock() === block) {
+          connectionDBList.push([
+            blockList.indexOf(block.id),
+            blockList.indexOf(parentBlock.id)]);
+        }
       });
       Blockly.Events.setGroup(false);
       return true;
@@ -184,15 +198,19 @@ const registerCut = function() {
     },
     callback: function(workspace) {
       copyData.clear();
+      const blockList = [];
       const apply = function(block) {
         if (cutShortcut.check(block)) {
           copyData.add(block.toCopyData());
-          block.workspace.hideChaff();
-          if (block.outputConnection) {
-            block.dispose(false, true);
-          } else {
-            block.dispose(true, true);
-          }
+          blockList.push(block.id);
+        }
+      };
+      const applyDelete = function(block) {
+        block.workspace.hideChaff();
+        if (block.outputConnection) {
+          block.dispose(false, true);
+        } else {
+          block.dispose(true, true);
         }
       };
       const selected = Blockly.common.getSelected();
@@ -204,6 +222,21 @@ const registerCut = function() {
       blockSelection.forEach(function(id) {
         const block = workspace.getBlockById(id);
         apply(block);
+      });
+      connectionDBList.length = 0;
+      blockList.forEach(function(id) {
+        const block = workspace.getBlockById(id);
+        const parentBlock = block.getParent();
+        if (parentBlock && blockList.indexOf(parentBlock.id) !== -1 &&
+          parentBlock.getNextBlock() === block) {
+          connectionDBList.push([
+            blockList.indexOf(block.id),
+            blockList.indexOf(parentBlock.id)]);
+        }
+      });
+      blockList.forEach(function(id) {
+        const block = workspace.getBlockById(id);
+        applyDelete(block);
       });
       Blockly.Events.setGroup(false);
       return true;
@@ -246,6 +279,7 @@ const registerPaste = function() {
         }
       });
       blockSelection.clear();
+      const blockList = [];
       copyData.forEach(function(data) {
         // Pasting always pastes to the main workspace, even if the copy
         // started in a flyout workspace.
@@ -256,9 +290,14 @@ const registerPaste = function() {
         if (data.typeCounts &&
             workspace.isCapacityAvailable(data.typeCounts)) {
           const block = workspace.paste(data.saveInfo);
+          blockList.push(block);
           block.pathObject.updateSelected(true);
           blockSelectionWeakMap.get(block.workspace).add(block.id);
         }
+      });
+      connectionDBList.forEach(function(connectionDB) {
+        blockList[connectionDB[0]].nextConnection.connect(
+            blockList[connectionDB[1]].previousConnection);
       });
       Blockly.Events.setGroup(false);
       return true;
@@ -306,14 +345,23 @@ const registeSelectAll = function() {
         Blockly.getSelected().pathObject.updateSelected(false);
         Blockly.common.setSelected(null);
       }
+      const blockList = [];
       workspace.getTopBlocks().forEach(function(block) {
         if (selectAllShortcut.check(block)) {
-          blockSelection.add(block.id);
-          if (!Blockly.common.getSelected()) {
-            Blockly.common.setSelected(block);
+          blockList.push(block);
+          let nextBlock = block.getNextBlock();
+          while (nextBlock) {
+            blockList.push(nextBlock);
+            nextBlock = nextBlock.getNextBlock();
           }
-          block.pathObject.updateSelected(true);
         }
+      });
+      blockList.forEach(function(block) {
+        blockSelection.add(block.id);
+        if (!Blockly.common.getSelected()) {
+          Blockly.common.setSelected(block);
+        }
+        block.pathObject.updateSelected(true);
       });
       return true;
     },
