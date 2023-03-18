@@ -139,8 +139,8 @@ const registerCopy = function() {
         if (parentBlock && blockList.indexOf(parentBlock.id) !== -1 &&
           parentBlock.getNextBlock() === block) {
           connectionDBList.push([
-            blockList.indexOf(block.id),
-            blockList.indexOf(parentBlock.id)]);
+            blockList.indexOf(parentBlock.id),
+            blockList.indexOf(block.id)]);
         }
       });
       Blockly.Events.setGroup(false);
@@ -230,8 +230,8 @@ const registerCut = function() {
         if (parentBlock && blockList.indexOf(parentBlock.id) !== -1 &&
           parentBlock.getNextBlock() === block) {
           connectionDBList.push([
-            blockList.indexOf(block.id),
-            blockList.indexOf(parentBlock.id)]);
+            blockList.indexOf(parentBlock.id),
+            blockList.indexOf(block.id)]);
         }
       });
       blockList.forEach(function(id) {
