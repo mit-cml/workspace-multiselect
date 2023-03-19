@@ -206,6 +206,7 @@ const registerCut = function() {
         }
       };
       const applyDelete = function(block) {
+        if (!block) return;
         block.workspace.hideChaff();
         if (block.outputConnection) {
           block.dispose(false, true);
