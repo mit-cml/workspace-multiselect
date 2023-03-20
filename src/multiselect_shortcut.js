@@ -9,7 +9,8 @@
  */
 
 import * as Blockly from 'blockly/core';
-import {blockSelectionWeakMap, hasSelectedParent} from './global';
+import {blockSelectionWeakMap, hasSelectedParent, copyData, connectionDBList,
+  dataCopyToStorage, dataCopyFromStorage} from './global';
 
 /**
  * Modification for keyboard shortcut 'Delete' to be available
@@ -78,8 +79,6 @@ const registerShortcutDelete = function() {
       Blockly.utils.KeyCodes.BACKSPACE, deleteShortcut.name);
 };
 
-const copyData = new Set();
-const connectionDBList = [];
 
 /**
  * Keyboard shortcut to copy multiple selected blocks on
@@ -143,6 +142,7 @@ const registerCopy = function() {
             blockList.indexOf(block.id)]);
         }
       });
+      dataCopyToStorage();
       Blockly.Events.setGroup(false);
       return true;
     },
@@ -239,6 +239,7 @@ const registerCut = function() {
         const block = workspace.getBlockById(id);
         applyDelete(block);
       });
+      dataCopyToStorage();
       Blockly.Events.setGroup(false);
       return true;
     },
@@ -281,10 +282,13 @@ const registerPaste = function() {
       });
       blockSelection.clear();
       const blockList = [];
+      dataCopyFromStorage();
       copyData.forEach(function(data) {
         // Pasting always pastes to the main workspace, even if the copy
         // started in a flyout workspace.
-        let workspace = data.source;
+        if (data.source) {
+          workspace = data.source;
+        }
         if (workspace.isFlyout) {
           workspace = workspace.targetWorkspace;
         }
