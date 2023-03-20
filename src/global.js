@@ -99,9 +99,14 @@ export const dataCopyFromStorage = function() {
 
 /**
  * Get blocks number in the clipboard from localStorage.
+ * @param {boolean} useCopyPasteCrossTab Whether or not to use
+ *     cross tab copy/paste.
  * @returns {number} The number of blocks in the clipboard.
  */
-export const blockNumGetFromStorage = function() {
+export const blockNumGetFromStorage = function(useCopyPasteCrossTab) {
+  if (!useCopyPasteCrossTab) {
+    return copyData.size;
+  }
   const storage = JSON.parse(localStorage.getItem('blocklyStashMulti'));
   const time = localStorage.getItem('blocklyStashTime');
   if (storage && parseInt(time) > timestamp) {

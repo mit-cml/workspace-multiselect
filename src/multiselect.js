@@ -32,11 +32,13 @@ export class Multiselect {
     this.blockSelection_ = blockSelectionWeakMap.get(this.workspace_);
     inMultipleSelectionModeWeakMap.set(this.workspace_, false);
     BaseBlockDraggerWeakMap.set(this.workspace_, Blockly.BlockDragger);
+    this.useCopyPasteCrossTab_ = true;
+    this.useCopyPasteMenu_ = true;
   }
 
   /**
    * Bind the events and replace registration.
-   * @param {{multiselectIcon: Object, useDoubleClick: boolean}} options
+   * @param {Object} options
    * to set.
    */
   init(options) {
@@ -49,11 +51,22 @@ export class Multiselect {
     this.eventListenerWrapper_ = this.eventListener_.bind(this);
     this.workspace_.addChangeListener(this.eventListenerWrapper_);
 
+    if (options.multiselectCopyPaste &&
+      options.multiselectCopyPaste.crossTab === false) {
+      this.useCopyPasteCrossTab_ = false;
+    }
+
+    if (options.multiselectCopyPaste &&
+        options.multiselectCopyPaste.menu === false) {
+      this.useCopyPasteMenu_ = false;
+    }
+
     if (!Blockly.ContextMenuRegistry.registry.registry_.workspaceSelectAll) {
       ContextMenu.unregisterContextMenu();
-      ContextMenu.registerOurContextMenu();
+      ContextMenu.registerOurContextMenu(this.useCopyPasteMenu_,
+          this.useCopyPasteCrossTab_);
       Shortcut.unregisterShortcut();
-      Shortcut.registerOurShortcut();
+      Shortcut.registerOurShortcut(this.useCopyPasteCrossTab_);
     }
 
     this.controls_ = new MultiselectControls(
@@ -97,8 +110,11 @@ export class Multiselect {
     }
     if (!keepRegistry) {
       ContextMenu.unregisterContextMenu();
-      Blockly.ContextMenuRegistry.registry.unregister('blockCopyToStorage');
-      Blockly.ContextMenuRegistry.registry.unregister('blockPasteFromStorage');
+      if (this.useCopyPasteMenu_) {
+        Blockly.ContextMenuRegistry.registry.unregister('blockCopyToStorage');
+        Blockly.ContextMenuRegistry.registry
+            .unregister('blockPasteFromStorage');
+      }
       Blockly.ContextMenuRegistry.registry.unregister('workspaceSelectAll');
       ContextMenu.registerOrigContextMenu();
 

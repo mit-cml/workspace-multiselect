@@ -83,8 +83,9 @@ const registerShortcutDelete = function() {
 /**
  * Keyboard shortcut to copy multiple selected blocks on
  * ctrl+c, cmd+c, or alt+c.
+ * @param {boolean} useCopyPasteCrossTab Whether or not to use copy/paste
  */
-const registerCopy = function() {
+const registerCopy = function(useCopyPasteCrossTab) {
   const copyShortcut = {
     name: Blockly.ShortcutItems.names.COPY,
     preconditionFn: function(workspace) {
@@ -142,7 +143,9 @@ const registerCopy = function() {
             blockList.indexOf(block.id)]);
         }
       });
-      dataCopyToStorage();
+      if (useCopyPasteCrossTab) {
+        dataCopyToStorage();
+      }
       Blockly.Events.setGroup(false);
       return true;
     },
@@ -170,8 +173,9 @@ const registerCopy = function() {
 /**
  * Keyboard shortcut to copy and delete multiple selected blocks on
  * ctrl+x, cmd+x, or alt+x.
+ * @param {boolean} useCopyPasteCrossTab Whether or not to use copy/paste
  */
-const registerCut = function() {
+const registerCut = function(useCopyPasteCrossTab) {
   const cutShortcut = {
     name: Blockly.ShortcutItems.names.CUT,
     preconditionFn: function(workspace) {
@@ -239,7 +243,9 @@ const registerCut = function() {
         const block = workspace.getBlockById(id);
         applyDelete(block);
       });
-      dataCopyToStorage();
+      if (useCopyPasteCrossTab) {
+        dataCopyToStorage();
+      }
       Blockly.Events.setGroup(false);
       return true;
     },
@@ -264,8 +270,9 @@ const registerCut = function() {
 /**
  * Keyboard shortcut to paste multiple selected blocks on
  * ctrl+v, cmd+v, or alt+v.
+ * @param {boolean} useCopyPasteCrossTab Whether or not to use copy/paste
  */
-const registerPaste = function() {
+const registerPaste = function(useCopyPasteCrossTab) {
   const pasteShortcut = {
     name: Blockly.ShortcutItems.names.PASTE,
     preconditionFn: function(workspace) {
@@ -282,7 +289,9 @@ const registerPaste = function() {
       });
       blockSelection.clear();
       const blockList = [];
-      dataCopyFromStorage();
+      if (useCopyPasteCrossTab) {
+        dataCopyFromStorage();
+      }
       copyData.forEach(function(data) {
         // Pasting always pastes to the main workspace, even if the copy
         // started in a flyout workspace.
@@ -416,11 +425,12 @@ export const registerOrigShortcut = function() {
 
 /**
  * Registers all modified keyboard shortcut item.
+ * @param {boolean} useCopyPasteCrossTab Whether to use copy/paste cross tab.
  */
-export const registerOurShortcut = function() {
+export const registerOurShortcut = function(useCopyPasteCrossTab) {
   registerShortcutDelete();
-  registerCopy();
-  registerCut();
-  registerPaste();
+  registerCopy(useCopyPasteCrossTab);
+  registerCut(useCopyPasteCrossTab);
+  registerPaste(useCopyPasteCrossTab);
   registeSelectAll();
 };

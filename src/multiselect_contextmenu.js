@@ -15,8 +15,10 @@ import {blockSelectionWeakMap, hasSelectedParent, copyData,
 
 /**
  * Copy multiple selected blocks to clipboard.
+ * @param {boolean} useCopyPasteCrossTab Whether or not to use
+ *     cross tab copy paste.
  */
-const registerCopy = function() {
+const registerCopy = function(useCopyPasteCrossTab) {
   const copyOptions = {
     displayText: function(scope) {
       let workableBlocksLength = 0;
@@ -99,7 +101,9 @@ const registerCopy = function() {
             blockList.indexOf(block.id)]);
         }
       });
-      dataCopyToStorage();
+      if (useCopyPasteCrossTab) {
+        dataCopyToStorage();
+      }
       Blockly.Events.setGroup(false);
       return true;
     },
@@ -593,11 +597,12 @@ const registerDelete = function() {
 
 /**
  * Paste multiple selected blocks from clipboard.
+ * @param {boolean} useCopyPasteCrossTab Whether to use cross tab copy paste.
  */
-const registerPaste = function() {
+const registerPaste = function(useCopyPasteCrossTab) {
   const pasteOption = {
     displayText: function() {
-      const workableBlocksLength = blockNumGetFromStorage();
+      const workableBlocksLength = blockNumGetFromStorage(useCopyPasteCrossTab);
       if (workableBlocksLength <= 1) {
         return Blockly.Msg['CROSS_TAB_PASTE']?
           Blockly.Msg['CROSS_TAB_PASTE'] : 'Paste';
@@ -612,6 +617,9 @@ const registerPaste = function() {
       }
     },
     preconditionFn: function(scope) {
+      if (blockNumGetFromStorage(useCopyPasteCrossTab) < 1) {
+        return 'disabled';
+      }
       return !scope.workspace.options.readOnly?
         'enabled': 'hidden';
     },
@@ -627,7 +635,9 @@ const registerPaste = function() {
       });
       blockSelection.clear();
       const blockList = [];
-      dataCopyFromStorage();
+      if (useCopyPasteCrossTab) {
+        dataCopyFromStorage();
+      }
       copyData.forEach(function(data) {
         // Pasting always pastes to the main workspace, even if the copy
         // started in a flyout workspace.
@@ -735,15 +745,19 @@ export const registerOrigContextMenu = function() {
 
 /**
  * Registers all modified context menu item.
+ * @param {boolean} useCopyPasteMenu Whether to use copy/paste menu.
+ * @param {boolean} useCopyPasteCrossTab Whether to use cross tab copy/paste.
  */
-export const registerOurContextMenu = function() {
-  registerCopy();
+export const registerOurContextMenu = function(useCopyPasteMenu, useCopyPasteCrossTab) {
+  if (useCopyPasteMenu) {
+    registerCopy(useCopyPasteCrossTab);
+    registerPaste(useCopyPasteCrossTab);
+  }
   registerDuplicate();
   registerComment();
   registerInline();
   registerCollapseExpandBlock();
   registerDisable();
   registerDelete();
-  registerPaste();
   registerSelectAll();
 };

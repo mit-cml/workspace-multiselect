@@ -38,6 +38,10 @@ document.addEventListener('DOMContentLoaded', function() {
       enabledIcon: 'media/select.svg',
       disabledIcon: 'media/unselect.svg',
     },
+    multiselectCopyPaste: {
+      crossTab: true,
+      menu: true,
+    },
     grid: {
       spacing: 25,
       length: 3,
