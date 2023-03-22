@@ -45,8 +45,8 @@ const registerCopy = function(useCopyPasteCrossTab) {
     },
     preconditionFn: function(scope) {
       const workspace = scope.block.workspace;
-      if (workspace.options.readOnly) {
-        return 'disabled';
+      if (workspace.options.readOnly && !useCopyPasteCrossTab) {
+        return 'hidden';
       }
       const selected = Blockly.common.getSelected();
       const blockSelection = blockSelectionWeakMap.get(workspace);
@@ -63,7 +63,7 @@ const registerCopy = function(useCopyPasteCrossTab) {
           return 'enabled';
         }
       }
-      return 'hidden';
+      return 'disabled';
     },
     check: function(block) {
       return block && block.isDeletable() && block.isMovable() &&
@@ -617,11 +617,9 @@ const registerPaste = function(useCopyPasteCrossTab) {
       }
     },
     preconditionFn: function(scope) {
-      if (blockNumGetFromStorage(useCopyPasteCrossTab) < 1) {
-        return 'disabled';
-      }
-      return !scope.workspace.options.readOnly?
-        'enabled': 'hidden';
+      return scope.workspace.options.readOnly?
+        'hidden': (blockNumGetFromStorage(useCopyPasteCrossTab) < 1?
+          'disabled': 'enabled');
     },
     callback: function(scope) {
       let workspace = scope.workspace;
