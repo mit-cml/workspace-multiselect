@@ -136,7 +136,7 @@ export class MultiselectControls {
 
   /**
    * Create the multi select controls.
-   * @return {!SVGElement} The multi select controls SVG group.
+   * @returns {!SVGElement} The multi select controls SVG group.
    */
   createDom() {
     this.svgGroup_ = Blockly.utils.dom.createSvgElement(
@@ -176,7 +176,7 @@ export class MultiselectControls {
   /**
    * Returns the bounding rectangle of the UI element in pixel units relative to
    * the Blockly injection div.
-   * @return {?Blockly.utils.Rect} The UI elements's bounding box. Null if
+   * @returns {?Blockly.utils.Rect} The UI elements's bounding box. Null if
    *   bounding box should be ignored by other UI elements.
    */
   getBoundingRectangle() {

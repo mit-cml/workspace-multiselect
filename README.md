@@ -43,6 +43,13 @@ options = {
     enabledIcon: 'https://github.com/mit-cml/workspace-multiselect/raw/main/test/media/select.svg',
     disabledIcon: 'https://github.com/mit-cml/workspace-multiselect/raw/main/test/media/unselect.svg',
   },
+
+  multiselectCopyPaste: {
+    // Enable the copy/paste accross tabs feature (true by default).
+    crossTab: true,
+    // Show the copy/paste menu entries (true by default).
+    menu: true,
+  },
 };
 
 // Inject Blockly.
@@ -79,7 +86,8 @@ workspace.getInjectionDiv().focus();
 19. The workspace context menu has a item to `Select all Blocks` in that workspace.
 20. When you use `Ctrl/Alt + A`, you can select all the blocks in the current workspace. `Ctrl/Alt + C` to copy the selected blocks, `Ctrl/Alt + X` to cut the selected blocks to the clipboard, and `Ctrl/Alt + V` to paste all the blocks currently in the clipboard and get all the newly pasted blocks selected, these will only apply to the selected most top block in the block stack.
 21. When you edit the fields while selecting multiple blocks, we will automatically apply that to all the blocks with the same type.
-22. (MIT App Inventor-only feature) Double click to collapse/expand currently selected blocks, enable with Blockly option `useDoubleClick: true`.
+22. Support all the features from the [blockly-plugin-cross-tab-copy-paste](https://www.npmjs.com/package/@blockly/plugin-cross-tab-copy-paste) with multiple selection adaptation.
+23. (MIT App Inventor-only feature) Double click to collapse/expand currently selected blocks, enable with Blockly option `useDoubleClick: true`.
 
 ## Known issues
 - [ ] Currently, we rely on DragSelect to know which block gets selected. DragSelect seems to listen to the "blocks". However, it actually works by listening to the SVG path element, which is always a rectangle with some transparent parts forming a block. For irregularly shaped blocks, if you click on the transparent area that within the SVG rectangle, it will still get selected. (a mitigation has already been introduced in v0.1.4, but a proper fix should be that Blockly implements some kind of API, so that we can know for sure where the block actually locates.)
@@ -96,6 +104,7 @@ workspace.getInjectionDiv().focus();
 - [DragSelect](https://github.com/ThibaultJanBeyer/DragSelect): This plugin uses DragSelect to realize the "drag a rectangle to select multiple blocks" feature. The patching PR [#143](https://github.com/ThibaultJanBeyer/DragSelect/pull/143) and [#165](https://github.com/ThibaultJanBeyer/DragSelect/pull/165) made all this possible, and these PRs are included in [v2.6.0](https://github.com/ThibaultJanBeyer/DragSelect/releases/tag/v2.6.0)).
 - [select.svg](test/media/select.svg) & [unselect.svg](test/media/unselect.svg): Free icons downloaded at [Icons8](https://icons8.com).
 - This plugin is part of the achievement by Songlin Jiang([@HollowMan6](https://github.com/HollowMan6)) participating the [Google Summer of Code 2022](https://summerofcode.withgoogle.com/programs/2022/projects/9wF06HWE) at [MIT App Inventor](https://github.com/mit-cml).
+- Thanks to the sponsor from [@zakx](https://github.com/zakx).
 
 ## License
 Apache 2.0

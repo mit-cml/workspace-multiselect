@@ -52,7 +52,7 @@ export class MultiselectBlockDragger extends Blockly.BlockDragger {
           return;
         }
         // Only drag the parent if it is selected.
-        if (hasSelectedParent(element)) {
+        if (hasSelectedParent(element, true)) {
           return;
         }
         blockDraggerList.push(new this.BaseBlockDragger(element,
@@ -144,22 +144,23 @@ export class MultiselectBlockDragger extends Blockly.BlockDragger {
       this.BaseBlockDragger.prototype.updateBlockAfterMove_ =
           this.origUpdateBlockAfterMove_;
     } else {
-      this.BaseBlockDragger.prototype.updateBlockAfterMove_ = function(delta) {
-        this.draggingBlock_.moveConnections(delta.x, delta.y);
+      this.BaseBlockDragger.prototype.updateBlockAfterMove_ = function() {
         this.fireMoveEvent_();
         if (this.draggedConnectionManager_.wouldConnectBlock()) {
           // We have to ensure that we can't connect to a block
           // that is in dragging.
+          const closest = this.draggedConnectionManager_.activeCandidate
+              .closest;
           if (!blockSelectionWeakMap.get(this.workspace_).has(
-              this.draggedConnectionManager_.closestConnection_.
-                  sourceBlock_.id)) {
+              closest.sourceBlock_.id) &&
+              !hasSelectedParent(closest.sourceBlock_, true)) {
             // Applying connections also rerenders the relevant blocks.
             this.draggedConnectionManager_.applyConnections();
           } else {
             // We have to hide preview if any.
             // Don't fire events for insertion markers.
             Blockly.Events.disable();
-            this.draggedConnectionManager_.hidePreview_();
+            this.draggedConnectionManager_.hidePreview();
             Blockly.Events.enable();
           }
         }
@@ -191,7 +192,7 @@ export class MultiselectBlockDragger extends Blockly.BlockDragger {
   /**
    * Get a list of the insertion markers that currently exist.  Drags have 0, 1,
    * or 2 insertion markers.
-   * @return {!Array<!Blockly.BlockSvg>} A possibly empty list of insertion
+   * @returns {!Array<!Blockly.BlockSvg>} A possibly empty list of insertion
    *     marker blocks.
    */
   getInsertionMarkers() {
