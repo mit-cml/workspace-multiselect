@@ -153,7 +153,7 @@ export class Multiselect {
 
       const wrappedFunc = function(e, ws) {
         func.call(this, e, ws);
-        if (this.targetBlock_ && e.buttons === 1 &&
+        if (this.targetBlock && e.buttons === 1 &&
             !inMultipleSelectionModeWeakMap.get(ws)) {
           const preCondition = function(block) {
             return !block.isInFlyout && block.isMovable() &&

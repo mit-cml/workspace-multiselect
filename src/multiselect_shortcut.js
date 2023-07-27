@@ -339,8 +339,9 @@ const registerPaste = function(useCopyPasteCrossTab) {
  * ctrl+a, cmd+a, or alt+a.
  */
 const registeSelectAll = function() {
+  const name = 'selectall';
   const selectAllShortcut = {
-    name: 'selectall',
+    name,
     preconditionFn: function(workspace) {
       return workspace.getTopBlocks().some(
           (b) => selectAllShortcut.check(b)) ? true : false;
@@ -380,6 +381,9 @@ const registeSelectAll = function() {
       return true;
     },
   };
+  if (name in Blockly.ShortcutRegistry.registry.getRegistry()) {
+    Blockly.ShortcutRegistry.registry.unregister(name);
+  }
   Blockly.ShortcutRegistry.registry.register(selectAllShortcut);
 
   const ctrlA = Blockly.ShortcutRegistry.registry.createSerializedKey(

@@ -1,6 +1,6 @@
 {
   "name": "@mit-app-inventor/blockly-plugin-workspace-multiselect",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "A Blockly plugin that allows to drag, select and doing actions on multiple blocks in the workspace.",
   "scripts": {
     "audit:fix": "blockly-scripts auditFix",
@@ -39,15 +39,15 @@
     "src"
   ],
   "dependencies": {
-    "dragselect": "^2.7.3"
+    "dragselect": "^2.7.4"
   },
   "devDependencies": {
-    "@blockly/dev-scripts": "^1.2.31",
-    "@blockly/dev-tools": "^5.2.3",
-    "blockly": "^9.2.1"
+    "@blockly/dev-scripts": "^2.0.1",
+    "@blockly/dev-tools": "^7.0.2",
+    "blockly": "^10.0.2"
   },
   "peerDependencies": {
-    "blockly": "^9.0.0"
+    "blockly": "^10.0.0"
   },
   "publishConfig": {},
   "eslintConfig": {

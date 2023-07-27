@@ -19,6 +19,7 @@ import {blockSelectionWeakMap, hasSelectedParent, copyData,
  *     cross tab copy paste.
  */
 const registerCopy = function(useCopyPasteCrossTab) {
+  const id = 'blockCopyToStorage';
   const copyOptions = {
     displayText: function(scope) {
       let workableBlocksLength = 0;
@@ -108,9 +109,12 @@ const registerCopy = function(useCopyPasteCrossTab) {
       return true;
     },
     scopeType: Blockly.ContextMenuRegistry.ScopeType.BLOCK,
-    id: 'blockCopyToStorage',
+    id,
     weight: 0,
   };
+  if (Blockly.ContextMenuRegistry.registry.getItem(id) !== null) {
+    Blockly.ContextMenuRegistry.registry.unregister(id);
+  }
   Blockly.ContextMenuRegistry.registry.register(copyOptions);
 };
 
@@ -209,14 +213,13 @@ const registerComment = function() {
   const commentOption = {
     displayText: function(scope) {
       let workableBlocksLength = 0;
-      const state = scope.block.getCommentIcon();
+      const state = scope.block.hasIcon(Blockly.icons.CommentIcon.TYPE);
       const workspace = scope.block.workspace;
       const blockSelection = blockSelectionWeakMap.get(workspace);
       blockSelection.forEach(function(id) {
         const block = workspace.getBlockById(id);
-        if (commentOption.check(block) &&
-            (block.getCommentIcon() instanceof Blockly.Comment) ===
-            (state instanceof Blockly.Comment)) {
+        if (commentOption.check(block) && state === block.hasIcon(
+            Blockly.icons.CommentIcon.TYPE)) {
           workableBlocksLength++;
         }
       });
@@ -256,7 +259,8 @@ const registerComment = function() {
              commentOption.preconditionFn({block: block}) === 'enabled';
     },
     callback: function(scope) {
-      const hasCommentIcon = scope.block.getCommentIcon();
+      const hasCommentIcon = scope.block.hasIcon(
+          Blockly.icons.CommentIcon.TYPE);
       const apply = function(block) {
         if (commentOption.check(block)) {
           if (hasCommentIcon) {
@@ -600,6 +604,7 @@ const registerDelete = function() {
  * @param {boolean} useCopyPasteCrossTab Whether to use cross tab copy paste.
  */
 const registerPaste = function(useCopyPasteCrossTab) {
+  const id = 'blockPasteFromStorage';
   const pasteOption = {
     displayText: function() {
       const workableBlocksLength = blockNumGetFromStorage(useCopyPasteCrossTab);
@@ -661,9 +666,12 @@ const registerPaste = function(useCopyPasteCrossTab) {
       return true;
     },
     scopeType: Blockly.ContextMenuRegistry.ScopeType.WORKSPACE,
-    id: 'blockPasteFromStorage',
+    id,
     weight: 0,
   };
+  if (Blockly.ContextMenuRegistry.registry.getItem(id) !== null) {
+    Blockly.ContextMenuRegistry.registry.unregister(id);
+  }
   Blockly.ContextMenuRegistry.registry.register(pasteOption);
 };
 
@@ -671,6 +679,7 @@ const registerPaste = function(useCopyPasteCrossTab) {
  * Add context menu 'Select all Blocks' for workspace.
  */
 const registerSelectAll = function() {
+  const id = 'workspaceSelectAll';
   const selectAllOption = {
     displayText: function() {
       return 'Select all Blocks';
@@ -711,9 +720,12 @@ const registerSelectAll = function() {
       });
     },
     scopeType: Blockly.ContextMenuRegistry.ScopeType.WORKSPACE,
-    id: 'workspaceSelectAll',
+    id,
     weight: 5,
   };
+  if (Blockly.ContextMenuRegistry.registry.getItem(id) !== null) {
+    Blockly.ContextMenuRegistry.registry.unregister(id);
+  }
   Blockly.ContextMenuRegistry.registry.register(selectAllOption);
 };
 
