@@ -32,6 +32,16 @@ export class MultiselectBlockDragger extends Blockly.BlockDragger {
   }
 
   /**
+   * Dispose of this block dragger.
+   */
+  dispose() {
+    super.dispose();
+    this.blockDraggers_.forEach((blockDragger) => {
+      blockDragger.dispose();
+    });
+  }
+
+  /**
    * Prepares the block dragger for a new drag.
    * @param {!Blockly.utils.Coordinate} currentDragDeltaXY How far the pointer
    *     has moved from the position at the start of the drag, in pixel units.
@@ -180,7 +190,7 @@ export class MultiselectBlockDragger extends Blockly.BlockDragger {
          */
         this.draggingBlock_.getDescendants(false).forEach(function(block) {
           if (!block.getChildren().length) {
-            block.render();
+            block.queueRender();
           }
         });
 
