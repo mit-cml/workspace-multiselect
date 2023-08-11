@@ -11,7 +11,7 @@
 import * as Blockly from 'blockly/core';
 import {blockSelectionWeakMap, hasSelectedParent, copyData,
   connectionDBList, dataCopyToStorage, dataCopyFromStorage,
-  blockNumGetFromStorage} from './global';
+  blockNumGetFromStorage, registeredContextMenu} from './global';
 
 /**
  * Copy multiple selected blocks to clipboard.
@@ -733,24 +733,31 @@ const registerSelectAll = function() {
  * Unregister context menu item, should be called before registering.
  */
 export const unregisterContextMenu = function() {
-  Blockly.ContextMenuRegistry.registry.unregister('blockDuplicate');
-  Blockly.ContextMenuRegistry.registry.unregister('blockComment');
-  Blockly.ContextMenuRegistry.registry.unregister('blockInline');
-  Blockly.ContextMenuRegistry.registry.unregister('blockCollapseExpand');
-  Blockly.ContextMenuRegistry.registry.unregister('blockDisable');
-  Blockly.ContextMenuRegistry.registry.unregister('blockDelete');
+  registeredContextMenu.length = 0;
+  for (const id of ['blockDuplicate', 'blockComment', 'blockInline',
+    'blockCollapseExpand', 'blockDisable', 'blockDelete']) {
+    if (Blockly.ContextMenuRegistry.registry.getItem(id) !== null) {
+      Blockly.ContextMenuRegistry.registry.unregister(id);
+      registeredContextMenu.push(id);
+    }
+  }
 };
 
 /**
  * Register default context menu item.
  */
 export const registerOrigContextMenu = function() {
-  Blockly.ContextMenuItems.registerDuplicate();
-  Blockly.ContextMenuItems.registerComment();
-  Blockly.ContextMenuItems.registerInline();
-  Blockly.ContextMenuItems.registerCollapseExpandBlock();
-  Blockly.ContextMenuItems.registerDisable();
-  Blockly.ContextMenuItems.registerDelete();
+  const map = {
+    blockDuplicate: Blockly.ContextMenuItems.registerDuplicate,
+    blockComment: Blockly.ContextMenuItems.registerComment,
+    blockInline: Blockly.ContextMenuItems.registerInline,
+    blockCollapseExpand: Blockly.ContextMenuItems.registerCollapseExpandBlock,
+    blockDisable: Blockly.ContextMenuItems.registerDisable,
+    blockDelete: Blockly.ContextMenuItems.registerDelete,
+  };
+  for (const id of registeredContextMenu) {
+    map[id]();
+  }
 };
 
 /**
@@ -763,11 +770,16 @@ export const registerOurContextMenu = function(useCopyPasteMenu, useCopyPasteCro
     registerCopy(useCopyPasteCrossTab);
     registerPaste(useCopyPasteCrossTab);
   }
-  registerDuplicate();
-  registerComment();
-  registerInline();
-  registerCollapseExpandBlock();
-  registerDisable();
-  registerDelete();
+  const map = {
+    blockDuplicate: registerDuplicate,
+    blockComment: registerComment,
+    blockInline: registerInline,
+    blockCollapseExpand: registerCollapseExpandBlock,
+    blockDisable: registerDisable,
+    blockDelete: registerDelete,
+  };
+  for (const id of registeredContextMenu) {
+    map[id]();
+  }
   registerSelectAll();
 };

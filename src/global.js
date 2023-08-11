@@ -36,6 +36,16 @@ export const copyData = new Set();
 export const connectionDBList = [];
 
 /**
+ * Store the registered context menu list.
+ */
+export const registeredContextMenu = [];
+
+/**
+ * Store the registered shortcut list.
+ */
+export const registeredShortcut = [];
+
+/**
  * Store the copy time.
  */
 let timestamp = 0;
