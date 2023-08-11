@@ -86,7 +86,7 @@ workspace.getInjectionDiv().focus();
 19. The workspace context menu has a item to `Select all Blocks` in that workspace.
 20. When you use `Ctrl/Alt + A`, you can select all the blocks in the current workspace. `Ctrl/Alt + C` to copy the selected blocks, `Ctrl/Alt + X` to cut the selected blocks to the clipboard, and `Ctrl/Alt + V` to paste all the blocks currently in the clipboard and get all the newly pasted blocks selected, these will only apply to the selected most top block in the block stack.
 21. When you edit the fields while selecting multiple blocks, we will automatically apply that to all the blocks with the same type.
-22. Support all the features from the [blockly-plugin-cross-tab-copy-paste](https://www.npmjs.com/package/@blockly/plugin-cross-tab-copy-paste) with multiple selection adaptation.
+22. You can copy and paste blocks in the same workspace and across different tabs. This plugin collides with [blockly-plugin-cross-tab-copy-paste](https://www.npmjs.com/package/@blockly/plugin-cross-tab-copy-paste) so they should not be used together.
 23. (MIT App Inventor-only feature) Double click to collapse/expand currently selected blocks, enable with Blockly option `useDoubleClick: true`.
 
 ## Known issues
