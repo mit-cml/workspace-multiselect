@@ -58,10 +58,6 @@ const workspace = Blockly.inject('blocklyDiv', options);
 // Initialize plugin.
 const multiselectPlugin = new Multiselect(workspace);
 multiselectPlugin.init(options);
-
-// Focus on the workspace.
-// The shift drag will only work on the workspace that gets focused.
-workspace.getInjectionDiv().focus();
 ```
 
 ## User behavior

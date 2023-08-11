@@ -407,7 +407,8 @@ export class MultiselectControls {
       }
     });
     if (byIcon) {
-      document.dispatchEvent(new KeyboardEvent('keydown', {'key': 'meta'}));
+      this.workspace_.getInjectionDiv().dispatchEvent(
+          new KeyboardEvent('keydown', {'key': 'meta'}));
     }
     this.updateMultiselectIcon(true);
     inMultipleSelectionModeWeakMap.set(this.workspace_, true);
@@ -421,7 +422,8 @@ export class MultiselectControls {
     inMultipleSelectionModeWeakMap.set(this.workspace_, false);
     if (this.dragSelect_) {
       if (byIcon) {
-        document.dispatchEvent(new KeyboardEvent('keyup', {'key': 'meta'}));
+        this.workspace_.getInjectionDiv().dispatchEvent(
+            new KeyboardEvent('keyup', {'key': 'meta'}));
       }
       this.dragSelect_.stop();
       this.dragSelect_ = null;

@@ -42,14 +42,16 @@ export class Multiselect {
    * to set.
    */
   init(options) {
+    const injectionDiv = this.workspace_.getInjectionDiv();
     this.onKeyDownWrapper_ = Blockly.browserEvents.conditionalBind(
-        this.workspace_.getInjectionDiv(), 'keydown', this, this.onKeyDown_);
-    this.onBlurWrapper_ = Blockly.browserEvents.conditionalBind(
-        globalThis['window'], 'blur', this, this.onBlur_);
+        injectionDiv, 'keydown', this, this.onKeyDown_);
     this.onKeyUpWrapper_ = Blockly.browserEvents.conditionalBind(
-        this.workspace_.getInjectionDiv(), 'keyup', this, this.onKeyUp_);
+        injectionDiv, 'keyup', this, this.onKeyUp_);
     this.onFocusOutWrapper_ = Blockly.browserEvents.conditionalBind(
-        this.workspace_.getInjectionDiv(), 'focusout', this, this.onBlur_);
+        injectionDiv, 'focusout', this, this.onBlur_);
+    injectionDiv.addEventListener('mouseenter', () => {
+      this.workspace_.svgGroup_.parentElement.focus();
+    });
     this.eventListenerWrapper_ = this.eventListener_.bind(this);
     this.workspace_.addChangeListener(this.eventListenerWrapper_);
 
@@ -101,10 +103,6 @@ export class Multiselect {
     if (this.onKeyDownWrapper_) {
       Blockly.browserEvents.unbind(this.onKeyDownWrapper_);
       this.onKeyDownWrapper_ = null;
-    }
-    if (this.onBlurWrapper_) {
-      Blockly.browserEvents.unbind(this.onBlurWrapper_);
-      this.onBlurWrapper_ = null;
     }
     if (this.onKeyUpWrapper_) {
       Blockly.browserEvents.unbind(this.onKeyUpWrapper_);
