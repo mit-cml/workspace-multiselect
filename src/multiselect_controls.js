@@ -348,10 +348,11 @@ export class MultiselectControls {
       this.hasDisableWorkspaceDrag_ = true;
     }
     this.dragSelect_ = new DragSelect({
-      selectables: document.querySelectorAll(
-          'g.blocklyDraggable:not(.blocklyInsertionMarker)' +
+      selectables: this.workspace_.getInjectionDiv()
+          .querySelectorAll(
+              'g.blocklyDraggable:not(.blocklyInsertionMarker)' +
         '> path.blocklyPath'),
-      area: document.querySelector('.blocklyWorkspace'),
+      area: this.workspace_.svgGroup_,
       multiselectMode: true,
       draggability: false,
       usePointerEvents: true,
