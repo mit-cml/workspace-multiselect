@@ -223,7 +223,7 @@ export class MultiselectControls {
   }
 
   /**
-   * Create the zoom reset icon and its event handler.
+   * Create the multi-select icon and its event handler.
    * @private
    */
   createMultiselectSvg_() {
@@ -252,7 +252,7 @@ export class MultiselectControls {
   }
 
   /**
-   * Handles a mouse down event on the reset zoom button on the workspace.
+   * Handles a mouse down event on the multi-select button on the workspace.
    * @param {!Event} e A mouse down event.
    * @private
    */
