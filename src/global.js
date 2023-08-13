@@ -26,6 +26,11 @@ export const inMultipleSelectionModeWeakMap = new WeakMap();
 export const BaseBlockDraggerWeakMap = new WeakMap();
 
 /**
+ * Store the multi-select controls instances.
+ */
+export const multiselectControlsList = new Set();
+
+/**
  * Store the copy data.
  */
 export const copyData = new Set();

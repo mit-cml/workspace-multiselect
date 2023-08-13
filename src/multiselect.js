@@ -13,7 +13,8 @@ import * as Blockly from 'blockly/core';
 import * as ContextMenu from './multiselect_contextmenu';
 import * as Shortcut from './multiselect_shortcut';
 import {blockSelectionWeakMap, inMultipleSelectionModeWeakMap,
-  hasSelectedParent, BaseBlockDraggerWeakMap} from './global';
+  hasSelectedParent, BaseBlockDraggerWeakMap,
+  multiselectControlsList} from './global';
 import {MultiselectControls} from './multiselect_controls';
 
 /**
@@ -75,6 +76,7 @@ export class Multiselect {
 
     this.controls_ = new MultiselectControls(
         this.workspace_, options.multiselectIcon, this);
+    multiselectControlsList.add(this.controls_);
     if (!options.multiselectIcon || !options.multiselectIcon.hideIcon) {
       const svgControls = this.controls_.createDom();
       this.workspace_.getParentSvg().appendChild(svgControls);
@@ -132,6 +134,7 @@ export class Multiselect {
     }
 
     if (this.controls_) {
+      multiselectControlsList.delete(this.controls_);
       this.controls_.dispose();
       this.controls_ = null;
     }
@@ -216,7 +219,9 @@ export class Multiselect {
   eventListener_(e) {
     // on Block Selected
     if (e.type === Blockly.Events.SELECTED) {
-      this.controls_.updateMultiselect();
+      multiselectControlsList.forEach((controls) => {
+        controls.updateMultiselect();
+      });
     // on Block field changed
     } else if (e.type === Blockly.Events.CHANGE &&
         e.element === 'field' && e.recordUndo &&
