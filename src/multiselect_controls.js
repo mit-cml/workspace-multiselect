@@ -296,8 +296,8 @@ export class MultiselectControls {
    */
   updateMultiselect() {
     if (!inMultipleSelectionModeWeakMap.get(this.workspace_)) {
-      if (!Blockly.getSelected() ||
-        (Blockly.getSelected() &&
+      if (!Blockly.getSelected() || this.workspace_.id !==
+         Blockly.getMainWorkspace().id || (Blockly.getSelected() &&
          !this.blockSelection.has(Blockly.getSelected().id))) {
         // When not in multiple selection mode and Blockly selects a block not
         // in currently selected set or unselects, clear the selected set.
@@ -308,9 +308,12 @@ export class MultiselectControls {
           }
         });
         this.blockSelection.clear();
-        this.updateBlocks_(Blockly.getSelected());
+        if (this.workspace_.id === Blockly.getMainWorkspace().id) {
+          this.updateBlocks_(Blockly.getSelected());
+        }
       }
     } else if (this.justUnselectedBlock_ && Blockly.getSelected() &&
+      this.workspace_.id === Blockly.getMainWorkspace().id &&
       Blockly.getSelected().id === this.justUnselectedBlock_.id) {
       // Update the Blockly selected block when that block is
       // no longer selected in our set.
