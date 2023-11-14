@@ -77,7 +77,7 @@ const registerCopy = function(useCopyPasteCrossTab) {
       const blockList = [];
       const apply = function(block) {
         if (copyOptions.check(block)) {
-          copyData.add(block.toCopyData());
+          copyData.add(JSON.stringify(block.toCopyData()));
           blockList.push(block.id);
         }
       };
@@ -163,13 +163,13 @@ const registerDuplicate = function() {
     callback: function(scope) {
       const duplicatedBlocks = {};
       const connectionDBList = [];
+      const workspace = scope.block.workspace;
       const apply = function(block) {
         if (duplicateOption.check(block)) {
-          duplicatedBlocks[block.id] = Blockly.clipboard.duplicate(block);
+          duplicatedBlocks[block.id] = Blockly.clipboard.paste(block.toCopyData(), workspace);
         }
         block.pathObject.updateSelected(false);
       };
-      const workspace = scope.block.workspace;
       const blockSelection = blockSelectionWeakMap.get(workspace);
       Blockly.Events.setGroup(true);
       if (!blockSelection.size) {
@@ -641,9 +641,10 @@ const registerPaste = function(useCopyPasteCrossTab) {
       if (useCopyPasteCrossTab) {
         dataCopyFromStorage();
       }
-      copyData.forEach(function(data) {
+      copyData.forEach(function(stringData) {
         // Pasting always pastes to the main workspace, even if the copy
         // started in a flyout workspace.
+        const data = JSON.parse(stringData);
         if (data.source) {
           workspace = data.source;
         }
@@ -652,7 +653,7 @@ const registerPaste = function(useCopyPasteCrossTab) {
         }
         if (data.typeCounts &&
             workspace.isCapacityAvailable(data.typeCounts)) {
-          const block = workspace.paste(data.saveInfo);
+          const block = Blockly.clipboard.paste(data, workspace);
           blockList.push(block);
           block.pathObject.updateSelected(true);
           blockSelectionWeakMap.get(block.workspace).add(block.id);
