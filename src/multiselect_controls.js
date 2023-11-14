@@ -148,12 +148,18 @@ export class MultiselectControls {
   /**
    * Initializes the multi select controls.
    */
-  init() {
-    this.workspace_.getComponentManager().addComponent({
-      component: this,
-      weight: 3,
-      capabilities: [Blockly.ComponentManager.Capability.POSITIONABLE],
-    });
+  init(hideIcon, weight) {
+    if (!hideIcon) {
+      let weightValue = 3;
+      if (typeof weight === 'number') {
+        weightValue = weight;
+      }
+      this.workspace_.getComponentManager().addComponent({
+        component: this,
+        weight: weightValue,
+        capabilities: [Blockly.ComponentManager.Capability.POSITIONABLE],
+      });
+    }
     this.initialized_ = true;
     this.workspace_.resize();
   }
