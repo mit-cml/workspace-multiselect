@@ -35,6 +35,7 @@ export class Multiselect {
     BaseBlockDraggerWeakMap.set(this.workspace_, Blockly.BlockDragger);
     this.useCopyPasteCrossTab_ = true;
     this.useCopyPasteMenu_ = true;
+    this.multiFieldUpdate_ = true;
   }
 
   /**
@@ -93,6 +94,10 @@ export class Multiselect {
 
     if (options.baseBlockDragger) {
       BaseBlockDraggerWeakMap.set(this.workspace_, options.baseBlockDragger);
+    }
+
+    if (options.multiFieldUpdate === false) {
+      this.multiFieldUpdate_ = false;
     }
 
     if (!options.bumpNeighbours) {
@@ -227,7 +232,8 @@ export class Multiselect {
         controls.updateMultiselect();
       });
     // on Block field changed
-    } else if (e.type === Blockly.Events.CHANGE &&
+    } else if (this.multiFieldUpdate_ &&
+        e.type === Blockly.Events.CHANGE &&
         e.element === 'field' && e.recordUndo &&
         this.blockSelection_.has(e.blockId)) {
       const inGroup = !!e.group;
