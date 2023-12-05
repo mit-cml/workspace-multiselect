@@ -32,6 +32,7 @@ document.addEventListener('DOMContentLoaded', function() {
     toolbox: toolboxCategories,
     useDoubleClick: true,
     bumpNeighbours: false,
+    multiFieldUpdate: true,
     multiselectIcon: {
       hideIcon: false,
       weight: 3,

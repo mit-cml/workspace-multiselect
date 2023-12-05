@@ -37,6 +37,9 @@ options = {
   // Bump neighbours after dragging to avoid overlapping.
   bumpNeighbours: false,
 
+  // Keep the fields of multiple selected same-type blocks with the same value
+  multiFieldUpdate: true,
+
   // Use custom icon for the multi select controls.
   multiselectIcon: {
     hideIcon: false,
