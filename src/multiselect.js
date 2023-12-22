@@ -251,6 +251,10 @@ export class Multiselect {
             block.setFieldValue(e.newValue, e.name);
           }
         });
+      } catch (err) {
+        // Avoid errors when changing a block if it is no longer in the workspace.
+        // https://github.com/mit-cml/workspace-multiselect/issues/33
+        console.warn(err);
       } finally {
         if (!inGroup) {
           Blockly.Events.setGroup(false);
