@@ -39,7 +39,7 @@
     "src"
   ],
   "dependencies": {
-    "dragselect": "^3.0.4"
+    "dragselect": "^2.7.4"
   },
   "devDependencies": {
     "@blockly/dev-scripts": "^3.1.1",

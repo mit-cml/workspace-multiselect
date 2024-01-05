@@ -399,7 +399,7 @@ export class MultiselectControls {
       return {select, unselect};
     };
 
-    this.dragSelect_.subscribe('DS:select', (info) => {
+    this.dragSelect_.subscribe('elementselect', (info) => {
       const element = info.item.parentElement;
       if (inMultipleSelectionModeWeakMap.get(this.workspace_) &&
           element && element.dataset && element.dataset.id) {
@@ -407,7 +407,7 @@ export class MultiselectControls {
             this.workspace_.getBlockById(element.dataset.id));
       }
     });
-    this.dragSelect_.subscribe('DS:unselect', (info) => {
+    this.dragSelect_.subscribe('elementunselect', (info) => {
       const element = info.item.parentElement;
       if (inMultipleSelectionModeWeakMap.get(this.workspace_) &&
           element && element.dataset && element.dataset.id) {
