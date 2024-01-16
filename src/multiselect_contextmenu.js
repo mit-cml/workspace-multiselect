@@ -51,6 +51,12 @@ const registerCopy = function(useCopyPasteCrossTab) {
       }
       const selected = Blockly.common.getSelected();
       const blockSelection = blockSelectionWeakMap.get(workspace);
+
+      // Fix the context menu error for backpack plugin
+      if (blockSelection === undefined) {
+        return 'hidden';
+      }
+
       if (!blockSelection.size) {
         if (copyOptions.check(selected)) {
           return 'enabled';
