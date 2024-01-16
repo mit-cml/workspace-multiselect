@@ -560,7 +560,7 @@ const registerDelete = function() {
           }
         }
       });
-      return (descendantCount === 1) ?
+      return (descendantCount <= 1) ?
         Blockly.Msg['DELETE_BLOCK'] :
         Blockly.Msg['DELETE_X_BLOCKS'].replace('%1', String(descendantCount));
     },
