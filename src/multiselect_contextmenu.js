@@ -172,7 +172,8 @@ const registerDuplicate = function() {
       const workspace = scope.block.workspace;
       const apply = function(block) {
         if (duplicateOption.check(block)) {
-          duplicatedBlocks[block.id] = Blockly.clipboard.paste(block.toCopyData(), workspace);
+          duplicatedBlocks[block.id] = Blockly.clipboard.paste(
+              block.toCopyData(), workspace);
         }
         block.pathObject.updateSelected(false);
       };

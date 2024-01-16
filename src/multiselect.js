@@ -87,7 +87,8 @@ export class Multiselect {
       const svgControls = this.controls_.createDom();
       this.workspace_.getParentSvg().appendChild(svgControls);
     }
-    this.controls_.init(options.multiselectIcon.hideIcon, options.multiselectIcon.weight);
+    this.controls_.init(options.multiselectIcon.hideIcon,
+        options.multiselectIcon.weight);
 
     if (options.useDoubleClick) {
       this.useDoubleClick_(true);
@@ -254,7 +255,8 @@ export class Multiselect {
           }
         });
       } catch (err) {
-        // Avoid errors when changing a block if it is no longer in the workspace.
+        // Avoid errors when changing a block if it is
+        // no longer in the workspace.
         // https://github.com/mit-cml/workspace-multiselect/issues/33
         console.warn(err);
       } finally {
