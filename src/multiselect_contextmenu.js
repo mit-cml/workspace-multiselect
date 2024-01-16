@@ -737,6 +737,106 @@ const registerSelectAll = function() {
 };
 
 /**
+ * Registers copy to back pack context menu item in back pack.
+ * @param {boolean} disablePreconditionContainsCheck Option for
+ *                  the back pack plugin, default is false.
+ */
+const updateToMultiCopyToBackpack =
+    function(disablePreconditionContainsCheck = false) {
+      const id = 'copy_to_backpack';
+      const copyToBackpack = {
+        getBackPack: function(ws) {
+          return ws
+              .getComponentManager()
+              .getComponent('backpack');
+        },
+        check: function(block) {
+          if (!block) return false;
+          const ws = block.workspace;
+          const backpack = copyToBackpack.getBackPack(ws);
+          return backpack &&
+             !backpack.containsBlock(block) &&
+             !hasSelectedParent(block);
+        },
+        displayText: function(scope) {
+          if (!scope.block) {
+            return '';
+          }
+          const ws = scope.block.workspace;
+          const backpack = copyToBackpack.getBackPack(ws);
+          if (!backpack) {
+            return '';
+          }
+          const backpackCount = backpack.getCount();
+          let workableBlocksLength = 0;
+          const blockSelection = blockSelectionWeakMap.get(ws);
+          if (!blockSelection.size) {
+            if (copyToBackpack.check(scope.block)) {
+              workableBlocksLength++;
+            }
+          }
+          for (const id of blockSelection) {
+            if (copyToBackpack.check(ws.getBlockById(id))) {
+              workableBlocksLength++;
+            }
+          }
+          return `(${workableBlocksLength}) ` +
+             `${Blockly.Msg['COPY_TO_BACKPACK']} (${backpackCount})`;
+        },
+        preconditionFn: function(scope) {
+          if (!scope.block) return 'hidden';
+          const ws = scope.block.workspace;
+          if (!ws.isFlyout) {
+            if (!copyToBackpack.getBackPack(ws)) {
+              return 'hidden';
+            }
+            if (disablePreconditionContainsCheck) {
+              return 'enabled';
+            }
+            const blockSelection = blockSelectionWeakMap.get(ws);
+            if (!blockSelection.size) {
+              if (copyToBackpack.check(scope.block)) {
+                return 'enabled';
+              }
+            }
+            for (const id of blockSelection) {
+              if (copyToBackpack.check(ws.getBlockById(id))) {
+                return 'enabled';
+              }
+            }
+            return 'disabled';
+          }
+          return 'hidden';
+        },
+        callback: function(scope) {
+          if (!scope.block) return;
+          const ws = scope.block.workspace;
+          const backpack = copyToBackpack.getBackPack(ws);
+          const blockSelection = blockSelectionWeakMap.get(ws);
+          if (!blockSelection.size) {
+            if (copyToBackpack.check(scope.block)) {
+              backpack.addBlock(scope.block);
+            }
+          }
+          blockSelection.forEach(function(id) {
+            const block = ws.getBlockById(id);
+            if (copyToBackpack.check(block)) {
+              backpack.addBlock(block);
+            }
+          });
+        },
+        scopeType: Blockly.ContextMenuRegistry.ScopeType.BLOCK,
+        id,
+        // Use a larger weight to push the option lower on the context menu.
+        weight: 200,
+      };
+      if (Blockly.ContextMenuRegistry.registry.getItem(id) !== null) {
+        Blockly.ContextMenuRegistry.registry.unregister(id);
+      }
+      Blockly.ContextMenuRegistry.registry.register(copyToBackpack);
+    };
+
+/**
  * Unregister context menu item, should be called before registering.
  */
 export const unregisterContextMenu = function() {
@@ -789,4 +889,5 @@ export const registerOurContextMenu = function(useCopyPasteMenu, useCopyPasteCro
     map[id]();
   }
   registerSelectAll();
+  updateToMultiCopyToBackpack();
 };

@@ -136,6 +136,7 @@ export class Multiselect {
             .unregister('blockPasteFromStorage');
       }
       Blockly.ContextMenuRegistry.registry.unregister('workspaceSelectAll');
+      Blockly.ContextMenuRegistry.registry.unregister('copy_to_backpack');
       ContextMenu.registerOrigContextMenu();
 
       Shortcut.unregisterShortcut();

@@ -11,6 +11,7 @@
 import * as Blockly from 'blockly';
 import {toolboxCategories, createPlayground} from '@blockly/dev-tools';
 import {Multiselect, MultiselectBlockDragger} from '../src/index';
+import {Backpack} from '@blockly/workspace-backpack';
 
 /**
  * Create a workspace.
@@ -20,6 +21,10 @@ import {Multiselect, MultiselectBlockDragger} from '../src/index';
  */
 function createWorkspace(blocklyDiv, options) {
   const workspace = Blockly.inject(blocklyDiv, options);
+
+  // Initialize backpack plugin.
+  const backpack = new Backpack(workspace);
+  backpack.init();
 
   const multiselectPlugin = new Multiselect(workspace);
   multiselectPlugin.init(options);
