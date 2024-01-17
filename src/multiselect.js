@@ -62,6 +62,11 @@ export class Multiselect {
     this.eventListenerWrapper_ = this.eventListener_.bind(this);
     this.workspace_.addChangeListener(this.eventListenerWrapper_);
 
+    this.eventListenerAllWrapper_ = this.eventListenerAll_.bind(this);
+    Blockly.Workspace.getAll().forEach((ws) => {
+      ws.addChangeListener(this.eventListenerAllWrapper_);
+    });
+
     if (options.multiselectCopyPaste &&
       options.multiselectCopyPaste.crossTab === false) {
       this.useCopyPasteCrossTab_ = false;
@@ -128,6 +133,12 @@ export class Multiselect {
     if (this.eventListenerWrapper_) {
       this.workspace_.removeChangeListener(this.eventListenerWrapper_);
       this.eventListenerWrapper_ = null;
+    }
+    if (this.eventListenerAllWrapper_) {
+      Blockly.Workspace.getAll().forEach((ws) => {
+        ws.removeChangeListener(this.eventListenerAllWrapper_);
+      });
+      this.eventListenerAllWrapper_ = null;
     }
     if (!keepRegistry) {
       ContextMenu.unregisterContextMenu();
@@ -224,18 +235,13 @@ export class Multiselect {
   }
 
   /**
-   * Handle workspace events.
+   * Handle binded workspace events.
    * @param {!Event} e Blockly event.
    * @private
    */
   eventListener_(e) {
-    // on Block Selected
-    if (e.type === Blockly.Events.SELECTED) {
-      multiselectControlsList.forEach((controls) => {
-        controls.updateMultiselect();
-      });
     // on Block field changed
-    } else if (this.multiFieldUpdate_ &&
+    if (this.multiFieldUpdate_ &&
         e.type === Blockly.Events.CHANGE &&
         e.element === 'field' && e.recordUndo &&
         this.blockSelection_.has(e.blockId)) {
@@ -264,6 +270,21 @@ export class Multiselect {
           Blockly.Events.setGroup(false);
         }
       }
+    }
+  }
+
+  /**
+   * Handle all workspaces events.
+   * @param {!Event} e Blockly event.
+   * @private
+   */
+  eventListenerAll_(e) {
+    // on Block Selected (must listen events of all workspaces
+    // to cover all possible selection changes)
+    if (e.type === Blockly.Events.SELECTED) {
+      multiselectControlsList.forEach((controls) => {
+        controls.updateMultiselect();
+      });
     }
   }
 
