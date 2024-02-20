@@ -40,6 +40,9 @@ options = {
   // Keep the fields of multiple selected same-type blocks with the same value
   multiFieldUpdate: true,
 
+  // Auto focus the workspace when the mouse enters.
+  workspaceAutoFocus: true,
+
   // Use custom icon for the multi select controls.
   multiselectIcon: {
     hideIcon: false,

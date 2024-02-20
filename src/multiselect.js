@@ -52,7 +52,8 @@ export class Multiselect {
     this.onFocusOutWrapper_ = Blockly.browserEvents.conditionalBind(
         injectionDiv, 'focusout', this, this.onBlur_);
     injectionDiv.addEventListener('mouseenter', () => {
-      if (document.activeElement === this.workspace_.svgGroup_.parentElement ||
+      if (options.workspaceAutoFocus === false ||
+          document.activeElement === this.workspace_.svgGroup_.parentElement ||
           document.activeElement.nodeName.toLowerCase() === 'input' ||
           document.activeElement.nodeName.toLowerCase() === 'textarea') {
         return;
