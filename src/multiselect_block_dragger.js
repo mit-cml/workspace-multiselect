@@ -156,21 +156,20 @@ export class MultiselectBlockDragger extends Blockly.BlockDragger {
     } else {
       this.BaseBlockDragger.prototype.updateBlockAfterMove_ = function() {
         this.fireMoveEvent_();
-        if (this.draggedConnectionManager_.wouldConnectBlock()) {
+        if (this.connectionCandidate) {
           // We have to ensure that we can't connect to a block
           // that is in dragging.
-          const closest = this.draggedConnectionManager_.activeCandidate
-              .closest;
+          const neighbour = this.connectionCandidate.neighbour;
           if (!blockSelectionWeakMap.get(this.workspace_).has(
-              closest.sourceBlock_.id) &&
-              !hasSelectedParent(closest.sourceBlock_, true)) {
+              neighbour.sourceBlock_.id) &&
+              !hasSelectedParent(neighbour.sourceBlock_, true)) {
             // Applying connections also rerenders the relevant blocks.
-            this.draggedConnectionManager_.applyConnections();
+            this.applyConnections(this.connectionCandidate);
           } else {
             // We have to hide preview if any.
             // Don't fire events for insertion markers.
             Blockly.Events.disable();
-            this.draggedConnectionManager_.hidePreview();
+            this.connectionPreviewer.hidePreview();
             Blockly.Events.enable();
           }
         }
