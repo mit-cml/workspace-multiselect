@@ -768,7 +768,6 @@ const updateToMultiCopyToBackpack =
           if (!backpack) {
             return '';
           }
-          const backpackCount = backpack.getCount();
           let workableBlocksLength = 0;
           const blockSelection = blockSelectionWeakMap.get(ws);
           if (!blockSelection.size) {
@@ -783,9 +782,11 @@ const updateToMultiCopyToBackpack =
           }
           if (workableBlocksLength > 1) {
             if (Blockly.Msg['COPY_X_TO_BACKPACK']) {
-              return Blockly.Msg['COPY_X_TO_BACKPACK'].replace('%1', workableBlocksLength.toString());
+              return Blockly.Msg['COPY_X_TO_BACKPACK']
+                  .replace('%1', workableBlocksLength.toString());
             } else {
-              return `${Blockly.Msg['COPY_TO_BACKPACK']} (${workableBlocksLength})`;
+              return Blockly.Msg['COPY_TO_BACKPACK'] +
+                  ` (${workableBlocksLength})`;
             }
           } else {
             return Blockly.Msg['COPY_TO_BACKPACK'];
