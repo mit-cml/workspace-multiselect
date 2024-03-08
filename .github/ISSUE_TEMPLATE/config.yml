@@ -1,0 +1,10 @@
+contact_links:
+  - name: Ask a question ❓
+    url: https://groups.google.com/forum/#!forum/blockly
+    about: Go to the Blockly developer forum, where you can ask and answer questions.
+  - name: Report issues with Blockly 🧩
+    url: https://github.com/google/blockly/issues/new/choose
+    about: File bugs or feature requests about blockly core.
+  - name: Report issues with other plugins and examples 🧩
+    url: https://github.com/google/blockly-samples/issues/new/choose
+    about: File bugs or feature requests about other plugins and samples in the blockly-samples repository.
