@@ -42,13 +42,13 @@
     "dragselect": "^2.7.4"
   },
   "devDependencies": {
-    "@blockly/workspace-backpack": "^5.3.4",
+    "@blockly/workspace-backpack": "^5.3.7",
     "@blockly/dev-scripts": "^3.1.1",
-    "@blockly/dev-tools": "^7.1.6",
-    "blockly": "^10.4.2"
+    "@blockly/dev-tools": "^7.1.9",
+    "blockly": "^11.0.0-beta.10"
   },
   "peerDependencies": {
-    "blockly": ">=10.4.0 <= 11"
+    "blockly": ">=11"
   },
   "publishConfig": {},
   "eslintConfig": {
