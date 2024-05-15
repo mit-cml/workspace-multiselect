@@ -10,7 +10,7 @@
 
 import * as Blockly from 'blockly';
 import {toolboxCategories, createPlayground} from '@blockly/dev-tools';
-import {Multiselect, MultiselectBlockDragger} from '../src/index';
+import {Multiselect, MultiselectDraggable} from '../src/index';
 import {Backpack} from '@blockly/workspace-backpack';
 
 /**
