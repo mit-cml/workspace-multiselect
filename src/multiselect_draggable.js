@@ -9,8 +9,7 @@
  */
 import * as Blockly from 'blockly/core';
 // This import is only if I decide to extend the MultiDraggable class
-import {MultiDraggable} from "./multi_draggable";
-import {Coordinate} from "blockly/core/utils/coordinate";
+
 
 /**
  * A draggable object that adds the functionality for multiple blocks to
@@ -22,8 +21,6 @@ export class MultiselectDraggable {
     constructor(workspace, subDraggables) {
         this.workspace_ = workspace;
         this.subDraggables = subDraggables;
-        this.view
-        this.svgRoot
         this.loc
     }
 
@@ -35,14 +32,6 @@ export class MultiselectDraggable {
     // TODO: Need to determine if blocks will always be movable
     isMovable() {
         return true;
-    }
-
-    /**
-     * Returns the root SVG element of the multiselect-draggable.
-     * @returns {SVGElement} The root SVG element of this rendered multiselect-draggable element.
-     */
-    getSvgRoot() {
-
     }
 
     // TODO: Complete these methods
@@ -60,18 +49,19 @@ export class MultiselectDraggable {
     startDrag(e) {
       for (const draggable of this.subDraggables) {
         draggable.startDrag(e);
+
       }
     }
 
     // TODO: Need to implement drag
-    drag(newLoc, e, target) {
+    drag(newLoc, e) {
       for (const draggable of this.subDraggables) {
-        draggable.drag(Coordinate.sum(newLoc, draggable.dragOffset), target, e);
+        draggable.drag(Blockly.utils.Coordinate.sum(newLoc, draggable.dragOffset), e);
       }
     }
 
     // TODO: Need to implement endDrag
-    endDrag(e: PointerEvent) {
+    endDrag(e) {
       for (const draggable of this.subDraggables) {
         draggable.endDrag(e);
       }
@@ -110,6 +100,3 @@ export class MultiselectDraggable {
 
 
   }
-
-Blockly.registry.register(Blockly.registry.Type.MULTI_DRAGGABLE,
-    'MultiselectDraggable', MultiselectDraggable);

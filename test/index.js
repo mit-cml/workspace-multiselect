@@ -61,7 +61,6 @@ document.addEventListener('DOMContentLoaded', function() {
       wheel: true,
     },
     plugins: {
-      'blockDragger': MultiselectBlockDragger,
     },
   };
   createPlayground(document.getElementById('root'), createWorkspace,
