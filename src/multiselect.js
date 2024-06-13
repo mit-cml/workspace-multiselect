@@ -256,6 +256,9 @@ export class Multiselect {
         // Update the fields to the same value for
         // the selected blocks with same type.
         this.blockSelection_.forEach((id) => {
+          if (id === e.blockId) {
+            return;
+          }
           const block = this.workspace_.getBlockById(id);
           if (block.type === blockType) {
             block.setFieldValue(e.newValue, e.name);
