@@ -16,6 +16,7 @@ import {blockSelectionWeakMap, inMultipleSelectionModeWeakMap,
   hasSelectedParent, BaseBlockDraggerWeakMap,
   multiselectControlsList} from './global';
 import {MultiselectControls} from './multiselect_controls';
+import {MultiselectDraggable} from "./multiselect_draggable";
 
 /**
  * Class for using multiple select blocks on workspace.
@@ -192,24 +193,28 @@ export class Multiselect {
             !inMultipleSelectionModeWeakMap.get(ws)) {
           const preCondition = function(block) {
             return !block.isInFlyout && block.isMovable() &&
-            block.workspace.options.collapse;
+                block.workspace.options.collapse;
           };
-          if (Blockly.getSelected() && preCondition(Blockly.getSelected())) {
+
+          const selected = Blockly.getSelected();
+
+          // Case where selected is a block (not a multidraggable)
+          if (selected && selected instanceof Blockly.BlockSvg && preCondition(selected)) {
             if (ws.doubleClickPid_) {
               clearTimeout(ws.doubleClickPid_);
               ws.doubleClickPid_ = undefined;
-              if (Blockly.getSelected().id === ws.doubleClickBlock_) {
-                const state = !Blockly.getSelected().isCollapsed();
+              if (selected.id === ws.doubleClickBlock_) {
+                const state = !selected.isCollapsed();
                 const maybeCollapse = function(block) {
                   if (block && preCondition(block) &&
-                  !hasSelectedParent(block)) {
+                      !hasSelectedParent(block)) {
                     block.setCollapsed(state);
                   }
                 };
                 Blockly.Events.setGroup(true);
                 const blockSelection = blockSelectionWeakMap.get(ws);
-                if (Blockly.getSelected() && !blockSelection.size) {
-                  maybeCollapse(Blockly.getSelected());
+                if (selected && !blockSelection.size) {
+                  maybeCollapse(selected);
                 }
                 blockSelection.forEach(function(id) {
                   const block = ws.getBlockById(id);
@@ -222,7 +227,51 @@ export class Multiselect {
               }
             }
             if (!ws.doubleClickPid_) {
-              ws.doubleClickBlock_ = Blockly.getSelected().id;
+              ws.doubleClickBlock_ = selected.id;
+              ws.doubleClickPid_ = setTimeout(function() {
+                ws.doubleClickPid_ = undefined;
+              }, 500);
+            }
+          }
+          // Case where the selected is a multidraggable instance
+          else if (selected && selected instanceof MultiselectDraggable) {
+            if (ws.doubleClickPid_) {
+              clearTimeout(ws.doubleClickPid_);
+              ws.doubleClickPid_ = undefined;
+              const blockSelection = blockSelectionWeakMap.get(ws);
+              if (blockSelection.size) {
+                // Checking whether any of the blocks in the blockSelection is not collapsed
+                // If there are not collapsed blocks, set the maybeCollapse function to collapse
+                // those uncollapsed blocks. Otherwise, uncollapse all the collapsed blocks.
+                let notCollapsed = 0;
+                blockSelection.forEach((id) => {
+                  if (!ws.getBlockById(id).isCollapsed()) {
+                    notCollapsed += 1;
+                  }
+                })
+                let state = null;
+                if (notCollapsed > 0) {
+                  state = true;
+                }
+
+                const maybeCollapse = function (block) {
+                  if (block && preCondition(block) &&
+                      !hasSelectedParent(block)) {
+                    block.setCollapsed(state);
+                  }
+                };
+                Blockly.Events.setGroup(true);
+                blockSelection.forEach(function (id) {
+                  const block = ws.getBlockById(id);
+                  if (block) {
+                    maybeCollapse(block);
+                  }
+                });
+                Blockly.Events.setGroup(false);
+                return;
+              }
+            }
+            if (!ws.doubleClickPid_) {
               ws.doubleClickPid_ = setTimeout(function() {
                 ws.doubleClickPid_ = undefined;
               }, 500);
@@ -234,6 +283,66 @@ export class Multiselect {
       return wrappedFunc;
     })(Blockly.Gesture.prototype.handleWsStart);
   }
+
+  // useDoubleClick_(on) {
+  //   if (!on) {
+  //     Blockly.Gesture.prototype.handleWsStart = this.origHandleWsStart_;
+  //     return;
+  //   }
+  //
+  //   Blockly.Gesture.prototype.handleWsStart = (function(func) {
+  //     if (func.isWrapped) {
+  //       return func;
+  //     }
+  //
+  //     const wrappedFunc = function(e, ws) {
+  //       func.call(this, e, ws);
+  //       if (this.targetBlock && e.buttons === 1 &&
+  //           !inMultipleSelectionModeWeakMap.get(ws)) {
+  //         const preCondition = function(block) {
+  //           return !block.isInFlyout && block.isMovable() &&
+  //           block.workspace.options.collapse;
+  //         };
+  //         if (Blockly.getSelected() && preCondition(Blockly.getSelected())) {
+  //           if (ws.doubleClickPid_) {
+  //             clearTimeout(ws.doubleClickPid_);
+  //             ws.doubleClickPid_ = undefined;
+  //             if (Blockly.getSelected().id === ws.doubleClickBlock_) {
+  //               const state = !Blockly.getSelected().isCollapsed();
+  //               const maybeCollapse = function(block) {
+  //                 if (block && preCondition(block) &&
+  //                 !hasSelectedParent(block)) {
+  //                   block.setCollapsed(state);
+  //                 }
+  //               };
+  //               Blockly.Events.setGroup(true);
+  //               const blockSelection = blockSelectionWeakMap.get(ws);
+  //               if (Blockly.getSelected() && !blockSelection.size) {
+  //                 maybeCollapse(Blockly.getSelected());
+  //               }
+  //               blockSelection.forEach(function(id) {
+  //                 const block = ws.getBlockById(id);
+  //                 if (block) {
+  //                   maybeCollapse(block);
+  //                 }
+  //               });
+  //               Blockly.Events.setGroup(false);
+  //               return;
+  //             }
+  //           }
+  //           if (!ws.doubleClickPid_) {
+  //             ws.doubleClickBlock_ = Blockly.getSelected().id;
+  //             ws.doubleClickPid_ = setTimeout(function() {
+  //               ws.doubleClickPid_ = undefined;
+  //             }, 500);
+  //           }
+  //         }
+  //       }
+  //     };
+  //     wrappedFunc.isWrapped = true;
+  //     return wrappedFunc;
+  //   })(Blockly.Gesture.prototype.handleWsStart);
+  // }
 
   /**
    * Handle binded workspace events.

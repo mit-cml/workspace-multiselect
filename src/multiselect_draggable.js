@@ -8,7 +8,7 @@
  * @fileoverview Multiple selection draggable class.
  */
 import * as Blockly from 'blockly/core';
-// This import is only if I decide to extend the MultiDraggable class
+import {inMultipleSelectionModeWeakMap} from "./global";
 
 
 /**
@@ -18,15 +18,53 @@ import * as Blockly from 'blockly/core';
 export class MultiselectDraggable {
 
     // TODO: Need to determine what is needed in constructor
-    constructor(workspace, subDraggables) {
-        this.workspace_ = workspace;
-        this.subDraggables = subDraggables;
-        this.loc
+    constructor(workspace) {
+        this.workspace = workspace;
+        this.id = Blockly.utils.idGenerator.genUid();
+        this.subDraggables = new Map();
+        this.loc = new Blockly.utils.Coordinate(0,0);
     }
 
     // TODO: Need to determine how to implement this after talking to mentor
-    addSubDraggable(subBlock) {
+    addSubDraggable(subDraggable) {
+        this.subDraggables.set(subDraggable, subDraggable.getRelativeToSurfaceXY())
+        // console.log("Block added!!!");
+        this.addPointerDownEventListener(subDraggable);
+        // console.log("subdraggables set", this.subDraggables);
+    }
 
+    removeSubDraggable(subDraggable) {
+        this.subDraggables.delete(subDraggable);
+        // console.log("Block removed!!!");
+        this.removePointerDownEventListener(subDraggable);
+    }
+
+    addPointerDownEventListener(subDraggable) {
+        // Bind the handler to the correct context (class instance)
+        // i.e. it creates a new function where the 'this' of the new function
+        // is set to whatever is passed into the bind method argument.
+        // In this case, it is the multiselectDraggable class/object.
+        const handler = this.pointerDownEventHandler.bind(this);
+        // Store the handler function in the subDraggable object
+        subDraggable.pointerDownHandler = handler;
+        // When adding/removing an event listener, we must pass in named functions
+        // as anonymous functions are different function instances in memory
+        subDraggable.getSvgRoot().addEventListener('pointerdown', handler);
+    }
+
+    removePointerDownEventListener(subDraggable) {
+        // Retrieve the stored handler function
+        const handler = subDraggable.pointerDownHandler;
+        if (handler) {
+            subDraggable.getSvgRoot().removeEventListener('pointerdown', handler);
+            // Clean up the stored handler reference
+            delete subDraggable.pointerDownHandler;
+        }
+    }
+
+    pointerDownEventHandler(event) {
+        console.log('Pointer down event detected');
+        Blockly.common.setSelected(this);
     }
 
     // TODO: Need to determine if blocks will always be movable
@@ -47,23 +85,28 @@ export class MultiselectDraggable {
 
     // TODO: Need to implement startDrag
     startDrag(e) {
+        console.log("startingDrag, multidrag coords: ", this.loc)
       for (const draggable of this.subDraggables) {
-        draggable.startDrag(e);
-
+        draggable[0].startDrag()
+        console.log("startingDrag of subdraggables")
       }
     }
 
     // TODO: Need to implement drag
     drag(newLoc, e) {
+        console.log("drag", newLoc)
       for (const draggable of this.subDraggables) {
-        draggable.drag(Blockly.utils.Coordinate.sum(newLoc, draggable.dragOffset), e);
+        draggable[0].drag(Blockly.utils.Coordinate.sum(newLoc,this.subDraggables.get(draggable[0])), e);
       }
+      this.loc = newLoc;
     }
 
     // TODO: Need to implement endDrag
     endDrag(e) {
+        console.log("endDrag")
       for (const draggable of this.subDraggables) {
-        draggable.endDrag(e);
+        draggable[0].endDrag(e);
+          // this.removePointerDownEventListener(draggable[0]);
       }
     }
 
@@ -78,7 +121,13 @@ export class MultiselectDraggable {
     // ==========================================================
     // ==========================================================
     // TODO: Determine if need to implement ISelectable interface
+    select() {
 
+    }
+
+    unselect() {
+
+    }
 
 
     // TODO: Determine if need to implement IDeletable interface
@@ -97,6 +146,17 @@ export class MultiselectDraggable {
 
     // TODO: Determine if need to implement ICopyable interface
 
+    /**
+     * Handle a pointer-down on the workspace for a multidraggable.
+     * @param {PointerEvent} e The pointer-down event.
+     * @private
+     */
+    onMouseDown_(e) {
+        console.log("onmousedown")
+        if (e) {
+            Blockly.common.setSelected()
+        }
+    }
 
 
   }
