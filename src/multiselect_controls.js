@@ -534,10 +534,10 @@ export class MultiselectControls {
     inMultipleSelectionModeWeakMap.set(this.workspace_, false);
     if (this.dragSelect_) {
       if (byIcon) {
-        document.dispatchEvent(
-            new KeyboardEvent('keyup', {'key': 'shift'}));
         this.workspace_.getInjectionDiv().dispatchEvent(
             new KeyboardEvent('keyup', {'key': 'meta'}));
+        document.dispatchEvent(
+            new KeyboardEvent('keyup', {'key': 'shift'}));
       }
       this.dragSelect_.stop();
       this.dragSelect_ = null;
