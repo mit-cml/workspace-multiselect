@@ -28,8 +28,10 @@ export class MultiselectDraggable {
     // TODO: Need to determine how to implement this after talking to mentor
     addSubDraggable(subDraggable) {
         this.subDraggables.set(subDraggable, subDraggable.getRelativeToSurfaceXY())
-        // console.log("Block added!!!");
+        console.log("Block added!!!");
+        console.log(subDraggable.getRelativeToSurfaceXY())
         this.addPointerDownEventListener(subDraggable);
+        // this.loc = subDraggable.getRelativeToSurfaceXY();
         // console.log("subdraggables set", this.subDraggables);
     }
 
@@ -39,6 +41,10 @@ export class MultiselectDraggable {
         this.removePointerDownEventListener(subDraggable);
     }
 
+    // This is the feature where we added a pointer down event listener.
+    // This was added to mitigate the issue of setStartBlock overwriting the
+    // call that passes the multidraggable to Blockly.common.SetSelected().
+    // This should be updated/fixed when a more flexible gesture handling system is implemented.
     addPointerDownEventListener(subDraggable) {
         // Bind the handler to the correct context (class instance)
         // i.e. it creates a new function where the 'this' of the new function
@@ -83,31 +89,42 @@ export class MultiselectDraggable {
     }
 
 
-    // TODO: Need to implement startDrag
     startDrag(e) {
         console.log("startingDrag, multidrag coords: ", this.loc)
       for (const draggable of this.subDraggables) {
+        this.subDraggables.set(draggable[0], draggable[0].getRelativeToSurfaceXY())
         draggable[0].startDrag()
         console.log("startingDrag of subdraggables")
+
       }
     }
 
-    // TODO: Need to implement drag
     drag(newLoc, e) {
-        console.log("drag", newLoc)
+        console.log("drag -> newLoc coords", newLoc)
       for (const draggable of this.subDraggables) {
-        draggable[0].drag(Blockly.utils.Coordinate.sum(newLoc,this.subDraggables.get(draggable[0])), e);
+          console.log(draggable)
+          draggable[0].drag(Blockly.utils.Coordinate.sum(newLoc,this.subDraggables.get(draggable[0])), e);
+          // draggable[0].drag((newLoc), e);
+          // this.subDraggables.set(draggable[0], draggable[0].getRelativeToSurfaceXY())
       }
-      this.loc = newLoc;
     }
 
-    // TODO: Need to implement endDrag
     endDrag(e) {
         console.log("endDrag")
       for (const draggable of this.subDraggables) {
         draggable[0].endDrag(e);
-          // this.removePointerDownEventListener(draggable[0]);
+        // console.log("Before new set", draggable)
+        draggable[1] = draggable[0].getRelativeToSurfaceXY();
+        // this.subDraggables.set(draggable[0], draggable[0].getRelativeToSurfaceXY())
+        // console.log("After new set", draggable)
+        console.log("connected", draggable[0].isConnected)
       }
+    }
+
+    updateSubDraggablePositions() {
+        for (const draggable of this.subDraggables) {
+            draggable[1] = draggable[0].getRelativeToSurfaceXY();
+        }
     }
 
     // TODO: Need to implement revertDrag

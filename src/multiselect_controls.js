@@ -142,6 +142,8 @@ export class MultiselectControls {
 
     this.origSetStartBlock = Blockly.Gesture.prototype.setStartBlock;
 
+    this.origHandleBlockStart = Blockly.Gesture.prototype.handleBlockStart;
+
     console.log(this.multiDraggable);
 
   }
@@ -496,7 +498,6 @@ export class MultiselectControls {
       return {select, unselect};
     };
 
-    // TODO: If have time, look into weird bug where clicking on workspace might cause reselection
     this.dragSelect_.subscribe('elementselect', (info) => {
       const element = info.item.parentElement;
       if (inMultipleSelectionModeWeakMap.get(this.workspace_) &&
