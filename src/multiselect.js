@@ -245,7 +245,8 @@ export class Multiselect {
     if (this.multiFieldUpdate_ &&
         e.type === Blockly.Events.CHANGE &&
         e.element === 'field' && e.recordUndo &&
-        this.blockSelection_.has(e.blockId)) {
+        this.blockSelection_.has(e.blockId) &&
+        e.group === '') {
       const inGroup = !!e.group;
       if (!inGroup) {
         Blockly.Events.setGroup(true);
