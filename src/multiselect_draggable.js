@@ -92,9 +92,17 @@ export class MultiselectDraggable {
     startDrag(e) {
         console.log("startingDrag, multidrag coords: ", this.loc)
       for (const draggable of this.subDraggables) {
+          console.log("startingDrag of subdraggables: ", draggable[0])
+          console.log("connections", draggable[0].getConnections_(false))
+          const connections = draggable[0].getConnections_(false);
+          connections.forEach(connection => {
+              console.log(`Block ${draggable[0].id} connection status: `, connection.isConnected());
+              console.log("connection type: ", connection.type);
+          });
+          console.log("connection candidate", draggable[0].dragStrategy.connectionCandidate)
         this.subDraggables.set(draggable[0], draggable[0].getRelativeToSurfaceXY())
         draggable[0].startDrag()
-        console.log("startingDrag of subdraggables")
+
 
       }
     }
@@ -114,17 +122,33 @@ export class MultiselectDraggable {
       for (const draggable of this.subDraggables) {
         draggable[0].endDrag(e);
         // console.log("Before new set", draggable)
-        draggable[1] = draggable[0].getRelativeToSurfaceXY();
+
         // this.subDraggables.set(draggable[0], draggable[0].getRelativeToSurfaceXY())
         // console.log("After new set", draggable)
-        console.log("connected", draggable[0].isConnected)
-      }
-    }
+        // console.log("connected?", draggable[0].previousConnection.isConnected())
+        console.log("connections", draggable[0].getConnections_(false))
+        const delta = Blockly.utils.Coordinate.difference(draggable[0].getRelativeToSurfaceXY(), draggable[1])
+        console.log("delta", delta)
 
-    updateSubDraggablePositions() {
-        for (const draggable of this.subDraggables) {
-            draggable[1] = draggable[0].getRelativeToSurfaceXY();
+        // Attempt to reconnect
+        const connections = draggable[0].getConnections_(true);
+        for (const connection of connections) {
+            const neighbour = connection.closest(Blockly.config.connectingSnapRadius, delta);
+
+            if (neighbour.connection) {
+                  // Try to connect to the closest connection
+                  connection.connect(neighbour.connection);
+            }
         }
+
+        connections.forEach(connection => {
+              console.log(`Block ${draggable[0].id} connection status: `, connection.isConnected());
+              console.log("connection type: ", connection.type);
+        });
+        console.log("connection candidate", draggable[0].dragStrategy.connectionCandidate)
+
+        draggable[1] = draggable[0].getRelativeToSurfaceXY();
+      }
     }
 
     // TODO: Need to implement revertDrag
@@ -162,18 +186,6 @@ export class MultiselectDraggable {
     }
 
     // TODO: Determine if need to implement ICopyable interface
-
-    /**
-     * Handle a pointer-down on the workspace for a multidraggable.
-     * @param {PointerEvent} e The pointer-down event.
-     * @private
-     */
-    onMouseDown_(e) {
-        console.log("onmousedown")
-        if (e) {
-            Blockly.common.setSelected()
-        }
-    }
 
 
   }
