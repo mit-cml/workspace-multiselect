@@ -23,9 +23,16 @@ export class MultiselectDraggable {
         this.id = Blockly.utils.idGenerator.genUid();
         this.subDraggables = new Map();
         this.loc = new Blockly.utils.Coordinate(0,0);
+        this.savedConnections = new Map();
     }
 
-    // TODO: Need to determine how to implement this after talking to mentor
+    clearAll() {
+        for (const subDraggable in this.subDraggables) {
+            this.removeSubDraggable(subDraggable);
+        }
+    }
+
+    // TODO: Finish implementing these methods
     addSubDraggable(subDraggable) {
         this.subDraggables.set(subDraggable, subDraggable.getRelativeToSurfaceXY())
         console.log("Block added!!!");
@@ -46,6 +53,7 @@ export class MultiselectDraggable {
     // call that passes the multidraggable to Blockly.common.SetSelected().
     // This should be updated/fixed when a more flexible gesture handling system is implemented.
     addPointerDownEventListener(subDraggable) {
+        console.log("added pointer down event listener")
         // Bind the handler to the correct context (class instance)
         // i.e. it creates a new function where the 'this' of the new function
         // is set to whatever is passed into the bind method argument.
@@ -59,12 +67,14 @@ export class MultiselectDraggable {
     }
 
     removePointerDownEventListener(subDraggable) {
-        // Retrieve the stored handler function
-        const handler = subDraggable.pointerDownHandler;
-        if (handler) {
-            subDraggable.getSvgRoot().removeEventListener('pointerdown', handler);
-            // Clean up the stored handler reference
-            delete subDraggable.pointerDownHandler;
+        if (subDraggable){
+            // Retrieve the stored handler function
+            const handler = subDraggable.pointerDownHandler;
+            if (handler) {
+                subDraggable.getSvgRoot().removeEventListener('pointerdown', handler);
+                // Clean up the stored handler reference
+                delete subDraggable.pointerDownHandler;
+            }
         }
     }
 
@@ -100,10 +110,18 @@ export class MultiselectDraggable {
               console.log("connection type: ", connection.type);
           });
           console.log("connection candidate", draggable[0].dragStrategy.connectionCandidate)
-        this.subDraggables.set(draggable[0], draggable[0].getRelativeToSurfaceXY())
-        draggable[0].startDrag()
+
+          const connectionInfo = connections.map(connection => {
+              return {
+                  connection: connection,
+                  targetConnection: connection.targetConnection,
+              };
+          });
+          this.savedConnections.set(draggable[0], connectionInfo);
 
 
+          this.subDraggables.set(draggable[0], draggable[0].getRelativeToSurfaceXY())
+          draggable[0].startDrag()
       }
     }
 
@@ -119,73 +137,113 @@ export class MultiselectDraggable {
 
     endDrag(e) {
         console.log("endDrag")
-      for (const draggable of this.subDraggables) {
-        draggable[0].endDrag(e);
-        // console.log("Before new set", draggable)
+        console.log("draggingConn: ", Blockly.common.draggingConnections)
+        for (const draggable of this.subDraggables) {
+            draggable[0].endDrag(e);
+            // console.log("connected?", draggable[0].previousConnection.isConnected())
+            console.log("connections", draggable[0].getConnections_(false))
 
-        // this.subDraggables.set(draggable[0], draggable[0].getRelativeToSurfaceXY())
-        // console.log("After new set", draggable)
-        // console.log("connected?", draggable[0].previousConnection.isConnected())
-        console.log("connections", draggable[0].getConnections_(false))
-        const delta = Blockly.utils.Coordinate.difference(draggable[0].getRelativeToSurfaceXY(), draggable[1])
-        console.log("delta", delta)
+            // Calculate delta of drag in coordinates ==========
+            const delta = Blockly.utils.Coordinate.difference(draggable[0].getRelativeToSurfaceXY(), draggable[1])
+            console.log("delta", delta)
 
-        // Attempt to reconnect
-        const connections = draggable[0].getConnections_(true);
-        for (const connection of connections) {
-            const neighbour = connection.closest(Blockly.config.connectingSnapRadius, delta);
-
-            if (neighbour.connection) {
-                  // Try to connect to the closest connection
-                  connection.connect(neighbour.connection);
+            // Update connection locations =============
+            const connections = draggable[0].getConnections_(true);
+            for (const connection of connections) {
+                connection.moveBy(delta.x, delta.y)
+                console.log("connection name and target: ", connection, connection.targetConnection)
             }
-        }
 
-        connections.forEach(connection => {
-              console.log(`Block ${draggable[0].id} connection status: `, connection.isConnected());
-              console.log("connection type: ", connection.type);
-        });
-        console.log("connection candidate", draggable[0].dragStrategy.connectionCandidate)
+            // Attempt to reconnect ================
+            // THIS ONE WORKS BUT HAS ANOTHER GLITCH
+            // const savedConnections = this.savedConnections.get(draggable[0]) || [];
+            // for (const savedConnection of savedConnections) {
+            //     const { connection, targetConnection } = savedConnection;
+            //     if (targetConnection && connection && !connection.isConnected()) {
+            //         try {
+            //             connection.connect(targetConnection);
+            //         } catch (e) {
+            //             console.warn("Reconnection failed:", e);
+            //         }
+            //     }
+            // }
 
-        draggable[1] = draggable[0].getRelativeToSurfaceXY();
-      }
+            // for (const connection of connections) {
+            //
+            //     const neighbour = connection.closest(Blockly.config.connectingSnapRadius, delta);
+            //     console.log(neighbour)
+            //
+            //     if (neighbour && neighbour.connection) {
+            //           // Try to connect to the closest connection
+            //           connection.connect(neighbour.connection);
+            //     }
+            // }
+
+            // for (const draggable of this.subDraggables) {
+            //     const connections = draggable[0].getConnections_(true);
+            //     for (const connection of connections) {
+            //
+            //         const neighbour = connection.db.getNeighbours(connection, 28);
+            //         console.log(neighbour)
+            //
+            //         if (neighbour[0] && neighbour[0].connection) {
+            //             // Try to connect to the closest connection
+            //             connection.connect(neighbour[0].connection);
+            //         }
+            //     }
+            // }
+
+            // Check connection status ==============
+            connections.forEach(connection => {
+                  console.log(`Block ${draggable[0].id} connection status: `, connection.isConnected());
+                  console.log("connection type: ", connection.type);
+            });
+            console.log("connection candidate", draggable[0].dragStrategy.connectionCandidate)
+
+            // Update location of subdraggables ============
+            draggable[1] = draggable[0].getRelativeToSurfaceXY();
+          }
     }
 
-    // TODO: Need to implement revertDrag
     revertDrag() {
-
+        for (const draggable of this.subDraggables) {
+            draggable[0].revertDrag();
+        }
     }
 
-    // BELOW ARE OTHER INTERFACES THAT MAY NEED TO BE IMPLEMENTED
-    // ==========================================================
-    // ==========================================================
-    // ==========================================================
-    // ==========================================================
-    // TODO: Determine if need to implement ISelectable interface
+    // ISelectable methods
     select() {
-
+        // This just needs to be an empty function
     }
 
     unselect() {
-
+        // This just needs to be an empty function
     }
 
 
-    // TODO: Determine if need to implement IDeletable interface
-
+    // IDeletable methods
     isDeletable() {
         return true;
     }
 
     dispose() {
-
+        for (const draggable of this.subDraggables) {
+            this.removeSubDraggable(draggable[0]);
+            draggable[0].dispose(true,true);
+        }
     }
 
     setDeleteStyle() {
         // Visually indicate that the draggable is about to be deleted.
     }
 
-    // TODO: Determine if need to implement ICopyable interface
-
+    // ICopyable methods
+    // toCopyData() {
+    //     return {
+    //         // This string matches the string used to register the paster.
+    //         paster: 'MY_PASTER',
+    //         state: this.myState,
+    //     };
+    // }
 
   }

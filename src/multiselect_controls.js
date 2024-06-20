@@ -12,7 +12,7 @@
 import * as Blockly from 'blockly/core';
 
 import DragSelect from 'dragselect';
-import {blockSelectionWeakMap, inMultipleSelectionModeWeakMap} from './global';
+import {blockSelectionWeakMap, inMultipleSelectionModeWeakMap, multiDraggableWeakMap} from './global';
 import {MultiselectDraggable} from "./multiselect_draggable";
 
 /**
@@ -136,13 +136,11 @@ export class MultiselectControls {
     this.blockSelection = blockSelectionWeakMap.get(workspace);
 
     // MultiDraggable object that holds subdraggables
-    this.multiDraggable = new MultiselectDraggable(workspace);
+    this.multiDraggable = multiDraggableWeakMap.get(workspace);
 
     this.lastSelectedBlock_ = null;
 
     this.origSetStartBlock = Blockly.Gesture.prototype.setStartBlock;
-
-    this.origHandleBlockStart = Blockly.Gesture.prototype.handleBlockStart;
 
     console.log(this.multiDraggable);
 
@@ -295,30 +293,6 @@ export class MultiselectControls {
    * @param {!Blockly.BlockSvg} block The block to update.
    * @private
    */
-  // updateBlocks_(block) {
-  //   if (block &&
-  //       (block.isDeletable() || block.isMovable())) {
-  //     console.log("blockselection: ", this.blockSelection)
-  //     if (this.blockSelection.has(block.id)) {
-  //       this.blockSelection.delete(block.id);
-  //       this.multiDraggable.removeSubDraggable(block)
-  //       this.justUnselectedBlock_ = block;
-  //       block.pathObject.updateSelected(false);
-  //     } else {
-  //       this.blockSelection.add(block.id);
-  //       this.multiDraggable.addSubDraggable(block)
-  //       console.log(this.multiDraggable)
-  //       this.justUnselectedBlock_ = null;
-  //       console.log("updateBlocks", block)
-  //       // Currently MultiselectDraggable does not have a pathObject
-  //       // this.multiDraggable.subDraggables.forEach()
-  //       block.pathObject.updateSelected(true);
-  //       block.bringToFront();
-  //     }
-  //   }
-  // }
-
-  // TODO: Check if this properly implemented
   updateBlocks_(block) {
     // There is a block and it is deletable/movable
     if (block &&
@@ -356,7 +330,6 @@ export class MultiselectControls {
   /**
    * Update the multiple selection blocks status.
    */
-  // TODO: Implement multiselect mode case
   updateMultiselect() {
     console.log("multipleselectmode: ", inMultipleSelectionModeWeakMap.get(this.workspace_))
     // Not in multiselect mode

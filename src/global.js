@@ -10,6 +10,8 @@
 
 import * as Blockly from 'blockly/core';
 
+export const multiDraggableWeakMap = new WeakMap();
+
 /**
  * Set for storing the current selected blockSvg ids.
  */
