@@ -80,7 +80,7 @@ const registerShortcutDelete = function() {
           const block = workspace.getBlockById(id);
           apply(block);
         });
-      }
+      };
 
       Blockly.Events.setGroup(false);
       return true;
@@ -145,7 +145,6 @@ const registerCopy = function(useCopyPasteCrossTab) {
         console.log("COPY KEY PRESSED")
         for (const element of selected.subDraggables) {
           apply(element[0]);
-          selected.removeSubDraggable(element[0]);
         }
       } else if (!blockSelection.size) {
         apply(selected);
@@ -316,14 +315,14 @@ const registerPaste = function(useCopyPasteCrossTab) {
     callback: function(workspace) {
       const blockSelection = blockSelectionWeakMap.get(workspace);
       Blockly.Events.setGroup(true);
-      const selected = Blockly.common.getSelected()
+      const multiDraggable = multiDraggableWeakMap.get(workspace);
 
       if (blockSelection.size) {
         blockSelection.forEach(function(id) {
           const block = workspace.getBlockById(id);
           if (block) {
             block.pathObject.updateSelected(false);
-            selected.removeSubDraggable(block)
+            multiDraggable.removeSubDraggable(block)
           }
         });
         blockSelection.clear();
@@ -348,7 +347,7 @@ const registerPaste = function(useCopyPasteCrossTab) {
           blockList.push(block);
           block.pathObject.updateSelected(true);
           blockSelectionWeakMap.get(block.workspace).add(block.id);
-          selected.addSubDraggable(block)
+          multiDraggable.addSubDraggable(block);
         }
       });
       connectionDBList.forEach(function(connectionDB) {
@@ -379,7 +378,7 @@ const registerPaste = function(useCopyPasteCrossTab) {
  * Keyboard shortcut to select all top blocks in the workspace on
  * ctrl+a, cmd+a, or alt+a.
  */
-const registeSelectAll = function() {
+const registerSelectAll = function() {
   const name = 'selectall';
   const selectAllShortcut = {
     name,
@@ -411,10 +410,10 @@ const registeSelectAll = function() {
       blockList.forEach(function(block) {
           blockSelection.add(block.id);
           block.pathObject.updateSelected(true);
-          multiDraggable.addSubDraggable(block)
+          multiDraggable.addSubDraggable(block);
       });
 
-      Blockly.common.setSelected(multiDraggable)
+      Blockly.common.setSelected(multiDraggable);
       return true;
     },
   };
@@ -490,5 +489,5 @@ export const registerOurShortcut = function(useCopyPasteCrossTab) {
       map[name](useCopyPasteCrossTab);
     }
   }
-  registeSelectAll();
+  registerSelectAll();
 };

@@ -9,15 +9,19 @@
  */
 
 import * as Blockly from 'blockly/core';
-import {blockSelectionWeakMap, hasSelectedParent, copyData,
+import {
+  blockSelectionWeakMap, hasSelectedParent, copyData,
   connectionDBList, dataCopyToStorage, dataCopyFromStorage,
-  blockNumGetFromStorage, registeredContextMenu} from './global';
+  blockNumGetFromStorage, registeredContextMenu, multiDraggableWeakMap
+} from './global';
+import {MultiselectDraggable} from "./multiselect_draggable";
 
 /**
  * Copy multiple selected blocks to clipboard.
  * @param {boolean} useCopyPasteCrossTab Whether or not to use
  *     cross tab copy paste.
  */
+// Updated
 const registerCopy = function(useCopyPasteCrossTab) {
   const id = 'blockCopyToStorage';
   const copyOptions = {
@@ -90,13 +94,22 @@ const registerCopy = function(useCopyPasteCrossTab) {
       const selected = Blockly.common.getSelected();
       const blockSelection = blockSelectionWeakMap.get(workspace);
       Blockly.Events.setGroup(true);
-      if (!blockSelection.size) {
+
+      // Handle the case where MultiselectDraggable is in use
+      if (selected && selected instanceof MultiselectDraggable) {
+        console.log("COPY KEY PRESSED")
+        for (const element of selected.subDraggables) {
+          apply(element[0]);
+        }
+      } else if (!blockSelection.size) {
         apply(selected);
+      } else {
+        blockSelection.forEach(function(id) {
+          const block = workspace.getBlockById(id);
+          apply(block);
+        });
       }
-      blockSelection.forEach(function(id) {
-        const block = workspace.getBlockById(id);
-        apply(block);
-      });
+
       connectionDBList.length = 0;
       blockList.forEach(function(id) {
         const block = workspace.getBlockById(id);
@@ -128,6 +141,7 @@ const registerCopy = function(useCopyPasteCrossTab) {
  * Modification for context menu 'Duplicate' to be available for
  * multiple blocks.
  */
+// Updated
 const registerDuplicate = function() {
   const duplicateOption = {
     displayText: function(scope) {
@@ -170,6 +184,7 @@ const registerDuplicate = function() {
       const duplicatedBlocks = {};
       const connectionDBList = [];
       const workspace = scope.block.workspace;
+      const multiDraggable = multiDraggableWeakMap.get(workspace);
       const apply = function(block) {
         if (duplicateOption.check(block)) {
           duplicatedBlocks[block.id] = Blockly.clipboard.paste(
@@ -179,14 +194,21 @@ const registerDuplicate = function() {
       };
       const blockSelection = blockSelectionWeakMap.get(workspace);
       Blockly.Events.setGroup(true);
-      if (!blockSelection.size) {
-        apply(scope.block);
+
+      if (blockSelection.size) {
+        blockSelection.forEach(function(id) {
+          const block = workspace.getBlockById(id);
+          if (block) {
+            apply(block)
+            multiDraggable.removeSubDraggable(block)
+          }
+        });
+        blockSelection.clear();
       }
-      blockSelection.forEach(function(id) {
-        const block = workspace.getBlockById(id);
-        apply(block);
-      });
-      blockSelection.clear();
+      else {
+        apply(scope.block)
+      }
+
       for (const [id, block] of Object.entries(duplicatedBlocks)) {
         const origBlock = workspace.getBlockById(id);
         const origParentBlock = origBlock.getParent();
@@ -198,6 +220,7 @@ const registerDuplicate = function() {
               block.previousConnection]);
           }
           blockSelection.add(block.id);
+          multiDraggable.addSubDraggable(block)
           block.pathObject.updateSelected(true);
         }
       }
@@ -216,6 +239,7 @@ const registerDuplicate = function() {
 /**
  * Modification for context menu 'Comment' to be available for multiple blocks.
  */
+// Works for updated multiselect_draggable (no need update)
 const registerComment = function() {
   const commentOption = {
     displayText: function(scope) {
@@ -299,6 +323,7 @@ const registerComment = function() {
 /**
  * Modification for context menu 'Inline' to be available for multiple blocks.
  */
+// Updated
 const registerInline = function() {
   const inlineOption = {
     displayText: function(scope) {
@@ -341,8 +366,8 @@ const registerInline = function() {
         for (let i = 1; i < block.inputList.length; i++) {
           // Only display this option if there are two value or dummy inputs
           // next to each other.
-          if (block.inputList[i - 1].type !== Blockly.inputTypes.STATEMENT &&
-            block.inputList[i].type !== Blockly.inputTypes.STATEMENT) {
+          if (block.inputList[i - 1].type !== Blockly.inputs.inputTypes.STATEMENT &&
+            block.inputList[i].type !== Blockly.inputs.inputTypes.STATEMENT) {
             return 'enabled';
           }
         }
@@ -383,6 +408,7 @@ const registerInline = function() {
  * Modification for context menu 'Collapse/Expand' to be available for
  * multiple blocks.
  */
+// Works for updated multiselect_draggable
 const registerCollapseExpandBlock = function() {
   const collapseExpandOption = {
     displayText: function(scope) {
@@ -462,6 +488,7 @@ const registerCollapseExpandBlock = function() {
 /**
  * Modification for context menu 'Disable' to be available for multiple blocks.
  */
+// Works for updated multiselect_draggable
 const registerDisable = function() {
   const disableOption = {
     displayText: function(scope) {
@@ -543,6 +570,7 @@ const registerDisable = function() {
 /**
  * Modification for context menu 'Delete' to be available for multiple blocks.
  */
+// Updated
 const registerDelete = function() {
   const deleteOption = {
     displayText: function(scope) {
@@ -589,14 +617,25 @@ const registerDelete = function() {
       };
       const workspace = scope.block.workspace;
       const blockSelection = blockSelectionWeakMap.get(workspace);
+      const selected = Blockly.common.getSelected();
       Blockly.Events.setGroup(true);
-      if (!blockSelection.size) {
-        apply(scope.block);
+
+      // Handle the case where MultiselectDraggable is in use
+      if (selected && selected instanceof MultiselectDraggable) {
+        console.log("DELETE KEY PRESSED")
+        for (const element of selected.subDraggables) {
+          selected.removeSubDraggable(element[0])
+          apply(element[0])
+        }
+      } else if (!blockSelection.size) {
+        apply(selected);
+      } else {
+        blockSelection.forEach(function(id) {
+          const block = workspace.getBlockById(id);
+          apply(block);
+        });
       }
-      blockSelection.forEach(function(id) {
-        const block = workspace.getBlockById(id);
-        apply(block);
-      });
+
       Blockly.Events.setGroup(false);
     },
     scopeType: Blockly.ContextMenuRegistry.ScopeType.BLOCK,
@@ -610,6 +649,7 @@ const registerDelete = function() {
  * Paste multiple selected blocks from clipboard.
  * @param {boolean} useCopyPasteCrossTab Whether to use cross tab copy paste.
  */
+// Updated
 const registerPaste = function(useCopyPasteCrossTab) {
   const id = 'blockPasteFromStorage';
   const pasteOption = {
@@ -637,13 +677,19 @@ const registerPaste = function(useCopyPasteCrossTab) {
       let workspace = scope.workspace;
       const blockSelection = blockSelectionWeakMap.get(workspace);
       Blockly.Events.setGroup(true);
-      blockSelection.forEach(function(id) {
-        const block = workspace.getBlockById(id);
-        if (block) {
-          block.pathObject.updateSelected(false);
-        }
-      });
-      blockSelection.clear();
+      const multiDraggable = multiDraggableWeakMap.get(workspace);
+
+      if (blockSelection.size) {
+        blockSelection.forEach(function(id) {
+          const block = workspace.getBlockById(id);
+          if (block) {
+            block.pathObject.updateSelected(false);
+            multiDraggable.removeSubDraggable(block)
+          }
+        });
+        blockSelection.clear();
+      }
+
       const blockList = [];
       if (useCopyPasteCrossTab) {
         dataCopyFromStorage();
@@ -664,6 +710,7 @@ const registerPaste = function(useCopyPasteCrossTab) {
           blockList.push(block);
           block.pathObject.updateSelected(true);
           blockSelectionWeakMap.get(block.workspace).add(block.id);
+          multiDraggable.addSubDraggable(block);
         }
       });
       connectionDBList.forEach(function(connectionDB) {
@@ -686,6 +733,7 @@ const registerPaste = function(useCopyPasteCrossTab) {
 /**
  * Add context menu 'Select all Blocks' for workspace.
  */
+// Updated
 const registerSelectAll = function() {
   const id = 'workspaceSelectAll';
   const selectAllOption = {
@@ -703,29 +751,25 @@ const registerSelectAll = function() {
     },
     callback: function(scope) {
       const blockSelection = blockSelectionWeakMap.get(scope.workspace);
-      if (Blockly.getSelected() &&
-        !blockSelection.has(Blockly.getSelected().id)) {
+      const multiDraggable = multiDraggableWeakMap.get(scope.workspace);
+      if (Blockly.getSelected()) {
         Blockly.getSelected().pathObject.updateSelected(false);
         Blockly.common.setSelected(null);
+        multiDraggable.clearAll();
       }
       const blockList = [];
-      scope.workspace.getTopBlocks().forEach(function(block) {
+      scope.workspace.getAllBlocks().forEach(function(block) {
         if (selectAllOption.check(block)) {
           blockList.push(block);
-          let nextBlock = block.getNextBlock();
-          while (nextBlock) {
-            blockList.push(nextBlock);
-            nextBlock = nextBlock.getNextBlock();
-          }
         }
       });
       blockList.forEach(function(block) {
         blockSelectionWeakMap.get(block.workspace).add(block.id);
-        if (!Blockly.common.getSelected()) {
-          Blockly.common.setSelected(block);
-        }
         block.pathObject.updateSelected(true);
+        multiDraggable.addSubDraggable(block);
       });
+
+      Blockly.common.setSelected(multiDraggable);
     },
     scopeType: Blockly.ContextMenuRegistry.ScopeType.WORKSPACE,
     id,
@@ -742,6 +786,7 @@ const registerSelectAll = function() {
  * @param {boolean} disablePreconditionContainsCheck Option for
  *                  the back pack plugin, default is false.
  */
+// Works for updated multiselect_draggable
 const updateToMultiCopyToBackpack =
     function(disablePreconditionContainsCheck = false) {
       const id = 'copy_to_backpack';
