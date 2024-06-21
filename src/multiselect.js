@@ -115,6 +115,21 @@ export class Multiselect {
   }
 
   /**
+   * Ignore multi-field updates within the given function.
+   * @param {function} func The function to call.
+   */
+  withoutMultiFieldUpdates(func) {
+      const oldGroup = Blockly.Events.getGroup();
+      // Note that this depends on the fact that eventListener_ will ignore events with a group ID.
+      Blockly.Events.setGroup("ignoreMultiFieldUpdates");
+      try {
+          func();
+      } finally {
+        Blockly.Events.setGroup(oldGroup);
+      }
+  }
+
+  /**
    * Unbind the events and replace with original registration.
    * @param {boolean} keepRegistry Keep the context menu and shortcut registry.
    */
