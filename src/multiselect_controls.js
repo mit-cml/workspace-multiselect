@@ -436,7 +436,7 @@ export class MultiselectControls {
         this.workspace_.getInjectionDiv().dispatchEvent(
             new KeyboardEvent('keyup', {'key': 'meta'}));
         document.dispatchEvent(
-          new KeyboardEvent('keyup', {'key': 'shift'}));
+            new KeyboardEvent('keyup', {'key': 'shift'}));
       }
       this.dragSelect_.stop();
       this.dragSelect_ = null;

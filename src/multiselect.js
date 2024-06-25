@@ -33,6 +33,8 @@ export class Multiselect {
     this.blockSelection_ = blockSelectionWeakMap.get(this.workspace_);
     inMultipleSelectionModeWeakMap.set(this.workspace_, false);
     BaseBlockDraggerWeakMap.set(this.workspace_, Blockly.BlockDragger);
+    this.multiFieldUpdateGroupID = '';
+    this.fieldIntermediateChangeGroupIds_ = new Set();
     this.useCopyPasteCrossTab_ = true;
     this.useCopyPasteMenu_ = true;
     this.multiFieldUpdate_ = true;
@@ -256,17 +258,27 @@ export class Multiselect {
    * @private
    */
   eventListener_(e) {
+    if (e.type === Blockly.Events.BLOCK_FIELD_INTERMEDIATE_CHANGE) {
+      // Keep track of the group ids for intermediate changes.
+      this.fieldIntermediateChangeGroupIds_.add(e.group);
     // on Block field changed
-    if (this.multiFieldUpdate_ &&
+    } else if (this.multiFieldUpdate_ &&
         e.type === Blockly.Events.CHANGE &&
         e.element === 'field' && e.recordUndo &&
         this.blockSelection_.has(e.blockId) &&
-        e.group === '') {
-      const inGroup = !!e.group;
+        (e.group === '' ||
+          this.fieldIntermediateChangeGroupIds_.has(e.group))) {
+      const currentGroup = Blockly.Events.getGroup();
+      if (e.group !== '' && e.group !== currentGroup) {
+        // Intermediate changes are finished, remove the group id.
+        this.fieldIntermediateChangeGroupIds_.delete(e.group);
+      }
+      const inGroup = !!currentGroup;
       if (!inGroup) {
         Blockly.Events.setGroup(true);
         e.group = Blockly.Events.getGroup();
       }
+      this.multiFieldUpdateGroupID = e.group;
       try {
         const blockType = this.workspace_.getBlockById(e.blockId).type;
         // Update the fields to the same value for
@@ -288,7 +300,10 @@ export class Multiselect {
       } finally {
         if (!inGroup) {
           Blockly.Events.setGroup(false);
+        } else {
+          Blockly.Events.setGroup(currentGroup);
         }
+        this.multiFieldUpdateGroupID = '';
       }
     }
   }

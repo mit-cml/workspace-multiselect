@@ -111,6 +111,7 @@ scope of its wrapped input function.
 
 - `Multiselect.init`: Initialize the plugin.
 - `Multiselect.dispose`: Dispose the plugin.
+- `Multiselect.multiFieldUpdateGroupID`: The event group id for multi-field updates.
 - `MultiselectBlockDragger`: The customized block dragger for multiple selection.
 - `blockSelectionWeakMap`: The WeakMap storing set of currently selected block ids by workspace svg.
 - `inMultipleSelectionModeWeakMap`: The WeakMap storing whether the plugin is in multiple selection mode by workspace svg.
