@@ -121,14 +121,16 @@ export class Multiselect {
    * @param {function} func The function to call.
    */
   withoutMultiFieldUpdates(func) {
-      const oldGroup = Blockly.Events.getGroup();
-      // Note that this depends on the fact that eventListener_ will ignore events with a group ID.
+    let oldGroup = Blockly.Events.getGroup();
+    // Note that this depends on the fact that eventListener_ will ignore events with a group ID.
+    if (!oldGroup) {
       Blockly.Events.setGroup("ignoreMultiFieldUpdates");
-      try {
-          func();
-      } finally {
-        Blockly.Events.setGroup(oldGroup);
-      }
+    }
+    try {
+        func();
+    } finally {
+      Blockly.Events.setGroup(oldGroup);
+    }
   }
 
   /**
