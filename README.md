@@ -96,10 +96,20 @@ multiselectPlugin.init(options);
 ## Known issues
 - [ ] Currently, we rely on DragSelect to know which block gets selected. DragSelect seems to listen to the "blocks". However, it actually works by listening to the SVG path element, which is always a rectangle with some transparent parts forming a block. For irregularly shaped blocks, if you click on the transparent area that within the SVG rectangle, it will still get selected. (a mitigation has already been introduced in v0.1.4, but a proper fix should be that Blockly implements some kind of API, so that we can know for sure where the block actually locates.)
 
+### Note on multi-field updates
+When the multiFieldUpdate option is enable, the plugin will automatically update the fields of all selected blocks with the
+same type. This may cause issues when you have multiple field on a block and one field is dependent on another. 
+For example, if you have a block with a dropdown field and another, dependent, field which is programmatically updated 
+(e.g. in the dropdown field's validator) based on the value of the dropdown field, then the
+ multi-field update may interfere with the programmatic update or break the redo/undo.  In this situation, you only want to multi-field
+update to update the dropdown fields. To do this, you can set the event group id for your dependent field to the one we use
+for multi-field updates, which is the value of the `Multiselect.multiFieldUpdateGroupID` string.
+
 ## API
 
 - `Multiselect.init`: Initialize the plugin.
 - `Multiselect.dispose`: Dispose the plugin.
+- `Multiselect.multiFieldUpdateGroupID`: The event group id for multi-field updates.
 - `MultiselectBlockDragger`: The customized block dragger for multiple selection.
 - `blockSelectionWeakMap`: The WeakMap storing set of currently selected block ids by workspace svg.
 - `inMultipleSelectionModeWeakMap`: The WeakMap storing whether the plugin is in multiple selection mode by workspace svg.
