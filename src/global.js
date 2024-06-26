@@ -10,6 +10,9 @@
 
 import * as Blockly from 'blockly/core';
 
+/**
+ * Weakmap for storing multidraggable objects for a given workspace (as a key).
+ */
 export const multiDraggableWeakMap = new WeakMap();
 
 /**

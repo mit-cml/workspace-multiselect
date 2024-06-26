@@ -127,7 +127,7 @@ export class MultiselectControls {
       this.disabled_img = options.disabledIcon;
     }
 
-    // SET containing currently select blockSvg ids.
+    // Set containing currently select blockSvg ids.
     this.blockSelection = blockSelectionWeakMap.get(workspace);
 
     // MultiDraggable object that holds subdraggables
@@ -135,8 +135,6 @@ export class MultiselectControls {
 
     // Original settings for setting the start block
     this.origSetStartBlock = Blockly.Gesture.prototype.setStartBlock;
-
-    // console.log(this.multiDraggable);
   }
 
   /**
@@ -290,24 +288,13 @@ export class MultiselectControls {
     // There is a block and it is deletable/movable
     if (block &&
         (block.isDeletable() || block.isMovable())) {
-      // console.log("block in updateBlocks", block);
-      // console.log("workspace", this.workspace_);
-      // console.log("blockselection: ", this.blockSelection);
       if (this.blockSelection.has(block.id)) {
-        console.log("updateBlocks DELETE")
         this.blockSelection.delete(block.id);
         this.multiDraggable.removeSubDraggable(block)
         block.pathObject.updateSelected(false);
       } else {
         this.blockSelection.add(block.id);
         this.multiDraggable.addSubDraggable(block);
-        console.log("updateBlocks ADD")
-        // console.log("multidraggable in updateblocks", this.multiDraggable);
-        // console.log("updateBlocks", block);
-        // Currently MultiselectDraggable does not have a pathObject
-        // this.multiDraggable.subDraggables.forEach((subDraggable) => {
-        //   subDraggable.pathObject.updateSelected(true);
-        // })
         block.pathObject.updateSelected(true);
         block.bringToFront();
       }
@@ -320,52 +307,32 @@ export class MultiselectControls {
    * Update the multiple selection blocks status.
    */
   updateMultiselect() {
-    console.log("multipleselectmode: ", inMultipleSelectionModeWeakMap.get(this.workspace_))
     // Not in multiselect mode
     if (!inMultipleSelectionModeWeakMap.get(this.workspace_)) {
-      console.log("NOT in mode, Blockly.getSelected()", Blockly.getSelected())
-      console.log("NOT in mode, multidraggable.sub", this.multiDraggable.subDraggables)
-      console.log("NOT in mode, this.blockSelection", this.blockSelection)
       if (this.workspace_.id !== Blockly.getMainWorkspace().id) {
         this.clearMultiselect();
       }
-      console.log("IS WORKSPACE THE MAIN WORKSPACE", this.workspace_.id === Blockly.getMainWorkspace().id)
 
       // If unselecting/clicking on workspace or different workspace, clear selected set
       if (!Blockly.getSelected()) {
         this.clearMultiselect();
-        Blockly.common.setSelected(null)
-        console.log("not in mode, unselect")
+        Blockly.common.setSelected(null);
       }
       // Blockly.getSelected() is not a multiselectDraggable and selected block is not in blockSelection
       else if (Blockly.getSelected() && !(Blockly.getSelected() instanceof MultiselectDraggable)) {
         this.clearMultiselect();
         this.blockSelection.add(Blockly.getSelected().id);
-        console.log("not in mode, selected is not multi")
       }
     }
     // In multiselect mode
     else {
-      console.log("in mode, Blockly.getSelected()", Blockly.getSelected())
-      console.log("in mode, multidraggable.sub", this.multiDraggable.subDraggables)
-      console.log("in mode, this.blockSelection", this.blockSelection)
-
-      // If unselecting/clicking on workspace or different workspace, clear selected set
-      if ((!Blockly.getSelected()) || this.workspace_.id !== Blockly.getMainWorkspace().id) {
-        // this.clearMultiselect();
-        console.log("in mode, unselect")
-      }
-
-
-      // Set selected to multidraggable if blockSelection not empty
+      // Set selected to multiDraggable if blockSelection not empty
       if (this.blockSelection.size && !(Blockly.getSelected() instanceof MultiselectDraggable)) {
-        Blockly.common.setSelected(this.multiDraggable)
-        console.log("2222222 setting sel to multidraggable")
+        Blockly.common.setSelected(this.multiDraggable);
       }
 
       else {
-        Blockly.common.setSelected(null)
-        console.log("setting sel to null")
+        Blockly.common.setSelected(null);
       }
     }
 
@@ -376,8 +343,6 @@ export class MultiselectControls {
         element.pathObject.updateSelected(true);
       }
     });
-    console.log("blockselection: ", this.blockSelection);
-    console.log("blockly get selected unselect", Blockly.common.getSelected());
   }
 
   /**
@@ -513,9 +478,7 @@ export class MultiselectControls {
     if (!this.blockSelection.size && Blockly.getSelected()) {
       Blockly.common.setSelected(null);
     } else if (this.blockSelection.size && !Blockly.getSelected()) {
-      // console.log("setting selected to multidrag");
-      Blockly.common.setSelected(this.multiDraggable)
-      // console.log("setting selected to multidrag test", Blockly.getSelected());
+      Blockly.common.setSelected(this.multiDraggable);
     }
     if (this.hasDisableWorkspaceDrag_) {
       this.workspace_.options.moveOptions.drag = true;

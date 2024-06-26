@@ -21,7 +21,6 @@ import {MultiselectDraggable} from "./multiselect_draggable";
  * @param {boolean} useCopyPasteCrossTab Whether or not to use
  *     cross tab copy paste.
  */
-// Updated
 const registerCopy = function(useCopyPasteCrossTab) {
   const id = 'blockCopyToStorage';
   const copyOptions = {
@@ -141,7 +140,6 @@ const registerCopy = function(useCopyPasteCrossTab) {
  * Modification for context menu 'Duplicate' to be available for
  * multiple blocks.
  */
-// Updated
 const registerDuplicate = function() {
   const duplicateOption = {
     displayText: function(scope) {
@@ -195,6 +193,8 @@ const registerDuplicate = function() {
       const blockSelection = blockSelectionWeakMap.get(workspace);
       Blockly.Events.setGroup(true);
 
+      // We want to update the blockSelection and the multiDraggable object to
+      // remove subdraggables from the current selection prior to duplicating.
       if (blockSelection.size) {
         blockSelection.forEach(function(id) {
           const block = workspace.getBlockById(id);
@@ -239,7 +239,6 @@ const registerDuplicate = function() {
 /**
  * Modification for context menu 'Comment' to be available for multiple blocks.
  */
-// Works for updated multiselect_draggable (no need update)
 const registerComment = function() {
   const commentOption = {
     displayText: function(scope) {
@@ -323,7 +322,6 @@ const registerComment = function() {
 /**
  * Modification for context menu 'Inline' to be available for multiple blocks.
  */
-// Updated
 const registerInline = function() {
   const inlineOption = {
     displayText: function(scope) {
@@ -408,7 +406,6 @@ const registerInline = function() {
  * Modification for context menu 'Collapse/Expand' to be available for
  * multiple blocks.
  */
-// Works for updated multiselect_draggable
 const registerCollapseExpandBlock = function() {
   const collapseExpandOption = {
     displayText: function(scope) {
@@ -488,7 +485,6 @@ const registerCollapseExpandBlock = function() {
 /**
  * Modification for context menu 'Disable' to be available for multiple blocks.
  */
-// Works for updated multiselect_draggable
 const registerDisable = function() {
   const disableOption = {
     displayText: function(scope) {
@@ -570,7 +566,6 @@ const registerDisable = function() {
 /**
  * Modification for context menu 'Delete' to be available for multiple blocks.
  */
-// Updated
 const registerDelete = function() {
   const deleteOption = {
     displayText: function(scope) {
@@ -649,7 +644,6 @@ const registerDelete = function() {
  * Paste multiple selected blocks from clipboard.
  * @param {boolean} useCopyPasteCrossTab Whether to use cross tab copy paste.
  */
-// Updated
 const registerPaste = function(useCopyPasteCrossTab) {
   const id = 'blockPasteFromStorage';
   const pasteOption = {
@@ -679,6 +673,8 @@ const registerPaste = function(useCopyPasteCrossTab) {
       Blockly.Events.setGroup(true);
       const multiDraggable = multiDraggableWeakMap.get(workspace);
 
+      // Update the blockSelection and multiDraggable object to remove current selection
+      // prior to pasting.
       if (blockSelection.size) {
         blockSelection.forEach(function(id) {
           const block = workspace.getBlockById(id);
@@ -698,7 +694,9 @@ const registerPaste = function(useCopyPasteCrossTab) {
         // Pasting always pastes to the main workspace, even if the copy
         // started in a flyout workspace.
         const data = JSON.parse(stringData);
-        // Set unique id for data
+
+        // Set unique id for data to prevent bug where blocks on multiple workspaces are
+        // highlighted.
         data.blockState.id = Blockly.utils.idGenerator.genUid();
 
         if (data.source) {
@@ -737,7 +735,6 @@ const registerPaste = function(useCopyPasteCrossTab) {
 /**
  * Add context menu 'Select all Blocks' for workspace.
  */
-// Updated
 const registerSelectAll = function() {
   const id = 'workspaceSelectAll';
   const selectAllOption = {
@@ -756,6 +753,9 @@ const registerSelectAll = function() {
     callback: function(scope) {
       const blockSelection = blockSelectionWeakMap.get(scope.workspace);
       const multiDraggable = multiDraggableWeakMap.get(scope.workspace);
+
+      // Make sure that there is nothing in the multiDraggable (clearing) prior to
+      // selecting all blocks in workspace.
       if (Blockly.getSelected()) {
         Blockly.getSelected().pathObject.updateSelected(false);
         Blockly.common.setSelected(null);
@@ -790,7 +790,6 @@ const registerSelectAll = function() {
  * @param {boolean} disablePreconditionContainsCheck Option for
  *                  the back pack plugin, default is false.
  */
-// Works for updated multiselect_draggable
 const updateToMultiCopyToBackpack =
     function(disablePreconditionContainsCheck = false) {
       const id = 'copy_to_backpack';

@@ -80,7 +80,7 @@ const registerShortcutDelete = function() {
           const block = workspace.getBlockById(id);
           apply(block);
         });
-      };
+      }
 
       Blockly.Events.setGroup(false);
       return true;
@@ -317,6 +317,8 @@ const registerPaste = function(useCopyPasteCrossTab) {
       Blockly.Events.setGroup(true);
       const multiDraggable = multiDraggableWeakMap.get(workspace);
 
+      // Update the blockSelection and multiDraggable object to remove current selection
+      // prior to pasting.
       if (blockSelection.size) {
         blockSelection.forEach(function(id) {
           const block = workspace.getBlockById(id);
@@ -336,7 +338,8 @@ const registerPaste = function(useCopyPasteCrossTab) {
         const data = JSON.parse(stringData);
         let targetWorkspace = workspace;
 
-        // Set unique id for data
+        // Set unique id for data to prevent bug where blocks on multiple workspaces are
+        // highlighted.
         data.blockState.id = Blockly.utils.idGenerator.genUid();
 
         if (data.source) {
@@ -401,6 +404,9 @@ const registerSelectAll = function() {
       e.preventDefault();
       const blockSelection = blockSelectionWeakMap.get(workspace);
       const multiDraggable = multiDraggableWeakMap.get(workspace);
+
+      // Make sure that there is nothing in the multiDraggable (clearing) prior to
+      // selecting all blocks in workspace.
       if (Blockly.getSelected()) {
           Blockly.getSelected().pathObject.updateSelected(false);
           Blockly.common.setSelected(null);

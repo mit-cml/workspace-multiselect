@@ -9,6 +9,5 @@
  */
 
 export {Multiselect} from './multiselect';
-export {MultiselectBlockDragger} from './multiselect_block_dragger';
 export {MultiselectDraggable} from './multiselect_draggable';
 export {blockSelectionWeakMap, inMultipleSelectionModeWeakMap} from './global';

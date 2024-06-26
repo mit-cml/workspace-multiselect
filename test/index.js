@@ -63,7 +63,6 @@ document.addEventListener('DOMContentLoaded', function() {
     zoom: {
       wheel: true,
     },
-    // baseBlockDragger: ScrollBlockDragger,
     plugins: {
       'blockDragger': ScrollBlockDragger,
       'metricsManager': ScrollMetricsManager,
