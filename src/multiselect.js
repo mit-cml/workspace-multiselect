@@ -33,7 +33,6 @@ export class Multiselect {
     this.blockSelection_ = blockSelectionWeakMap.get(this.workspace_);
     inMultipleSelectionModeWeakMap.set(this.workspace_, false);
     BaseBlockDraggerWeakMap.set(this.workspace_, Blockly.BlockDragger);
-    this.fieldIntermediateChangeGroupIds_ = new Set();
     this.useCopyPasteCrossTab_ = true;
     this.useCopyPasteMenu_ = true;
     this.multiFieldUpdate_ = true;
@@ -259,23 +258,14 @@ export class Multiselect {
    * @private
    */
   eventListener_(e) {
-    if (e.type === Blockly.Events.BLOCK_FIELD_INTERMEDIATE_CHANGE) {
-      // Keep track of the group ids for intermediate changes.
-      this.fieldIntermediateChangeGroupIds_.add(e.group);
     // on Block field changed
-    } else if (this.multiFieldUpdate_ &&
-        e.type === Blockly.Events.CHANGE &&
-        e.element === 'field' && e.recordUndo &&
+    if (this.multiFieldUpdate_ &&
         this.blockSelection_.has(e.blockId) &&
-        (e.group === '' ||
-          this.fieldIntermediateChangeGroupIds_.has(e.group))) {
+        (e.type === Blockly.Events.CHANGE &&
+        e.element === 'field' && e.recordUndo && e.group === '' ||
+        e.type === Blockly.Events.BLOCK_FIELD_INTERMEDIATE_CHANGE)) {
       const currentGroup = Blockly.Events.getGroup();
-      if (e.group !== '' && e.group !== currentGroup) {
-        // Intermediate changes are finished, remove the group id.
-        this.fieldIntermediateChangeGroupIds_.delete(e.group);
-      }
-      const inGroup = !!currentGroup;
-      if (!inGroup) {
+      if (!currentGroup) {
         Blockly.Events.setGroup(true);
         e.group = Blockly.Events.getGroup();
       }
@@ -298,11 +288,7 @@ export class Multiselect {
         // https://github.com/mit-cml/workspace-multiselect/issues/33
         console.warn(err);
       } finally {
-        if (!inGroup) {
-          Blockly.Events.setGroup(false);
-        } else {
-          Blockly.Events.setGroup(currentGroup);
-        }
+        Blockly.Events.setGroup(currentGroup);
       }
     }
   }
