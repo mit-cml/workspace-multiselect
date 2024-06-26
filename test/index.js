@@ -63,9 +63,9 @@ document.addEventListener('DOMContentLoaded', function() {
     zoom: {
       wheel: true,
     },
-    baseBlockDragger: ScrollBlockDragger,
+    // baseBlockDragger: ScrollBlockDragger,
     plugins: {
-      // 'blockDragger': MultiselectBlockDragger,
+      'blockDragger': ScrollBlockDragger,
       'metricsManager': ScrollMetricsManager,
     },
   };

@@ -698,6 +698,9 @@ const registerPaste = function(useCopyPasteCrossTab) {
         // Pasting always pastes to the main workspace, even if the copy
         // started in a flyout workspace.
         const data = JSON.parse(stringData);
+        // Set unique id for data
+        data.blockState.id = Blockly.utils.idGenerator.genUid();
+
         if (data.source) {
           workspace = data.source;
         }
@@ -718,6 +721,7 @@ const registerPaste = function(useCopyPasteCrossTab) {
             blockList[connectionDB[1]].previousConnection);
       });
       Blockly.Events.setGroup(false);
+      Blockly.common.setSelected(multiDraggable);
       return true;
     },
     scopeType: Blockly.ContextMenuRegistry.ScopeType.WORKSPACE,

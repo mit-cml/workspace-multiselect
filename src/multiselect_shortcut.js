@@ -335,6 +335,10 @@ const registerPaste = function(useCopyPasteCrossTab) {
       copyData.forEach(function(stringData) {
         const data = JSON.parse(stringData);
         let targetWorkspace = workspace;
+
+        // Set unique id for data
+        data.blockState.id = Blockly.utils.idGenerator.genUid();
+
         if (data.source) {
           targetWorkspace = data.source;
         }
@@ -347,7 +351,7 @@ const registerPaste = function(useCopyPasteCrossTab) {
           blockList.push(block);
           block.pathObject.updateSelected(true);
           blockSelectionWeakMap.get(block.workspace).add(block.id);
-          multiDraggable.addSubDraggable(block);
+          multiDraggableWeakMap.get(workspace).addSubDraggable(block);
         }
       });
       connectionDBList.forEach(function(connectionDB) {
@@ -355,6 +359,7 @@ const registerPaste = function(useCopyPasteCrossTab) {
             blockList[connectionDB[1]].previousConnection);
       });
       Blockly.Events.setGroup(false);
+      Blockly.common.setSelected(multiDraggable);
       return true;
     },
   };

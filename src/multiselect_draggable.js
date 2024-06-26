@@ -216,17 +216,22 @@ export class MultiselectDraggable {
         }
     }
 
-    setDeleteStyle() {
-        // Visually indicate that the draggable is about to be deleted.
-    }
+    getBoundingRectangle() {
+        if (this.subDraggables.size === 0) {
+            return new Blockly.utils.Rect(0, 0, 0, 0);
+        }
 
-    // ICopyable methods
-    // toCopyData() {
-    //     return {
-    //         // This string matches the string used to register the paster.
-    //         paster: 'MY_PASTER',
-    //         state: this.myState,
-    //     };
-    // }
+        let top = Infinity, bottom = -Infinity, left = Infinity, right = -Infinity;
+
+        this.subDraggables.forEach((coord, subDraggable) => {
+            const boundingBox = subDraggable.getBoundingRectangle();
+            top = Math.min(top, boundingBox.top);
+            bottom = Math.max(bottom, boundingBox.bottom);
+            left = Math.min(left, boundingBox.left);
+            right = Math.max(right, boundingBox.right);
+        });
+
+        return new Blockly.utils.Rect(top, bottom, left, right);
+    }
 
   }
