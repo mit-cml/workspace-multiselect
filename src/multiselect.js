@@ -295,6 +295,7 @@ export class Multiselect {
    * @private
    */
   eventListener_(e) {
+    console.log(e)
     if (e.type === Blockly.Events.BLOCK_FIELD_INTERMEDIATE_CHANGE) {
       // Keep track of the group ids for intermediate changes.
       this.fieldIntermediateChangeGroupIds_.add(e.group);
