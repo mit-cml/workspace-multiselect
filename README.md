@@ -38,6 +38,7 @@ options = {
   bumpNeighbours: false,
 
   // Keep the fields of multiple selected same-type blocks with the same value
+  // See note below.  
   multiFieldUpdate: true,
 
   // Auto focus the workspace when the mouse enters.
@@ -98,21 +99,22 @@ multiselectPlugin.init(options);
 
 ### Note on multi-field updates
 When the multiFieldUpdate option is enable, the plugin will automatically update the fields of all selected blocks with the
-same type. This may cause issues when you have multiple field on a block and one field is dependent on another. 
+same type. This can cause issues when you have multiple field on a block and one field is dependent on another. 
 For example, if you have a block with a dropdown field and another, dependent, field which is programmatically updated 
 (e.g. in the dropdown field's validator) based on the value of the dropdown field, then the
- multi-field update may interfere with the programmatic update or break the redo/undo.  In this situation, you only want to multi-field
-update to update the dropdown fields. To do this, you can set the event group id for your dependent field to the one we use
-for multi-field updates, which is the value of the `Multiselect.multiFieldUpdateGroupID` string.
+ multi-field update may interfere with the programmatic update.  In this situation, you only want to multi-field
+update to update the dropdown fields. To do this, you can use the `Multiselect.withoutMultiFieldUpdates` wrapper function
+within the function which updates the dependent field.  It allows you to temporarily turn off the multi-field update within the
+scope of its wrapped input function.
 
 ## API
 
 - `Multiselect.init`: Initialize the plugin.
 - `Multiselect.dispose`: Dispose the plugin.
-- `Multiselect.multiFieldUpdateGroupID`: The event group id for multi-field updates.
 - `MultiselectBlockDragger`: The customized block dragger for multiple selection.
 - `blockSelectionWeakMap`: The WeakMap storing set of currently selected block ids by workspace svg.
 - `inMultipleSelectionModeWeakMap`: The WeakMap storing whether the plugin is in multiple selection mode by workspace svg.
+- `Multiselect.withoutMultiFieldUpdates`: A wrapper function to ignore multi-field updates.
 
 ## Credit
 - [DragSelect](https://github.com/ThibaultJanBeyer/DragSelect): This plugin uses DragSelect to realize the "drag a rectangle to select multiple blocks" feature. The patching PR [#143](https://github.com/ThibaultJanBeyer/DragSelect/pull/143) and [#165](https://github.com/ThibaultJanBeyer/DragSelect/pull/165) made all this possible, and these PRs are included in [v2.6.0](https://github.com/ThibaultJanBeyer/DragSelect/releases/tag/v2.6.0).
