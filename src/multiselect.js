@@ -25,7 +25,7 @@ import {MultiselectDraggable} from "./multiselect_draggable";
  */
 export class Multiselect {
   /**
-   * Initalize the class data structure.
+   * Initialize the class data structure.
    * @param {!Blockly.WorkspaceSvg} workspace The workspace to sit in.
    */
   constructor(workspace) {
@@ -295,9 +295,10 @@ export class Multiselect {
   eventListener_(e) {
     // on Block field changed
     if (this.multiFieldUpdate_ &&
-        e.type === Blockly.Events.CHANGE &&
+        e.type === Blockly.Events.BLOCK_CHANGE &&
         e.element === 'field' && e.recordUndo &&
         this.blockSelection_.has(e.blockId)) {
+      console.log("CHANGING FIELD!!!!")
       const inGroup = !!e.group;
       if (!inGroup) {
         Blockly.Events.setGroup(true);

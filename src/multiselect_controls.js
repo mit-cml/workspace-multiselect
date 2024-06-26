@@ -117,12 +117,7 @@ export class MultiselectControls {
      */
     this.hasDisableWorkspaceDrag_ = false;
 
-    /**
-     * Store the block that just got unselected.
-     * @type {!Blockly.BlockSvg}
-     * @private
-     */
-    this.justUnselectedBlock_ = null;
+
 
     if (options && options.enabledIcon) {
       this.enabled_img = options.enabledIcon;
@@ -138,12 +133,10 @@ export class MultiselectControls {
     // MultiDraggable object that holds subdraggables
     this.multiDraggable = multiDraggableWeakMap.get(workspace);
 
-    this.lastSelectedBlock_ = null;
-
+    // Original settings for setting the start block
     this.origSetStartBlock = Blockly.Gesture.prototype.setStartBlock;
 
-    console.log(this.multiDraggable);
-
+    // console.log(this.multiDraggable);
   }
 
   /**
@@ -304,16 +297,12 @@ export class MultiselectControls {
         console.log("updateBlocks DELETE")
         this.blockSelection.delete(block.id);
         this.multiDraggable.removeSubDraggable(block)
-        this.justUnselectedBlock_ = block;
-        this.lastSelectedBlock_ = null;
         block.pathObject.updateSelected(false);
       } else {
         this.blockSelection.add(block.id);
         this.multiDraggable.addSubDraggable(block);
         console.log("updateBlocks ADD")
         // console.log("multidraggable in updateblocks", this.multiDraggable);
-        this.justUnselectedBlock_ = null;
-        this.lastSelectedBlock_ = block;
         // console.log("updateBlocks", block);
         // Currently MultiselectDraggable does not have a pathObject
         // this.multiDraggable.subDraggables.forEach((subDraggable) => {
@@ -337,7 +326,6 @@ export class MultiselectControls {
       console.log("NOT in mode, Blockly.getSelected()", Blockly.getSelected())
       console.log("NOT in mode, multidraggable.sub", this.multiDraggable.subDraggables)
       console.log("NOT in mode, this.blockSelection", this.blockSelection)
-      console.log("NOT in mode, lastselectedblock", this.lastSelectedBlock_)
       // If unselecting/clicking on workspace or different workspace, clear selected set
       if (!Blockly.getSelected() || this.workspace_.id !== Blockly.getMainWorkspace().id) {
         this.clearMultiselect();
@@ -356,7 +344,6 @@ export class MultiselectControls {
       console.log("in mode, Blockly.getSelected()", Blockly.getSelected())
       console.log("in mode, multidraggable.sub", this.multiDraggable.subDraggables)
       console.log("in mode, this.blockSelection", this.blockSelection)
-      console.log("in mode, lastselectedblock", this.lastSelectedBlock_)
 
       // If unselecting/clicking on workspace or different workspace, clear selected set
       if ((!Blockly.getSelected()) || this.workspace_.id !== Blockly.getMainWorkspace().id) {

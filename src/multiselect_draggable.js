@@ -8,7 +8,7 @@
  * @fileoverview Multiple selection draggable class.
  */
 import * as Blockly from 'blockly/core';
-import {inMultipleSelectionModeWeakMap} from "./global";
+import {hasSelectedParent, inMultipleSelectionModeWeakMap} from "./global";
 
 
 /**
@@ -22,8 +22,9 @@ export class MultiselectDraggable {
         this.workspace = workspace;
         this.id = Blockly.utils.idGenerator.genUid();
         this.subDraggables = new Map();
+        this.topSubDraggables = new Array();
         this.loc = new Blockly.utils.Coordinate(0,0);
-        this.savedConnections = new Map();
+        this.connectionDBList = new Array();
     }
 
     clearAll() {
@@ -101,27 +102,48 @@ export class MultiselectDraggable {
 
     startDrag(e) {
         console.log("startingDrag, multidrag coords: ", this.loc)
+        this.topSubDraggables = [];
       for (const draggable of this.subDraggables) {
-          console.log("startingDrag of subdraggables: ", draggable[0])
-          console.log("connections", draggable[0].getConnections_(false))
-          const connections = draggable[0].getConnections_(false);
-          connections.forEach(connection => {
-              console.log(`Block ${draggable[0].id} connection status: `, connection.isConnected());
-              console.log("connection type: ", connection.type);
-          });
-          console.log("connection candidate", draggable[0].dragStrategy.connectionCandidate)
+          if (!(hasSelectedParent(draggable[0], true))) {
+              this.topSubDraggables.push(draggable[0])
+          }
+          // console.log("startingDrag of subdraggables: ", draggable[0])
+          // console.log("connections", draggable[0].getConnections_(false))
+          // const connections = draggable[0].getConnections_(false);
+          // connections.forEach(connection => {
+          //     console.log(`Block ${draggable[0].id} connection status: `, connection.isConnected());
+          //     console.log("connection type: ", connection.type);
+          // });
+          // console.log("connection candidate", draggable[0].dragStrategy.connectionCandidate)
 
-          const connectionInfo = connections.map(connection => {
-              return {
-                  connection: connection,
-                  targetConnection: connection.targetConnection,
-              };
-          });
-          this.savedConnections.set(draggable[0], connectionInfo);
+          // const connectionInfo = connections.map(connection => {
+          //     return {
+          //         connection: connection,
+          //         targetConnection: connection.targetConnection,
+          //     };
+          // });
+          // this.savedConnections.set(draggable[0], connectionInfo);
+
+          const parentBlock = draggable[0].getParent();
+          console.log("original block,", draggable[0])
+          if (parentBlock) {
+              console.log("parentblock's next block", parentBlock.getNextBlock())
+          }
+          console.log("parent block, ", parentBlock)
+          console.log(this.subDraggables.keys())
+          console.log("parent block in subdragables: ", this.subDraggables.has(parentBlock))
+          if (parentBlock && this.subDraggables.has(parentBlock) && parentBlock.getNextBlock() === draggable[0]) {
+              console.log("ADDING TO DB LIST!!!!!!!!!!!")
+              this.connectionDBList.push([parentBlock.nextConnection, draggable[0].previousConnection])
+          }
 
 
           this.subDraggables.set(draggable[0], draggable[0].getRelativeToSurfaceXY())
-          draggable[0].startDrag()
+          // draggable[0].startDrag()
+      }
+
+      for (const draggable of this.topSubDraggables) {
+          draggable.startDrag();
       }
     }
 
@@ -129,17 +151,27 @@ export class MultiselectDraggable {
         console.log("drag -> newLoc coords", newLoc)
       for (const draggable of this.subDraggables) {
           console.log(draggable)
-          draggable[0].drag(Blockly.utils.Coordinate.sum(newLoc,this.subDraggables.get(draggable[0])), e);
+          // draggable[0].drag(Blockly.utils.Coordinate.sum(newLoc,this.subDraggables.get(draggable[0])), e);
           // draggable[0].drag((newLoc), e);
           // this.subDraggables.set(draggable[0], draggable[0].getRelativeToSurfaceXY())
+      }
+
+      for (const draggable of this.topSubDraggables) {
+          draggable.drag(Blockly.utils.Coordinate.sum(newLoc,this.subDraggables.get(draggable)), e);
       }
     }
 
     endDrag(e) {
         console.log("endDrag")
+        console.log("connectionDBList: ", this.connectionDBList)
         console.log("draggingConn: ", Blockly.common.draggingConnections)
+
+        for (const draggable of this.topSubDraggables) {
+            draggable.endDrag(e);
+        }
+
         for (const draggable of this.subDraggables) {
-            draggable[0].endDrag(e);
+            // draggable[0].endDrag(e);
             // console.log("connected?", draggable[0].previousConnection.isConnected())
             console.log("connections", draggable[0].getConnections_(false))
 
@@ -147,62 +179,13 @@ export class MultiselectDraggable {
             const delta = Blockly.utils.Coordinate.difference(draggable[0].getRelativeToSurfaceXY(), draggable[1])
             console.log("delta", delta)
 
-            // Update connection locations =============
-            const connections = draggable[0].getConnections_(true);
-            for (const connection of connections) {
-                connection.moveBy(delta.x, delta.y)
-                console.log("connection name and target: ", connection, connection.targetConnection)
-            }
-
-            // Attempt to reconnect ================
-            // THIS ONE WORKS BUT HAS ANOTHER GLITCH
-            // const savedConnections = this.savedConnections.get(draggable[0]) || [];
-            // for (const savedConnection of savedConnections) {
-            //     const { connection, targetConnection } = savedConnection;
-            //     if (targetConnection && connection && !connection.isConnected()) {
-            //         try {
-            //             connection.connect(targetConnection);
-            //         } catch (e) {
-            //             console.warn("Reconnection failed:", e);
-            //         }
-            //     }
-            // }
-
-            // for (const connection of connections) {
-            //
-            //     const neighbour = connection.closest(Blockly.config.connectingSnapRadius, delta);
-            //     console.log(neighbour)
-            //
-            //     if (neighbour && neighbour.connection) {
-            //           // Try to connect to the closest connection
-            //           connection.connect(neighbour.connection);
-            //     }
-            // }
-
-            // for (const draggable of this.subDraggables) {
-            //     const connections = draggable[0].getConnections_(true);
-            //     for (const connection of connections) {
-            //
-            //         const neighbour = connection.db.getNeighbours(connection, 28);
-            //         console.log(neighbour)
-            //
-            //         if (neighbour[0] && neighbour[0].connection) {
-            //             // Try to connect to the closest connection
-            //             connection.connect(neighbour[0].connection);
-            //         }
-            //     }
-            // }
-
-            // Check connection status ==============
-            connections.forEach(connection => {
-                  console.log(`Block ${draggable[0].id} connection status: `, connection.isConnected());
-                  console.log("connection type: ", connection.type);
-            });
-            console.log("connection candidate", draggable[0].dragStrategy.connectionCandidate)
-
             // Update location of subdraggables ============
             draggable[1] = draggable[0].getRelativeToSurfaceXY();
           }
+        this.connectionDBList.forEach(function(connectionDB) {
+            connectionDB[0].connect(connectionDB[1]);
+        })
+        this.connectionDBList = []
     }
 
     revertDrag() {
