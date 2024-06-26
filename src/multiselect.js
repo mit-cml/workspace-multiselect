@@ -33,7 +33,6 @@ export class Multiselect {
     this.blockSelection_ = blockSelectionWeakMap.get(this.workspace_);
     inMultipleSelectionModeWeakMap.set(this.workspace_, false);
     BaseBlockDraggerWeakMap.set(this.workspace_, Blockly.BlockDragger);
-    this.multiFieldUpdateGroupID = '';
     this.fieldIntermediateChangeGroupIds_ = new Set();
     this.useCopyPasteCrossTab_ = true;
     this.useCopyPasteMenu_ = true;
@@ -280,7 +279,6 @@ export class Multiselect {
         Blockly.Events.setGroup(true);
         e.group = Blockly.Events.getGroup();
       }
-      this.multiFieldUpdateGroupID = e.group;
       try {
         const blockType = this.workspace_.getBlockById(e.blockId).type;
         // Update the fields to the same value for
@@ -305,7 +303,6 @@ export class Multiselect {
         } else {
           Blockly.Events.setGroup(currentGroup);
         }
-        this.multiFieldUpdateGroupID = '';
       }
     }
   }
