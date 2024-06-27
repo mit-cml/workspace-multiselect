@@ -38,8 +38,6 @@ export class Multiselect {
     this.blockSelection_ = blockSelectionWeakMap.get(this.workspace_);
     inMultipleSelectionModeWeakMap.set(this.workspace_, false);
     BaseBlockDraggerWeakMap.set(this.workspace_, Blockly.BlockDragger);
-    this.multiFieldUpdateGroupID = '';
-    this.fieldIntermediateChangeGroupIds_ = new Set();
     this.useCopyPasteCrossTab_ = true;
     this.useCopyPasteMenu_ = true;
     this.multiFieldUpdate_ = true;
@@ -118,6 +116,24 @@ export class Multiselect {
     if (!options.bumpNeighbours) {
       this.origBumpNeighbours = Blockly.BlockSvg.prototype.bumpNeighbours;
       Blockly.BlockSvg.prototype.bumpNeighbours = function() {};
+    }
+  }
+
+  /**
+   * Ignore multi-field updates within the given function.
+   * @param {Function} func The function to call.
+   */
+  static withoutMultiFieldUpdates(func) {
+    const oldGroup = Blockly.Events.getGroup();
+    // Note that this depends on the fact that
+    // eventListener_ will ignore events with a group ID.
+    if (!oldGroup) {
+      Blockly.Events.setGroup(true);
+    }
+    try {
+      func();
+    } finally {
+      Blockly.Events.setGroup(oldGroup);
     }
   }
 
