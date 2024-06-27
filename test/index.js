@@ -9,9 +9,8 @@
  */
 
 import * as Blockly from 'blockly';
-import {toolboxCategories} from '@blockly/dev-tools';
-import {Multiselect, MultiselectBlockDragger} from '../src/index';
-import {ScrollOptions, ScrollBlockDragger, ScrollMetricsManager} from '@blockly/plugin-scroll-options';
+import {toolboxCategories, createPlayground} from '@blockly/dev-tools';
+import {Multiselect} from '../src/index';
 import {Backpack} from '@blockly/workspace-backpack';
 
 /**
@@ -23,10 +22,7 @@ import {Backpack} from '@blockly/workspace-backpack';
 function createWorkspace(blocklyDiv, options) {
   const workspace = Blockly.inject(blocklyDiv, options);
 
-  // Initialize plugin.
-  const plugin = new ScrollOptions(workspace);
-  plugin.init();
-
+  // Initialize backpack plugin.
   const backpack = new Backpack(workspace);
   backpack.init();
 
@@ -41,6 +37,7 @@ document.addEventListener('DOMContentLoaded', function() {
     toolbox: toolboxCategories,
     useDoubleClick: true,
     bumpNeighbours: false,
+    multiFieldUpdate: true,
     multiselectIcon: {
       hideIcon: false,
       weight: 3,
@@ -64,12 +61,8 @@ document.addEventListener('DOMContentLoaded', function() {
       wheel: true,
     },
     plugins: {
-      'blockDragger': ScrollBlockDragger,
-      'metricsManager': ScrollMetricsManager,
     },
   };
-  createWorkspace(document.getElementById('primaryDiv'),
-      defaultOptions);
-  createWorkspace(document.getElementById('secondaryDiv'),
+  createPlayground(document.getElementById('root'), createWorkspace,
       defaultOptions);
 });

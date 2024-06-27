@@ -15,10 +15,10 @@ import * as Shortcut from './multiselect_shortcut';
 import {
   blockSelectionWeakMap, inMultipleSelectionModeWeakMap,
   hasSelectedParent, BaseBlockDraggerWeakMap,
-  multiselectControlsList, multiDraggableWeakMap
+  multiselectControlsList, multiDraggableWeakMap,
 } from './global';
 import {MultiselectControls} from './multiselect_controls';
-import {MultiselectDraggable} from "./multiselect_draggable";
+import {MultiselectDraggable} from './multiselect_draggable';
 
 /**
  * Class for using multiple select blocks on workspace.
@@ -33,7 +33,8 @@ export class Multiselect {
     this.origHandleWsStart_ = Blockly.Gesture.prototype.handleWsStart;
 
     blockSelectionWeakMap.set(this.workspace_, new Set());
-    multiDraggableWeakMap.set(this.workspace_, new MultiselectDraggable(this.workspace_));
+    multiDraggableWeakMap.set(this.workspace_,
+        new MultiselectDraggable(this.workspace_));
     this.blockSelection_ = blockSelectionWeakMap.get(this.workspace_);
     inMultipleSelectionModeWeakMap.set(this.workspace_, false);
     BaseBlockDraggerWeakMap.set(this.workspace_, Blockly.BlockDragger);
@@ -203,8 +204,10 @@ export class Multiselect {
 
           const selected = Blockly.getSelected();
 
-          // Case where selected is a block (not a multidraggable)
-          if (selected && selected instanceof Blockly.BlockSvg && preCondition(selected)) {
+          // Case where selected is a
+          // block (not a multidraggable)
+          if (selected && selected instanceof Blockly.BlockSvg &&
+              preCondition(selected)) {
             if (ws.doubleClickPid_) {
               clearTimeout(ws.doubleClickPid_);
               ws.doubleClickPid_ = undefined;
@@ -237,36 +240,38 @@ export class Multiselect {
                 ws.doubleClickPid_ = undefined;
               }, 500);
             }
-          }
-          // Case where the selected is a multidraggable instance
-          else if (selected && selected instanceof MultiselectDraggable) {
+          } else if (selected && selected instanceof MultiselectDraggable) {
+            // Case where the selected is a multidraggable instance
             if (ws.doubleClickPid_) {
               clearTimeout(ws.doubleClickPid_);
               ws.doubleClickPid_ = undefined;
               const blockSelection = blockSelectionWeakMap.get(ws);
               if (blockSelection.size) {
-                // Checking whether any of the blocks in the blockSelection is not collapsed
-                // If there are not collapsed blocks, set the maybeCollapse function to collapse
-                // those uncollapsed blocks. Otherwise, uncollapse all the collapsed blocks.
+                // Checking whether any of the blocks in
+                // the blockSelection is not collapsed.
+                // If there are not collapsed blocks,
+                // set the maybeCollapse function to collapse
+                // those uncollapsed blocks.
+                // Otherwise, uncollapse all the collapsed blocks.
                 let notCollapsed = 0;
                 blockSelection.forEach((id) => {
                   if (!ws.getBlockById(id).isCollapsed()) {
                     notCollapsed += 1;
                   }
-                })
+                });
                 let state = null;
                 if (notCollapsed > 0) {
                   state = true;
                 }
 
-                const maybeCollapse = function (block) {
+                const maybeCollapse = function(block) {
                   if (block && preCondition(block) &&
                       !hasSelectedParent(block)) {
                     block.setCollapsed(state);
                   }
                 };
                 Blockly.Events.setGroup(true);
-                blockSelection.forEach(function (id) {
+                blockSelection.forEach(function(id) {
                   const block = ws.getBlockById(id);
                   if (block) {
                     maybeCollapse(block);
@@ -295,28 +300,17 @@ export class Multiselect {
    * @private
    */
   eventListener_(e) {
-    console.log(e)
-    if (e.type === Blockly.Events.BLOCK_FIELD_INTERMEDIATE_CHANGE) {
-      // Keep track of the group ids for intermediate changes.
-      this.fieldIntermediateChangeGroupIds_.add(e.group);
     // on Block field changed
-    } else if (this.multiFieldUpdate_ &&
-        e.type === Blockly.Events.CHANGE &&
-        e.element === 'field' && e.recordUndo &&
+    if (this.multiFieldUpdate_ &&
         this.blockSelection_.has(e.blockId) &&
-        (e.group === '' ||
-          this.fieldIntermediateChangeGroupIds_.has(e.group))) {
+        (e.type === Blockly.Events.CHANGE &&
+            e.element === 'field' && e.recordUndo && e.group === '' ||
+            e.type === Blockly.Events.BLOCK_FIELD_INTERMEDIATE_CHANGE)) {
       const currentGroup = Blockly.Events.getGroup();
-      if (e.group !== '' && e.group !== currentGroup) {
-        // Intermediate changes are finished, remove the group id.
-        this.fieldIntermediateChangeGroupIds_.delete(e.group);
-      }
-      const inGroup = !!currentGroup;
-      if (!inGroup) {
+      if (!currentGroup) {
         Blockly.Events.setGroup(true);
         e.group = Blockly.Events.getGroup();
       }
-      this.multiFieldUpdateGroupID = e.group;
       try {
         const blockType = this.workspace_.getBlockById(e.blockId).type;
         // Update the fields to the same value for
@@ -336,12 +330,7 @@ export class Multiselect {
         // https://github.com/mit-cml/workspace-multiselect/issues/33
         console.warn(err);
       } finally {
-        if (!inGroup) {
-          Blockly.Events.setGroup(false);
-        } else {
-          Blockly.Events.setGroup(currentGroup);
-        }
-        this.multiFieldUpdateGroupID = '';
+        Blockly.Events.setGroup(currentGroup);
       }
     }
   }
