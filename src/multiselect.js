@@ -304,8 +304,8 @@ export class Multiselect {
     if (this.multiFieldUpdate_ &&
         this.blockSelection_.has(e.blockId) &&
         (e.type === Blockly.Events.CHANGE &&
-            e.element === 'field' && e.recordUndo && e.group === '' ||
-            e.type === Blockly.Events.BLOCK_FIELD_INTERMEDIATE_CHANGE)) {
+        e.element === 'field' && e.recordUndo && e.group === '' ||
+        e.type === Blockly.Events.BLOCK_FIELD_INTERMEDIATE_CHANGE)) {
       const currentGroup = Blockly.Events.getGroup();
       if (!currentGroup) {
         Blockly.Events.setGroup(true);
