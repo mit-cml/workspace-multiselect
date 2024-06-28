@@ -199,7 +199,7 @@ const registerDuplicate = function() {
           const block = workspace.getBlockById(id);
           if (block) {
             apply(block);
-            multiDraggable.removeSubDraggable(block);
+            multiDraggable.removeSubDraggable_(block);
           }
         });
         blockSelection.clear();
@@ -218,8 +218,10 @@ const registerDuplicate = function() {
               block.previousConnection]);
           }
           blockSelection.add(block.id);
-          multiDraggable.addSubDraggable(block);
-          block.pathObject.updateSelected(true);
+          multiDraggable.addSubDraggable_(block);
+          if (!block.isShadow()) {
+            block.pathObject.updateSelected(true);
+          }
         }
       }
       connectionDBList.forEach(function(connectionDB) {
@@ -676,9 +678,9 @@ const registerPaste = function(useCopyPasteCrossTab) {
       if (blockSelection.size) {
         blockSelection.forEach(function(id) {
           const block = workspace.getBlockById(id);
-          if (block) {
+          if (block && !block.isShadow()) {
             block.pathObject.updateSelected(false);
-            multiDraggable.removeSubDraggable(block);
+            multiDraggable.removeSubDraggable_(block);
           }
         });
         blockSelection.clear();
@@ -707,9 +709,11 @@ const registerPaste = function(useCopyPasteCrossTab) {
             workspace.isCapacityAvailable(data.typeCounts)) {
           const block = Blockly.clipboard.paste(data, workspace);
           blockList.push(block);
-          block.pathObject.updateSelected(true);
+          if (!block.isShadow()) {
+            block.pathObject.updateSelected(true);
+          }
           blockSelectionWeakMap.get(block.workspace).add(block.id);
-          multiDraggable.addSubDraggable(block);
+          multiDraggable.addSubDraggable_(block);
         }
       });
       connectionDBList.forEach(function(connectionDB) {
@@ -756,18 +760,20 @@ const registerSelectAll = function() {
       if (Blockly.getSelected()) {
         Blockly.getSelected().pathObject.updateSelected(false);
         Blockly.common.setSelected(null);
-        multiDraggable.clearAll();
+        multiDraggable.clearAll_();
       }
       const blockList = [];
-      scope.workspace.getAllBlocks().forEach(function(block) {
+      scope.workspace.getTopBlocks().forEach(function(block) {
         if (selectAllOption.check(block)) {
           blockList.push(block);
         }
       });
       blockList.forEach(function(block) {
         blockSelectionWeakMap.get(block.workspace).add(block.id);
-        block.pathObject.updateSelected(true);
-        multiDraggable.addSubDraggable(block);
+        if (!block.isShadow()) {
+          block.pathObject.updateSelected(true);
+        }
+        multiDraggable.addSubDraggable_(block);
       });
 
       Blockly.common.setSelected(multiDraggable);

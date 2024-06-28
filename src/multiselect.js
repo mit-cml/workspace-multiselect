@@ -236,16 +236,9 @@ export class Multiselect {
                   }
                 };
                 Blockly.Events.setGroup(true);
-                const blockSelection = blockSelectionWeakMap.get(ws);
-                if (selected && !blockSelection.size) {
+                if (selected) {
                   maybeCollapse(selected);
                 }
-                blockSelection.forEach(function(id) {
-                  const block = ws.getBlockById(id);
-                  if (block) {
-                    maybeCollapse(block);
-                  }
-                });
                 Blockly.Events.setGroup(false);
                 return;
               }
@@ -271,11 +264,12 @@ export class Multiselect {
                 // Otherwise, uncollapse all the collapsed blocks.
                 let notCollapsed = 0;
                 blockSelection.forEach((id) => {
-                  if (!ws.getBlockById(id).isCollapsed()) {
+                  if (!ws.getBlockById(id).isCollapsed() &&
+                  !hasSelectedParent(ws.getBlockById(id))) {
                     notCollapsed += 1;
                   }
                 });
-                let state = null;
+                let state = false;
                 if (notCollapsed > 0) {
                   state = true;
                 }

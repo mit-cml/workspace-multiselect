@@ -322,9 +322,9 @@ const registerPaste = function(useCopyPasteCrossTab) {
       if (blockSelection.size) {
         blockSelection.forEach(function(id) {
           const block = workspace.getBlockById(id);
-          if (block) {
+          if (block && !block.isShadow()) {
             block.pathObject.updateSelected(false);
-            multiDraggable.removeSubDraggable(block);
+            multiDraggable.removeSubDraggable_(block);
           }
         });
         blockSelection.clear();
@@ -352,9 +352,11 @@ const registerPaste = function(useCopyPasteCrossTab) {
             targetWorkspace.isCapacityAvailable(data.typeCounts)) {
           const block = Blockly.clipboard.paste(data, targetWorkspace);
           blockList.push(block);
-          block.pathObject.updateSelected(true);
+          if (!block.isShadow()) {
+            block.pathObject.updateSelected(true);
+          }
           blockSelectionWeakMap.get(block.workspace).add(block.id);
-          multiDraggableWeakMap.get(workspace).addSubDraggable(block);
+          multiDraggableWeakMap.get(workspace).addSubDraggable_(block);
         }
       });
       connectionDBList.forEach(function(connectionDB) {
@@ -416,18 +418,20 @@ const registerSelectAll = function() {
           Blockly.getSelected().pathObject.updateSelected(false);
         }
         Blockly.common.setSelected(null);
-        multiDraggable.clearAll();
+        multiDraggable.clearAll_();
       }
       const blockList = [];
-      workspace.getAllBlocks().forEach(function(block) {
+      workspace.getTopBlocks().forEach(function(block) {
         if (selectAllShortcut.check(block)) {
           blockList.push(block);
         }
       });
       blockList.forEach(function(block) {
         blockSelection.add(block.id);
-        block.pathObject.updateSelected(true);
-        multiDraggable.addSubDraggable(block);
+        if (!block.isShadow()) {
+          block.pathObject.updateSelected(true);
+        }
+        multiDraggable.addSubDraggable_(block);
       });
 
       Blockly.common.setSelected(multiDraggable);

@@ -286,14 +286,16 @@ export class MultiselectControls {
   updateBlocks_(block) {
     // There is a block and it is deletable/movable
     if (block &&
-        (block.isDeletable() || block.isMovable())) {
+        (block.isDeletable() || block.isMovable()) &&
+        !block.isShadow()
+    ) {
       if (this.blockSelection.has(block.id)) {
         this.blockSelection.delete(block.id);
-        this.multiDraggable.removeSubDraggable(block);
+        this.multiDraggable.removeSubDraggable_(block);
         block.pathObject.updateSelected(false);
       } else {
         this.blockSelection.add(block.id);
-        this.multiDraggable.addSubDraggable(block);
+        this.multiDraggable.addSubDraggable_(block);
         block.pathObject.updateSelected(true);
         block.bringToFront();
       }
@@ -321,7 +323,6 @@ export class MultiselectControls {
         // Blockly.getSelected() is not a multiselectDraggable
         // and selected block is not in blockSelection
         this.clearMultiselect();
-        this.blockSelection.add(Blockly.getSelected().id);
       }
     } else {
       // In multiselect mode
@@ -337,7 +338,7 @@ export class MultiselectControls {
     // Update the selection highlight.
     this.blockSelection.forEach((id) => {
       const element = this.workspace_.getBlockById(id);
-      if (element) {
+      if (element && !element.isShadow()) {
         element.pathObject.updateSelected(true);
       }
     });
@@ -352,7 +353,7 @@ export class MultiselectControls {
       if (element) {
         element.pathObject.updateSelected(false);
       }
-      this.multiDraggable.removeSubDraggable(element);
+      this.multiDraggable.removeSubDraggable_(element);
     });
     this.blockSelection.clear();
   }

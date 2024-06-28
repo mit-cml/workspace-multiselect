@@ -35,9 +35,9 @@ export class MultiselectDraggable {
    * Clears everything in the subDraggables
    * map of the MultiselectDraggable object.
    */
-  clearAll() {
+  clearAll_() {
     for (const [subDraggable] of this.subDraggables) {
-      this.removeSubDraggable(subDraggable);
+      this.removeSubDraggable_(subDraggable);
     }
   }
 
@@ -46,9 +46,9 @@ export class MultiselectDraggable {
    * @param {Blockly.IDraggable} subDraggable A draggable object that is to
    * be added to the multiselectDraggable object
    */
-  addSubDraggable(subDraggable) {
+  addSubDraggable_(subDraggable) {
     this.subDraggables.set(subDraggable, subDraggable.getRelativeToSurfaceXY());
-    this.addPointerDownEventListener(subDraggable);
+    this.addPointerDownEventListener_(subDraggable);
   }
 
   /**
@@ -56,9 +56,9 @@ export class MultiselectDraggable {
    * @param {Blockly.IDraggable} subDraggable A draggable object that is to
    * be removed from the multiselectDraggable object
    */
-  removeSubDraggable(subDraggable) {
+  removeSubDraggable_(subDraggable) {
     this.subDraggables.delete(subDraggable);
-    this.removePointerDownEventListener(subDraggable);
+    this.removePointerDownEventListener_(subDraggable);
   }
 
   // This is the feature where we added a pointer down event listener.
@@ -73,12 +73,12 @@ export class MultiselectDraggable {
    * @param {Blockly.IDraggable} subDraggable A draggable object that will
    * have an event listener added to
    */
-  addPointerDownEventListener(subDraggable) {
+  addPointerDownEventListener_(subDraggable) {
     // Bind the handler to the correct context (class instance)
     // i.e. it creates a new function where the 'this' of the new function
     // is set to whatever is passed into the bind method argument.
     // In this case, it is the multiselectDraggable class/object.
-    const handler = this.pointerDownEventHandler.bind(this);
+    const handler = this.pointerDownEventHandler_.bind(this);
 
     // Store the handler function in the subDraggable object
     subDraggable.pointerDownHandler = handler;
@@ -95,7 +95,7 @@ export class MultiselectDraggable {
    * @param {Blockly.IDraggable} subDraggable A draggable object
    * that will have an event listener removed from
    */
-  removePointerDownEventListener(subDraggable) {
+  removePointerDownEventListener_(subDraggable) {
     if (subDraggable) {
       // Retrieve the stored handler function
       const handler = subDraggable.pointerDownHandler;
@@ -114,7 +114,7 @@ export class MultiselectDraggable {
    * the multidraggable to Blockly.common.SetSelected()
    * @param {PointerEvent} event A pointer down event
    */
-  pointerDownEventHandler(event) {
+  pointerDownEventHandler_(event) {
     Blockly.common.setSelected(this);
   }
 
@@ -247,7 +247,7 @@ export class MultiselectDraggable {
    */
   dispose() {
     for (const draggable of this.subDraggables) {
-      this.removeSubDraggable(draggable[0]);
+      this.removeSubDraggable_(draggable[0]);
       draggable[0].dispose(true, true);
     }
   }
