@@ -334,10 +334,21 @@ export class Multiselect {
 
   /**
    * Handle a blur on the workspace.
+   * @param {Event} e The blur event.
    * @private
    */
-  onBlur_() {
+  onBlur_(e) {
     if (inMultipleSelectionModeWeakMap.get(this.workspace_)) {
+      // Revert last unselected block if the related target
+      // is a field related element, for accomodating field update
+      // directly while the multi-selection mode is on.
+      if (e.relatedTarget && (e.relatedTarget.tagName === 'INPUT' ||
+          e.relatedTarget.tagName === 'TEXTAREA' ||
+          e.relatedTarget.tagName === 'DIV' &&
+          e.relatedTarget.classList.value.indexOf(
+              'blocklyDropdownMenu') > -1)) {
+        this.controls_.revertLastUnselectedBlock();
+      }
       this.controls_.disableMultiselect();
     }
   }

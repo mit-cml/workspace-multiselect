@@ -229,6 +229,13 @@ export class MultiselectControls {
   }
 
   /**
+   * Revert the last unselected block.
+   */
+  revertLastUnselectedBlock() {
+    this.updateBlocks_(this.justUnselectedBlock_);
+  }
+
+  /**
    * Create the multi-select icon and its event handler.
    * @private
    */
@@ -331,7 +338,6 @@ export class MultiselectControls {
         Blockly.common.setSelected(null);
       }
       this.justUnselectedBlock_.pathObject.updateSelected(false);
-      this.justUnselectedBlock_ = null;
     }
 
     // Update the selection highlight.
