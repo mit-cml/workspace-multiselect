@@ -115,6 +115,7 @@ scope of its wrapped input function.
 - `blockSelectionWeakMap`: The WeakMap storing set of currently selected block ids by workspace svg.
 - `inMultipleSelectionModeWeakMap`: The WeakMap storing whether the plugin is in multiple selection mode by workspace svg.
 - `Multiselect.withoutMultiFieldUpdates`: A wrapper function to ignore multi-field updates.
+- `Multiselect.setMultiselectIcon`: Pass in the icon URLs/data to change the multiselect icon at runtime.
 
 ## Credit
 - [DragSelect](https://github.com/ThibaultJanBeyer/DragSelect): This plugin uses DragSelect to realize the "drag a rectangle to select multiple blocks" feature. The patching PR [#143](https://github.com/ThibaultJanBeyer/DragSelect/pull/143) and [#165](https://github.com/ThibaultJanBeyer/DragSelect/pull/165) made all this possible, and these PRs are included in [v2.6.0](https://github.com/ThibaultJanBeyer/DragSelect/releases/tag/v2.6.0).

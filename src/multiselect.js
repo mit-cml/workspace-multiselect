@@ -133,6 +133,20 @@ export class Multiselect {
   }
 
   /**
+   * Update the multiselect icon in runtime.
+   * @param {string} enabledIcon The icon for enabled state.
+   * @param {string} disabledIcon The icon for disabled state.
+   */
+  setMultiselectIcon(enabledIcon, disabledIcon) {
+    if (!this.controls_) {
+      return;
+    }
+    this.controls_.enabled_img = enabledIcon;
+    this.controls_.disabled_img = disabledIcon;
+    this.controls_.updateMultiselectIcon(this.controls_.enabled);
+  }
+
+  /**
    * Unbind the events and replace with original registration.
    * @param {boolean} keepRegistry Keep the context menu and shortcut registry.
    */

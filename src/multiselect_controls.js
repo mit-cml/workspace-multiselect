@@ -487,14 +487,14 @@ export class MultiselectControls {
  */
 Blockly.Css.register(`
 .blocklyMultiselect>image, .blocklyMultiselect>svg>image {
-  opacity: .2;
-}
-
-.blocklyMultiselect>image:hover, .blocklyMultiselect>svg>image:hover {
   opacity: .4;
 }
 
-.blocklyMultiselect>image:active, .blocklyMultiselect>svg>image:active {
+.blocklyMultiselect>image:hover, .blocklyMultiselect>svg>image:hover {
   opacity: .6;
+}
+
+.blocklyMultiselect>image:active, .blocklyMultiselect>svg>image:active {
+  opacity: .8;
 }
 `);
