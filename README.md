@@ -52,6 +52,12 @@ options = {
     disabledIcon: 'https://github.com/mit-cml/workspace-multiselect/raw/main/test/media/unselect.svg',
   },
 
+  // Keys for multi-selection mode switch. Any key value is possible (see MDN docs).
+  // https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key
+  // The best support (default) is given for Shift.  Provide an empty array []
+  // will revert to the default key.
+  multiSelectKeys: ['Shift', 'Control'],
+
   multiselectCopyPaste: {
     // Enable the copy/paste accross tabs feature (true by default).
     crossTab: true,

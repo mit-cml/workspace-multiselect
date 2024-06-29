@@ -36,6 +36,7 @@ export class Multiselect {
     this.useCopyPasteCrossTab_ = true;
     this.useCopyPasteMenu_ = true;
     this.multiFieldUpdate_ = true;
+    this.multiSelectKeys_ = ['shift'];
   }
 
   /**
@@ -44,6 +45,11 @@ export class Multiselect {
    * to set.
    */
   init(options) {
+    if (options.multiSelectKeys && options.multiSelectKeys.length > 0) {
+      this.multiSelectKeys_ = options.multiSelectKeys.map((key) => {
+        return key.toLocaleLowerCase();
+      });
+    }
     const injectionDiv = this.workspace_.getInjectionDiv();
     this.onKeyDownWrapper_ = Blockly.browserEvents.conditionalBind(
         injectionDiv, 'keydown', this, this.onKeyDown_);
@@ -87,7 +93,7 @@ export class Multiselect {
     }
 
     this.controls_ = new MultiselectControls(
-        this.workspace_, options.multiselectIcon, this);
+        this.workspace_, options.multiselectIcon, this.multiSelectKeys_);
     multiselectControlsList.add(this.controls_);
     if (!options.multiselectIcon || !options.multiselectIcon.hideIcon) {
       const svgControls = this.controls_.createDom();
@@ -329,7 +335,7 @@ export class Multiselect {
    * @private
    */
   onKeyDown_(e) {
-    if (e.keyCode === Blockly.utils.KeyCodes.SHIFT &&
+    if (this.multiSelectKeys_.indexOf(e.key.toLocaleLowerCase()) > -1 &&
         !inMultipleSelectionModeWeakMap.get(this.workspace_)) {
       this.controls_.enableMultiselect();
     }
@@ -341,7 +347,7 @@ export class Multiselect {
    * @private
    */
   onKeyUp_(e) {
-    if (e.keyCode === Blockly.utils.KeyCodes.SHIFT) {
+    if (this.multiSelectKeys_.indexOf(e.key.toLocaleLowerCase()) > -1) {
       this.controls_.disableMultiselect();
     }
   }

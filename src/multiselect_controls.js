@@ -49,8 +49,10 @@ export class MultiselectControls {
   /**
    * @param {!Blockly.WorkspaceSvg} workspace The workspace to sit in.
    * @param {Object} options The icons configuration.
+   * @param {!Array<string>} multiSelectKeys The key codes for
+   *                         switching between multi select mode.
    */
-  constructor(workspace, options) {
+  constructor(workspace, options, multiSelectKeys) {
     /**
      * Icon path of the multi select controls when enabled.
      * @type {string}
@@ -85,6 +87,13 @@ export class MultiselectControls {
      * @type {string}
      */
     this.id = 'multiselectControls';
+
+    /**
+     * The key codes for switching between multi select.
+     * @type {!Array<string>}
+     * @private
+     */
+    this.multiSelectKeys_ = multiSelectKeys;
 
     /**
      * A handle to use to unbind the mouse down event handler for multi select
@@ -371,6 +380,7 @@ export class MultiselectControls {
       multiselectMode: true,
       draggability: false,
       usePointerEvents: true,
+      multiSelectKeys: this.multiSelectKeys_,
     });
     // Filter out the parent block when selecting child blocks
     // to mitigate the invisible rectangles issue.
@@ -423,9 +433,7 @@ export class MultiselectControls {
     });
     if (byIcon) {
       document.dispatchEvent(
-          new KeyboardEvent('keydown', {'key': 'shift'}));
-      this.workspace_.getInjectionDiv().dispatchEvent(
-          new KeyboardEvent('keydown', {'key': 'meta'}));
+          new KeyboardEvent('keydown', {'key': this.multiSelectKeys_[0]}));
     }
     this.updateMultiselectIcon(true);
     inMultipleSelectionModeWeakMap.set(this.workspace_, true);
@@ -439,10 +447,8 @@ export class MultiselectControls {
     inMultipleSelectionModeWeakMap.set(this.workspace_, false);
     if (this.dragSelect_) {
       if (byIcon) {
-        this.workspace_.getInjectionDiv().dispatchEvent(
-            new KeyboardEvent('keyup', {'key': 'meta'}));
         document.dispatchEvent(
-            new KeyboardEvent('keyup', {'key': 'shift'}));
+            new KeyboardEvent('keyup', {'key': this.multiSelectKeys_[0]}));
       }
       this.dragSelect_.stop();
       this.dragSelect_ = null;
