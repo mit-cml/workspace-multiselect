@@ -326,6 +326,11 @@ export class MultiselectControls {
       }
     } else {
       // In multiselect mode
+      if (Blockly.getSelected() && !(Blockly.getSelected() instanceof
+          MultiselectDraggable)) {
+        this.multiDraggable.addSubDraggable_(Blockly.getSelected())
+        Blockly.common.setSelected(this.multiDraggable);
+      }
       // Set selected to multiDraggable if blockSelection not empty
       if (this.blockSelection.size && !(Blockly.getSelected() instanceof
           MultiselectDraggable)) {
@@ -334,6 +339,7 @@ export class MultiselectControls {
         Blockly.common.setSelected(null);
       }
     }
+    // this.justUnselectedBlock_.pathObject.updateSelected(false);
 
     // Update the selection highlight.
     this.blockSelection.forEach((id) => {

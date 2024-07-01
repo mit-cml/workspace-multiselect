@@ -177,8 +177,12 @@ export class MultiselectDraggable {
    */
   drag(newLoc, e) {
     for (const draggable of this.topSubDraggables) {
-      draggable.drag(Blockly.utils.Coordinate.sum(newLoc,
-          this.subDraggables.get(draggable)), e);
+      if (this.subDraggables.get(draggable) &&
+          this.subDraggables.get(draggable) instanceof
+          Blockly.utils.Coordinate) {
+        draggable.drag(Blockly.utils.Coordinate.sum(newLoc,
+            this.subDraggables.get(draggable)), e);
+      }
     }
   }
 

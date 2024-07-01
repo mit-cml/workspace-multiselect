@@ -70,7 +70,7 @@ const registerShortcutDelete = function() {
       // Handle the case where MultiselectDraggable is in use
       if (selected && selected instanceof MultiselectDraggable) {
         for (const element of selected.subDraggables) {
-          selected.removeSubDraggable(element[0]);
+          selected.removeSubDraggable_(element[0]);
           apply(element[0]);
         }
       } else if (!blockSelection.size) {
@@ -261,7 +261,7 @@ const registerCut = function(useCopyPasteCrossTab) {
           applyConn(element[0]);
         }
         for (const element of selected.subDraggables) {
-          selected.removeSubDraggable(element[0]);
+          selected.removeSubDraggable_(element[0]);
           applyDelete(element[0]);
         }
       } else if (!blockSelection.size) {
