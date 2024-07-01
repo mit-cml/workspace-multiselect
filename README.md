@@ -49,6 +49,12 @@ options = {
     disabledIcon: 'https://github.com/mit-cml/workspace-multiselect/raw/main/test/media/unselect.svg',
   },
 
+  // Keys for multi-selection mode switch. Any key value is possible (see MDN docs).
+  // https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key
+  // The best support (default) is given for Shift.  Provide an empty array []
+  // will revert to the default key.
+  multiSelectKeys: ['Shift', 'Control'],
+
   multiselectCopyPaste: {
     // Enable the copy/paste accross tabs feature (true by default).
     crossTab: true,
@@ -112,6 +118,7 @@ scope of its wrapped input function.
 - `blockSelectionWeakMap`: The WeakMap storing set of currently selected block ids by workspace svg.
 - `inMultipleSelectionModeWeakMap`: The WeakMap storing whether the plugin is in multiple selection mode by workspace svg.
 - `Multiselect.withoutMultiFieldUpdates`: A wrapper function to ignore multi-field updates.
+- `Multiselect.setMultiselectIcon`: Pass in the icon URLs/data to change the multiselect icon at runtime.
 
 ## Credit
 - [DragSelect](https://github.com/ThibaultJanBeyer/DragSelect): This plugin uses DragSelect to realize the "drag a rectangle to select multiple blocks" feature. The patching PR [#143](https://github.com/ThibaultJanBeyer/DragSelect/pull/143) and [#165](https://github.com/ThibaultJanBeyer/DragSelect/pull/165) made all this possible, and these PRs are included in [v2.6.0](https://github.com/ThibaultJanBeyer/DragSelect/releases/tag/v2.6.0).

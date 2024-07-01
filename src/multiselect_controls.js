@@ -50,8 +50,10 @@ export class MultiselectControls {
   /**
    * @param {!Blockly.WorkspaceSvg} workspace The workspace to sit in.
    * @param {Object} options The icons configuration.
+   * @param {!Array<string>} multiSelectKeys The key codes for
+   *                         switching between multi select mode.
    */
-  constructor(workspace, options) {
+  constructor(workspace, options, multiSelectKeys) {
     /**
      * Icon path of the multi select controls when enabled.
      * @type {string}
@@ -86,6 +88,13 @@ export class MultiselectControls {
      * @type {string}
      */
     this.id = 'multiselectControls';
+
+    /**
+     * The key codes for switching between multi select.
+     * @type {!Array<string>}
+     * @private
+     */
+    this.multiSelectKeys_ = multiSelectKeys;
 
     /**
      * A handle to use to unbind the mouse down event handler for multi select
@@ -231,6 +240,13 @@ export class MultiselectControls {
   }
 
   /**
+   * Revert the last unselected block.
+   */
+  revertLastUnselectedBlock() {
+    this.updateBlocks_(this.justUnselectedBlock_);
+  }
+
+  /**
    * Create the multi-select icon and its event handler.
    * @private
    */
@@ -338,6 +354,8 @@ export class MultiselectControls {
       } else {
         Blockly.common.setSelected(null);
       }
+
+      this.justUnselectedBlock_.pathObject.updateSelected(false);
     }
     // this.justUnselectedBlock_.pathObject.updateSelected(false);
 
@@ -399,6 +417,7 @@ export class MultiselectControls {
       multiselectMode: true,
       draggability: false,
       usePointerEvents: true,
+      multiSelectKeys: this.multiSelectKeys_,
     });
     // Filter out the parent block when selecting child blocks
     // to mitigate the invisible rectangles issue.
@@ -451,9 +470,7 @@ export class MultiselectControls {
     });
     if (byIcon) {
       document.dispatchEvent(
-          new KeyboardEvent('keydown', {'key': 'shift'}));
-      this.workspace_.getInjectionDiv().dispatchEvent(
-          new KeyboardEvent('keydown', {'key': 'meta'}));
+          new KeyboardEvent('keydown', {'key': this.multiSelectKeys_[0]}));
     }
     this.updateMultiselectIcon(true);
     inMultipleSelectionModeWeakMap.set(this.workspace_, true);
@@ -471,10 +488,8 @@ export class MultiselectControls {
     inMultipleSelectionModeWeakMap.set(this.workspace_, false);
     if (this.dragSelect_) {
       if (byIcon) {
-        this.workspace_.getInjectionDiv().dispatchEvent(
-            new KeyboardEvent('keyup', {'key': 'meta'}));
         document.dispatchEvent(
-            new KeyboardEvent('keyup', {'key': 'shift'}));
+            new KeyboardEvent('keyup', {'key': this.multiSelectKeys_[0]}));
       }
       this.dragSelect_.stop();
       this.dragSelect_ = null;
@@ -517,14 +532,14 @@ export class MultiselectControls {
  */
 Blockly.Css.register(`
 .blocklyMultiselect>image, .blocklyMultiselect>svg>image {
-  opacity: .2;
-}
-
-.blocklyMultiselect>image:hover, .blocklyMultiselect>svg>image:hover {
   opacity: .4;
 }
 
-.blocklyMultiselect>image:active, .blocklyMultiselect>svg>image:active {
+.blocklyMultiselect>image:hover, .blocklyMultiselect>svg>image:hover {
   opacity: .6;
+}
+
+.blocklyMultiselect>image:active, .blocklyMultiselect>svg>image:active {
+  opacity: .8;
 }
 `);

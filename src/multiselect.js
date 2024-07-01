@@ -41,6 +41,7 @@ export class Multiselect {
     this.useCopyPasteCrossTab_ = true;
     this.useCopyPasteMenu_ = true;
     this.multiFieldUpdate_ = true;
+    this.multiSelectKeys_ = ['shift'];
   }
 
   /**
@@ -49,6 +50,11 @@ export class Multiselect {
    * to set.
    */
   init(options) {
+    if (options.multiSelectKeys && options.multiSelectKeys.length > 0) {
+      this.multiSelectKeys_ = options.multiSelectKeys.map((key) => {
+        return key.toLocaleLowerCase();
+      });
+    }
     const injectionDiv = this.workspace_.getInjectionDiv();
     this.onKeyDownWrapper_ = Blockly.browserEvents.conditionalBind(
         injectionDiv, 'keydown', this, this.onKeyDown_);
@@ -92,7 +98,7 @@ export class Multiselect {
     }
 
     this.controls_ = new MultiselectControls(
-        this.workspace_, options.multiselectIcon, this);
+        this.workspace_, options.multiselectIcon, this.multiSelectKeys_);
     multiselectControlsList.add(this.controls_);
     if (!options.multiselectIcon || !options.multiselectIcon.hideIcon) {
       const svgControls = this.controls_.createDom();
@@ -135,6 +141,20 @@ export class Multiselect {
     } finally {
       Blockly.Events.setGroup(oldGroup);
     }
+  }
+
+  /**
+   * Update the multiselect icon in runtime.
+   * @param {string} enabledIcon The icon for enabled state.
+   * @param {string} disabledIcon The icon for disabled state.
+   */
+  setMultiselectIcon(enabledIcon, disabledIcon) {
+    if (!this.controls_) {
+      return;
+    }
+    this.controls_.enabled_img = enabledIcon;
+    this.controls_.disabled_img = disabledIcon;
+    this.controls_.updateMultiselectIcon(this.controls_.enabled);
   }
 
   /**
@@ -366,7 +386,7 @@ export class Multiselect {
    * @private
    */
   onKeyDown_(e) {
-    if (e.keyCode === Blockly.utils.KeyCodes.SHIFT &&
+    if (this.multiSelectKeys_.indexOf(e.key.toLocaleLowerCase()) > -1 &&
         !inMultipleSelectionModeWeakMap.get(this.workspace_)) {
       this.controls_.enableMultiselect();
     }
@@ -378,17 +398,28 @@ export class Multiselect {
    * @private
    */
   onKeyUp_(e) {
-    if (e.keyCode === Blockly.utils.KeyCodes.SHIFT) {
+    if (this.multiSelectKeys_.indexOf(e.key.toLocaleLowerCase()) > -1) {
       this.controls_.disableMultiselect();
     }
   }
 
   /**
    * Handle a blur on the workspace.
+   * @param {Event} e The blur event.
    * @private
    */
-  onBlur_() {
+  onBlur_(e) {
     if (inMultipleSelectionModeWeakMap.get(this.workspace_)) {
+      // Revert last unselected block if the related target
+      // is a field related element, for accomodating field update
+      // directly while the multi-selection mode is on.
+      if (e.relatedTarget && (e.relatedTarget.tagName === 'INPUT' ||
+          e.relatedTarget.tagName === 'TEXTAREA' ||
+          e.relatedTarget.tagName === 'DIV' &&
+          e.relatedTarget.classList.value.indexOf(
+              'blocklyDropdownMenu') > -1)) {
+        this.controls_.revertLastUnselectedBlock();
+      }
       this.controls_.disableMultiselect();
     }
   }
