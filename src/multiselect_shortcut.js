@@ -12,7 +12,7 @@ import * as Blockly from 'blockly/core';
 import {
   blockSelectionWeakMap, hasSelectedParent, copyData, connectionDBList,
   dataCopyToStorage, dataCopyFromStorage, registeredShortcut,
-  multiDraggableWeakMap,
+  multiDraggableWeakMap, inPasteShortcut,
 } from './global';
 import {MultiselectDraggable} from './multiselect_draggable';
 
@@ -73,13 +73,9 @@ const registerShortcutDelete = function() {
           selected.removeSubDraggable_(element[0]);
           apply(element[0]);
         }
+        blockSelection.clear();
       } else if (!blockSelection.size) {
         apply(selected);
-      } else {
-        blockSelection.forEach(function(id) {
-          const block = workspace.getBlockById(id);
-          apply(block);
-        });
       }
 
       Blockly.Events.setGroup(false);
@@ -312,6 +308,7 @@ const registerPaste = function(useCopyPasteCrossTab) {
       return !workspace.options.readOnly && !Blockly.Gesture.inProgress();
     },
     callback: function(workspace) {
+      inPasteShortcut.set(workspace, true);
       const blockSelection = blockSelectionWeakMap.get(workspace);
       Blockly.Events.setGroup(true);
       const multiDraggable = multiDraggableWeakMap.get(workspace);

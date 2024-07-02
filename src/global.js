@@ -41,6 +41,11 @@ export const multiselectControlsList = new Set();
 export const copyData = new Set();
 
 /**
+ * Store the paste shortcut mode.
+ */
+export const inPasteShortcut = new WeakMap();
+
+/**
  * Store the copied connections list.
  */
 export const connectionDBList = [];

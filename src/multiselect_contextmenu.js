@@ -188,6 +188,7 @@ const registerDuplicate = function() {
               block.toCopyData(), workspace);
         }
         block.pathObject.updateSelected(false);
+        Blockly.common.setSelected(multiDraggable);
       };
       const blockSelection = blockSelectionWeakMap.get(workspace);
       Blockly.Events.setGroup(true);
@@ -578,6 +579,11 @@ const registerDelete = function() {
         if (block && !hasSelectedParent(block)) {
           // Count the number of blocks that are nested in this block.
           descendantCount += block.getDescendants(false).length;
+          for (const subBlocks of block.getDescendants(false)) {
+            if (subBlocks.isShadow()) {
+              descendantCount -= 1;
+            }
+          }
           const nextBlock = block.getNextBlock();
           if (nextBlock) {
             // Blocks in the current stack would survive this block's deletion.
@@ -622,13 +628,9 @@ const registerDelete = function() {
           selected.removeSubDraggable_(element[0]);
           apply(element[0]);
         }
+        blockSelection.clear();
       } else if (!blockSelection.size) {
         apply(selected);
-      } else {
-        blockSelection.forEach(function(id) {
-          const block = workspace.getBlockById(id);
-          apply(block);
-        });
       }
 
       Blockly.Events.setGroup(false);

@@ -8,7 +8,7 @@
  * @fileoverview Multiple selection draggable class.
  */
 import * as Blockly from 'blockly/core';
-import {hasSelectedParent} from './global';
+import {hasSelectedParent, inMultipleSelectionModeWeakMap} from './global';
 
 
 /**
@@ -123,6 +123,9 @@ export class MultiselectDraggable {
    * @returns {boolean} Returns true as it is always movable
    */
   isMovable() {
+    if (inMultipleSelectionModeWeakMap.get(this.workspace)) {
+      return false;
+    }
     return true;
   }
 
