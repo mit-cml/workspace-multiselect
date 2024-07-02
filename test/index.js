@@ -10,7 +10,7 @@
 
 import * as Blockly from 'blockly';
 import {toolboxCategories, createPlayground} from '@blockly/dev-tools';
-import {Multiselect, MultiselectBlockDragger} from '../src/index';
+import {Multiselect} from '../src/index';
 import {Backpack} from '@blockly/workspace-backpack';
 
 /**
@@ -62,7 +62,6 @@ document.addEventListener('DOMContentLoaded', function() {
       wheel: true,
     },
     plugins: {
-      'blockDragger': MultiselectBlockDragger,
     },
   };
   createPlayground(document.getElementById('root'), createWorkspace,

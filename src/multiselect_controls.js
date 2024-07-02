@@ -12,7 +12,8 @@
 import * as Blockly from 'blockly/core';
 
 import DragSelect from 'dragselect';
-import {blockSelectionWeakMap, inMultipleSelectionModeWeakMap} from './global';
+import {blockSelectionWeakMap, inMultipleSelectionModeWeakMap, inPasteShortcut, multiDraggableWeakMap} from './global';
+import {MultiselectDraggable} from './multiselect_draggable';
 
 /**
  * Width of the multi select controls.
@@ -132,6 +133,13 @@ export class MultiselectControls {
      */
     this.justUnselectedBlock_ = null;
 
+    /**
+     * Store the block that was last selected.
+     * @type {!Blockly.BlockSvg}
+     * @private
+     */
+    this.lastSelectedBlock_ = null;
+
     if (options && options.enabledIcon) {
       this.enabled_img = options.enabledIcon;
     }
@@ -140,7 +148,14 @@ export class MultiselectControls {
       this.disabled_img = options.disabledIcon;
     }
 
+    // Set containing currently select blockSvg ids.
     this.blockSelection = blockSelectionWeakMap.get(workspace);
+
+    // MultiDraggable object that holds subdraggables
+    this.multiDraggable = multiDraggableWeakMap.get(workspace);
+
+    // Original settings for setting the start block
+    this.origSetStartBlock = Blockly.Gesture.prototype.setStartBlock;
   }
 
   /**
@@ -298,64 +313,92 @@ export class MultiselectControls {
    * @private
    */
   updateBlocks_(block) {
+    // There is a block and it is deletable/movable
     if (block &&
-        (block.isDeletable() || block.isMovable())) {
+        (block.isDeletable() || block.isMovable()) &&
+        !block.isShadow()
+    ) {
       if (this.blockSelection.has(block.id)) {
         this.blockSelection.delete(block.id);
         this.justUnselectedBlock_ = block;
+        this.multiDraggable.removeSubDraggable_(block);
         block.pathObject.updateSelected(false);
       } else {
         this.blockSelection.add(block.id);
         this.justUnselectedBlock_ = null;
+        this.multiDraggable.addSubDraggable_(block);
         block.pathObject.updateSelected(true);
         block.bringToFront();
       }
     }
   }
 
+
   /**
-   * update the multiple selection blocks status.
+   * Update the multiple selection blocks status.
    */
   updateMultiselect() {
+    // Not in multiselect mode
     if (!inMultipleSelectionModeWeakMap.get(this.workspace_)) {
-      if (!Blockly.getSelected() || this.workspace_.id !==
-         Blockly.getMainWorkspace().id || (Blockly.getSelected() &&
-         !this.blockSelection.has(Blockly.getSelected().id))) {
-        // When not in multiple selection mode and Blockly selects a block not
-        // in currently selected set or unselects, clear the selected set.
-        this.blockSelection.forEach((id) => {
-          const element = this.workspace_.getBlockById(id);
-          if (element) {
-            element.pathObject.updateSelected(false);
-          }
-        });
-        this.blockSelection.clear();
-        if (this.workspace_.id === Blockly.getMainWorkspace().id) {
-          this.updateBlocks_(Blockly.getSelected());
-        }
+      if (this.workspace_.id !== Blockly.getMainWorkspace().id) {
+        this.clearMultiselect();
       }
-    } else if (this.justUnselectedBlock_ && Blockly.getSelected() &&
-      this.workspace_.id === Blockly.getMainWorkspace().id &&
-      Blockly.getSelected().id === this.justUnselectedBlock_.id) {
-      // Update the Blockly selected block when that block is
-      // no longer selected in our set.
-      if (this.blockSelection.size) {
-        Blockly.common.setSelected(
-            this.workspace_.getBlockById(
-                this.blockSelection.keys().next().value));
+
+      // If unselecting/clicking on workspace or different workspace,
+      // clear selected set
+      if (!Blockly.getSelected()) {
+        this.clearMultiselect();
+        Blockly.common.setSelected(null);
+      } else if (Blockly.getSelected() &&
+          !(Blockly.getSelected() instanceof MultiselectDraggable)) {
+        // Blockly.getSelected() is not a multiselectDraggable
+        // and selected block is not in blockSelection
+        this.clearMultiselect();
+        this.lastSelectedBlock_ = Blockly.getSelected();
+        inPasteShortcut.set(this.workspace_, false);
+      }
+    } else {
+      // In multiselect mode
+      if (Blockly.getSelected() && !(Blockly.getSelected() instanceof
+          MultiselectDraggable)) {
+        this.multiDraggable.addSubDraggable_(Blockly.getSelected());
+        Blockly.common.setSelected(this.multiDraggable);
+      }
+      // Set selected to multiDraggable if blockSelection not empty
+      if (this.blockSelection.size && !(Blockly.getSelected() instanceof
+          MultiselectDraggable)) {
+        Blockly.common.setSelected(this.multiDraggable);
+      } else if (this.lastSelectedBlock_ &&
+          !inPasteShortcut.get(this.workspace_)) {
+        this.updateBlocks_(this.lastSelectedBlock_);
+        this.lastSelectedBlock_ = null;
+        inPasteShortcut.set(this.workspace_, false);
       } else {
         Blockly.common.setSelected(null);
       }
-      this.justUnselectedBlock_.pathObject.updateSelected(false);
     }
 
     // Update the selection highlight.
     this.blockSelection.forEach((id) => {
       const element = this.workspace_.getBlockById(id);
-      if (element) {
+      if (element && !element.isShadow()) {
         element.pathObject.updateSelected(true);
       }
     });
+  }
+
+  /**
+   * Clear the multiple selection blocks status.
+   */
+  clearMultiselect() {
+    this.blockSelection.forEach((id) => {
+      const element = this.workspace_.getBlockById(id);
+      if (element) {
+        element.pathObject.updateSelected(false);
+      }
+      this.multiDraggable.removeSubDraggable_(element);
+    });
+    this.blockSelection.clear();
   }
 
   /**
@@ -363,6 +406,19 @@ export class MultiselectControls {
    * @param {!boolean} byIcon Whether to simulate a keyboard event.
    */
   enableMultiselect(byIcon = false) {
+    // Disable the setStartBlock gesture when entering multiselect mode.
+    Blockly.Gesture.prototype.setStartBlock = (function(func) {
+      if (func.isWrapped) {
+        return func;
+      }
+
+      const wrappedFunc = function(block) {
+        return;
+      };
+      wrappedFunc.isWrapped = true;
+      return wrappedFunc;
+    })(Blockly.Gesture.prototype.setStartBlock);
+
     // Ensure that we only restore drag to move the workspace behavior
     // when it is enabled.
     if (!this.hasDisableWorkspaceDrag_ &&
@@ -444,6 +500,10 @@ export class MultiselectControls {
    * @param {!boolean} byIcon Whether to simulate a keyboard event.
    */
   disableMultiselect(byIcon = false) {
+    // Revert Gesture.setStartBlock to original settings
+    // when disabling multiselect mode.
+    Blockly.Gesture.prototype.setStartBlock = this.origSetStartBlock;
+
     inMultipleSelectionModeWeakMap.set(this.workspace_, false);
     if (this.dragSelect_) {
       if (byIcon) {
@@ -453,14 +513,10 @@ export class MultiselectControls {
       this.dragSelect_.stop();
       this.dragSelect_ = null;
     }
-    // Ensure that at least Blockly select one of the blocks in the
-    // selection set, or clear the Blockly selection if our set is empty.
-    if (!this.blockSelection.size && Blockly.getSelected()) {
-      Blockly.common.setSelected(null);
-    } else if (this.blockSelection.size && !Blockly.getSelected()) {
-      Blockly.common.setSelected(
-          this.workspace_.getBlockById(
-              this.blockSelection.keys().next().value));
+    // Ensure that Blockly selects multidraggable if
+    // our set is not empty.
+    if (this.blockSelection.size && !Blockly.getSelected()) {
+      Blockly.common.setSelected(this.multiDraggable);
     }
     if (this.hasDisableWorkspaceDrag_) {
       this.workspace_.options.moveOptions.drag = true;

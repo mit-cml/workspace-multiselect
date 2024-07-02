@@ -18,18 +18,15 @@ npm install @mit-app-inventor/blockly-plugin-workspace-multiselect --save
 
 ```js
 import * as Blockly from 'blockly';
-import {Multiselect, MultiselectBlockDragger} from '@mit-app-inventor/blockly-plugin-workspace-multiselect';
+import {Multiselect} from '@mit-app-inventor/blockly-plugin-workspace-multiselect';
 
 options = {
   toolbox: toolboxCategories,
-  plugins: {
-    'blockDragger': MultiselectBlockDragger, // Required to work
-  },
 
-  // // For integration with other plugins that also
-  // // need to change the blockDragger above (such as
-  // // scroll-options).
-  // baseBlockDragger: ScrollBlockDragger
+  // The plugin should work with other plugins
+  // that require a custom block dragger, like
+  // the scroll-options plugin as this plugin
+  // was updated to not require a custom dragger.
 
   // Double click the blocks to collapse/expand
   // them (A feature from MIT App Inventor).
@@ -117,7 +114,7 @@ scope of its wrapped input function.
 
 - `Multiselect.init`: Initialize the plugin.
 - `Multiselect.dispose`: Dispose the plugin.
-- `MultiselectBlockDragger`: The customized block dragger for multiple selection.
+- `MultiselectDraggable`: The customized draggable object unique to each workspace that contains the blocks in the multiselection.
 - `blockSelectionWeakMap`: The WeakMap storing set of currently selected block ids by workspace svg.
 - `inMultipleSelectionModeWeakMap`: The WeakMap storing whether the plugin is in multiple selection mode by workspace svg.
 - `Multiselect.withoutMultiFieldUpdates`: A wrapper function to ignore multi-field updates.
@@ -127,6 +124,7 @@ scope of its wrapped input function.
 - [DragSelect](https://github.com/ThibaultJanBeyer/DragSelect): This plugin uses DragSelect to realize the "drag a rectangle to select multiple blocks" feature. The patching PR [#143](https://github.com/ThibaultJanBeyer/DragSelect/pull/143) and [#165](https://github.com/ThibaultJanBeyer/DragSelect/pull/165) made all this possible, and these PRs are included in [v2.6.0](https://github.com/ThibaultJanBeyer/DragSelect/releases/tag/v2.6.0).
 - [select.svg](test/media/select.svg) & [unselect.svg](test/media/unselect.svg): Free icons downloaded at [Icons8](https://icons8.com).
 - This plugin is part of the achievement by Songlin Jiang([@HollowMan6](https://github.com/HollowMan6)) participating the [Google Summer of Code 2022](https://summerofcode.withgoogle.com/programs/2022/projects/9wF06HWE) at [MIT App Inventor](https://github.com/mit-cml).
+- This plugin was updated for Blockly-v11 by Chang Min Bark([@changminbark](https://github.com/changminbark)) participating the [Google Summer of Code 2024](https://summerofcode.withgoogle.com/media/user/afbc2778524a/proposal/gAAAAABmfiJkQoI8AU7CQdVKcjTGzVcG_wTyrhZjekmhqyyZn88YsYUjdB_6gkAD-jYD5OoNDy09GXMQ4KPNVvqf2HEYk04J0KH4lWIn3iRY40eNEFr_GJw=.pdf) at [MIT App Inventor](https://github.com/mit-cml).
 - Thanks for the sponsor from [@zakx](https://github.com/zakx) & [@laurensvalk](https://github.com/laurensvalk).
 
 ## License

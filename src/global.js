@@ -11,6 +11,11 @@
 import * as Blockly from 'blockly/core';
 
 /**
+ * Weakmap for storing multidraggable objects for a given workspace (as a key).
+ */
+export const multiDraggableWeakMap = new WeakMap();
+
+/**
  * Set for storing the current selected blockSvg ids.
  */
 export const blockSelectionWeakMap = new WeakMap();
@@ -34,6 +39,11 @@ export const multiselectControlsList = new Set();
  * Store the copy data.
  */
 export const copyData = new Set();
+
+/**
+ * Store the paste shortcut mode.
+ */
+export const inPasteShortcut = new WeakMap();
 
 /**
  * Store the copied connections list.
