@@ -376,6 +376,7 @@ export class MultiselectControls {
       } else {
         Blockly.common.setSelected(null);
       }
+      this.justUnselectedBlock_.pathObject.updateSelected(false);
     }
 
     // Update the selection highlight.
