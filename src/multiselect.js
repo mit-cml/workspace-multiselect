@@ -12,27 +12,31 @@ import * as Blockly from 'blockly/core';
 
 import * as ContextMenu from './multiselect_contextmenu';
 import * as Shortcut from './multiselect_shortcut';
-import {blockSelectionWeakMap, inMultipleSelectionModeWeakMap,
-  hasSelectedParent, BaseBlockDraggerWeakMap,
-  multiselectControlsList} from './global';
+import {
+  dragSelectionWeakMap, inMultipleSelectionModeWeakMap,
+  hasSelectedParent,
+  multiselectControlsList, multiDraggableWeakMap,
+} from './global';
 import {MultiselectControls} from './multiselect_controls';
+import {MultiselectDraggable} from './multiselect_draggable';
 
 /**
  * Class for using multiple select blocks on workspace.
  */
 export class Multiselect {
   /**
-   * Initalize the class data structure.
+   * Initialize the class data structure.
    * @param {!Blockly.WorkspaceSvg} workspace The workspace to sit in.
    */
   constructor(workspace) {
     this.workspace_ = workspace;
     this.origHandleWsStart_ = Blockly.Gesture.prototype.handleWsStart;
 
-    blockSelectionWeakMap.set(this.workspace_, new Set());
-    this.blockSelection_ = blockSelectionWeakMap.get(this.workspace_);
+    dragSelectionWeakMap.set(this.workspace_, new Set());
+    multiDraggableWeakMap.set(this.workspace_,
+        new MultiselectDraggable(this.workspace_));
+    this.dragSelection_ = dragSelectionWeakMap.get(this.workspace_);
     inMultipleSelectionModeWeakMap.set(this.workspace_, false);
-    BaseBlockDraggerWeakMap.set(this.workspace_, Blockly.BlockDragger);
     this.useCopyPasteCrossTab_ = true;
     this.useCopyPasteMenu_ = true;
     this.multiFieldUpdate_ = true;
@@ -91,6 +95,8 @@ export class Multiselect {
       Shortcut.unregisterShortcut();
       Shortcut.registerOurShortcut(this.useCopyPasteCrossTab_);
     }
+    // Register workspace comments
+    // Blockly.ContextMenuItems.registerCommentOptions();
 
     this.controls_ = new MultiselectControls(
         this.workspace_, options.multiselectIcon, this.multiSelectKeys_);
@@ -104,10 +110,6 @@ export class Multiselect {
 
     if (options.useDoubleClick) {
       this.useDoubleClick_(true);
-    }
-
-    if (options.baseBlockDragger) {
-      BaseBlockDraggerWeakMap.set(this.workspace_, options.baseBlockDragger);
     }
 
     if (options.multiFieldUpdate === false) {
@@ -230,26 +232,75 @@ export class Multiselect {
             !inMultipleSelectionModeWeakMap.get(ws)) {
           const preCondition = function(block) {
             return !block.isInFlyout && block.isMovable() &&
-            block.workspace.options.collapse;
+                block.workspace.options.collapse;
           };
-          if (Blockly.getSelected() && preCondition(Blockly.getSelected())) {
+
+          const selected = Blockly.getSelected();
+
+          // Case where selected is a
+          // block (not a multidraggable)
+          if (selected && selected instanceof Blockly.BlockSvg &&
+              preCondition(selected)) {
             if (ws.doubleClickPid_) {
               clearTimeout(ws.doubleClickPid_);
               ws.doubleClickPid_ = undefined;
-              if (Blockly.getSelected().id === ws.doubleClickBlock_) {
-                const state = !Blockly.getSelected().isCollapsed();
+              if (selected.id === ws.doubleClickBlock_) {
+                const state = !selected.isCollapsed();
                 const maybeCollapse = function(block) {
                   if (block && preCondition(block) &&
-                  !hasSelectedParent(block)) {
+                      !hasSelectedParent(block)) {
                     block.setCollapsed(state);
                   }
                 };
                 Blockly.Events.setGroup(true);
-                const blockSelection = blockSelectionWeakMap.get(ws);
-                if (Blockly.getSelected() && !blockSelection.size) {
-                  maybeCollapse(Blockly.getSelected());
+                if (selected) {
+                  maybeCollapse(selected);
                 }
-                blockSelection.forEach(function(id) {
+                Blockly.Events.setGroup(false);
+                return;
+              }
+            }
+            if (!ws.doubleClickPid_) {
+              ws.doubleClickBlock_ = selected.id;
+              ws.doubleClickPid_ = setTimeout(function() {
+                ws.doubleClickPid_ = undefined;
+              }, 500);
+            }
+          } else if (selected && selected instanceof MultiselectDraggable) {
+            // Case where the selected is a multidraggable instance
+            if (ws.doubleClickPid_) {
+              clearTimeout(ws.doubleClickPid_);
+              ws.doubleClickPid_ = undefined;
+              const dragSelection = dragSelectionWeakMap.get(ws);
+              if (dragSelection.size) {
+                // Checking whether any of the blocks in
+                // the dragSelection is not collapsed.
+                // If there are not collapsed blocks,
+                // set the maybeCollapse function to collapse
+                // those uncollapsed blocks.
+                // Otherwise, uncollapse all the collapsed blocks.
+                let notCollapsed = 0;
+                dragSelection.forEach((id) => {
+                  if (ws.getBlockById(id)) {
+                    if (!ws.getBlockById(id).isCollapsed() &&
+                        !hasSelectedParent(ws.getBlockById(id))) {
+                      notCollapsed += 1;
+                    }
+                  }
+                });
+                let state = false;
+                if (notCollapsed > 0) {
+                  state = true;
+                }
+
+                const maybeCollapse = function(block) {
+                  if (block && preCondition(block) &&
+                      !hasSelectedParent(block)) {
+                    block.setCollapsed(state);
+                  }
+                };
+                Blockly.Events.setGroup(true);
+                dragSelection.forEach(function(id) {
                   const block = ws.getBlockById(id);
                   if (block) {
                     maybeCollapse(block);
@@ -260,7 +311,6 @@ export class Multiselect {
               }
             }
             if (!ws.doubleClickPid_) {
-              ws.doubleClickBlock_ = Blockly.getSelected().id;
               ws.doubleClickPid_ = setTimeout(function() {
                 ws.doubleClickPid_ = undefined;
               }, 500);
@@ -281,7 +331,7 @@ export class Multiselect {
   eventListener_(e) {
     // on Block field changed
     if (this.multiFieldUpdate_ &&
-        this.blockSelection_.has(e.blockId) &&
+        this.dragSelection_.has(e.blockId) &&
         (e.type === Blockly.Events.CHANGE &&
         e.element === 'field' && e.recordUndo && e.group === '' ||
         e.type === Blockly.Events.BLOCK_FIELD_INTERMEDIATE_CHANGE)) {
@@ -294,7 +344,7 @@ export class Multiselect {
         const blockType = this.workspace_.getBlockById(e.blockId).type;
         // Update the fields to the same value for
         // the selected blocks with same type.
-        this.blockSelection_.forEach((id) => {
+        this.dragSelection_.forEach((id) => {
           if (id === e.blockId) {
             return;
           }

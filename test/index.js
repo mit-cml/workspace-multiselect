@@ -10,7 +10,7 @@
 
 import * as Blockly from 'blockly';
 import {toolboxCategories, createPlayground} from '@blockly/dev-tools';
-import {Multiselect, MultiselectBlockDragger} from '../src/index';
+import {Multiselect} from '../src/index';
 import {Backpack} from '@blockly/workspace-backpack';
 
 /**
@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', function() {
       enabledIcon: 'media/select.svg',
       disabledIcon: 'media/unselect.svg',
     },
-    multiSelectKeys: ['Shift', 'Control'],
+    multiSelectKeys: ['Shift'],
     multiselectCopyPaste: {
       crossTab: true,
       menu: true,
@@ -62,7 +62,6 @@ document.addEventListener('DOMContentLoaded', function() {
       wheel: true,
     },
     plugins: {
-      'blockDragger': MultiselectBlockDragger,
     },
   };
   createPlayground(document.getElementById('root'), createWorkspace,

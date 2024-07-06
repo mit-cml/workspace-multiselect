@@ -9,9 +9,12 @@
  */
 
 import * as Blockly from 'blockly/core';
-import {blockSelectionWeakMap, hasSelectedParent, copyData,
+import {
+  dragSelectionWeakMap, hasSelectedParent, copyData,
   connectionDBList, dataCopyToStorage, dataCopyFromStorage,
-  blockNumGetFromStorage, registeredContextMenu} from './global';
+  blockNumGetFromStorage, registeredContextMenu, multiDraggableWeakMap, getByID,
+} from './global';
+import {MultiselectDraggable} from './multiselect_draggable';
 
 /**
  * Copy multiple selected blocks to clipboard.
@@ -24,11 +27,13 @@ const registerCopy = function(useCopyPasteCrossTab) {
     displayText: function(scope) {
       let workableBlocksLength = 0;
       const workspace = scope.block.workspace;
-      const blockSelection = blockSelectionWeakMap.get(workspace);
-      blockSelection.forEach(function(id) {
+      const dragSelection = dragSelectionWeakMap.get(workspace);
+      dragSelection.forEach(function(id) {
         const block = workspace.getBlockById(id);
-        if (copyOptions.check(block)) {
-          workableBlocksLength++;
+        if (block) {
+          if (copyOptions.check(block)) {
+            workableBlocksLength++;
+          }
         }
       });
       if (workableBlocksLength <= 1) {
@@ -50,24 +55,26 @@ const registerCopy = function(useCopyPasteCrossTab) {
         return 'hidden';
       }
       const selected = Blockly.common.getSelected();
-      const blockSelection = blockSelectionWeakMap.get(workspace);
+      const dragSelection = dragSelectionWeakMap.get(workspace);
 
       // Fix the context menu error for backpack plugin
-      if (blockSelection === undefined) {
+      if (dragSelection === undefined) {
         return 'hidden';
       }
 
-      if (!blockSelection.size) {
+      if (!dragSelection.size) {
         if (copyOptions.check(selected)) {
           return 'enabled';
         } else {
           return 'disabled';
         }
       }
-      for (const id of blockSelection) {
+      for (const id of dragSelection) {
         const block = workspace.getBlockById(id);
-        if (copyOptions.check(block)) {
-          return 'enabled';
+        if (block) {
+          if (copyOptions.check(block)) {
+            return 'enabled';
+          }
         }
       }
       return 'disabled';
@@ -88,15 +95,20 @@ const registerCopy = function(useCopyPasteCrossTab) {
         }
       };
       const selected = Blockly.common.getSelected();
-      const blockSelection = blockSelectionWeakMap.get(workspace);
+      const dragSelection = dragSelectionWeakMap.get(workspace);
       Blockly.Events.setGroup(true);
-      if (!blockSelection.size) {
+
+      // Handle the case where MultiselectDraggable is in use
+      if (selected && selected instanceof MultiselectDraggable) {
+        for (const element of selected.subDraggables) {
+          if (element[0] instanceof Blockly.BlockSvg) {
+            apply(element[0]);
+          }
+        }
+      } else if (!dragSelection.size) {
         apply(selected);
       }
-      blockSelection.forEach(function(id) {
-        const block = workspace.getBlockById(id);
-        apply(block);
-      });
+
       connectionDBList.length = 0;
       blockList.forEach(function(id) {
         const block = workspace.getBlockById(id);
@@ -133,8 +145,8 @@ const registerDuplicate = function() {
     displayText: function(scope) {
       let workableBlocksLength = 0;
       const workspace = scope.block.workspace;
-      const blockSelection = blockSelectionWeakMap.get(workspace);
-      blockSelection.forEach(function(id) {
+      const dragSelection = dragSelectionWeakMap.get(workspace);
+      dragSelection.forEach(function(id) {
         const block = workspace.getBlockById(id);
         if (duplicateOption.check(block)) {
           workableBlocksLength++;
@@ -170,23 +182,41 @@ const registerDuplicate = function() {
       const duplicatedBlocks = {};
       const connectionDBList = [];
       const workspace = scope.block.workspace;
+      const multiDraggable = multiDraggableWeakMap.get(workspace);
       const apply = function(block) {
         if (duplicateOption.check(block)) {
-          duplicatedBlocks[block.id] = Blockly.clipboard.paste(
-              block.toCopyData(), workspace);
+          // Generate a new unique ID
+          const newId = Blockly.utils.idGenerator.genUid();
+          // Get the copy data of the block
+          const blockCopyData = block.toCopyData();
+          // Set the new ID in the copy data
+          blockCopyData.blockState.id = newId;
+          // Paste the block with the modified copy data
+          duplicatedBlocks[block.id] =
+              Blockly.clipboard.paste(blockCopyData, workspace);
         }
-        block.pathObject.updateSelected(false);
       };
-      const blockSelection = blockSelectionWeakMap.get(workspace);
+      const dragSelection = dragSelectionWeakMap.get(workspace);
       Blockly.Events.setGroup(true);
-      if (!blockSelection.size) {
+
+      // We want to update the dragSelection and the multiDraggable object to
+      // remove subdraggables from the current selection prior to duplicating.
+      if (dragSelection.size) {
+        dragSelection.forEach(function(id) {
+          const block = workspace.getBlockById(id);
+          if (block) {
+            block.pathObject.updateSelected(false);
+            if (!hasSelectedParent(block)) {
+              apply(block);
+            }
+          }
+        });
+        dragSelection.clear();
+        multiDraggable.clearAll_();
+      } else {
         apply(scope.block);
       }
-      blockSelection.forEach(function(id) {
-        const block = workspace.getBlockById(id);
-        apply(block);
-      });
-      blockSelection.clear();
+
       for (const [id, block] of Object.entries(duplicatedBlocks)) {
         const origBlock = workspace.getBlockById(id);
         const origParentBlock = origBlock.getParent();
@@ -197,13 +227,17 @@ const registerDuplicate = function() {
               duplicatedBlocks[origParentBlock.id].nextConnection,
               block.previousConnection]);
           }
-          blockSelection.add(block.id);
-          block.pathObject.updateSelected(true);
+          dragSelection.add(block.id);
+          multiDraggable.addSubDraggable_(block);
+          if (!block.isShadow()) {
+            block.pathObject.updateSelected(true);
+          }
         }
       }
       connectionDBList.forEach(function(connectionDB) {
         connectionDB[0].connect(connectionDB[1]);
       });
+      Blockly.common.setSelected(multiDraggable);
       Blockly.Events.setGroup(false);
     },
     scopeType: Blockly.ContextMenuRegistry.ScopeType.BLOCK,
@@ -216,14 +250,14 @@ const registerDuplicate = function() {
 /**
  * Modification for context menu 'Comment' to be available for multiple blocks.
  */
-const registerComment = function() {
+const registerBlockComment = function() {
   const commentOption = {
     displayText: function(scope) {
       let workableBlocksLength = 0;
       const state = scope.block.hasIcon(Blockly.icons.CommentIcon.TYPE);
       const workspace = scope.block.workspace;
-      const blockSelection = blockSelectionWeakMap.get(workspace);
-      blockSelection.forEach(function(id) {
+      const dragSelection = dragSelectionWeakMap.get(workspace);
+      dragSelection.forEach(function(id) {
         const block = workspace.getBlockById(id);
         if (commentOption.check(block) && state === block.hasIcon(
             Blockly.icons.CommentIcon.TYPE)) {
@@ -278,14 +312,16 @@ const registerComment = function() {
         }
       };
       const workspace = scope.block.workspace;
-      const blockSelection = blockSelectionWeakMap.get(workspace);
+      const dragSelection = dragSelectionWeakMap.get(workspace);
       Blockly.Events.setGroup(true);
-      if (!blockSelection.size) {
+      if (!dragSelection.size) {
         apply(scope.block);
       }
-      blockSelection.forEach(function(id) {
+      dragSelection.forEach(function(id) {
         const block = workspace.getBlockById(id);
-        apply(block);
+        if (block) {
+          apply(block);
+        }
       });
       Blockly.Events.setGroup(false);
     },
@@ -305,8 +341,8 @@ const registerInline = function() {
       let workableBlocksLength = 0;
       const state = scope.block.getInputsInline();
       const workspace = scope.block.workspace;
-      const blockSelection = blockSelectionWeakMap.get(workspace);
-      blockSelection.forEach(function(id) {
+      const dragSelection = dragSelectionWeakMap.get(workspace);
+      dragSelection.forEach(function(id) {
         const block = workspace.getBlockById(id);
         if (inlineOption.check(block) &&
             block.getInputsInline() === state) {
@@ -341,8 +377,9 @@ const registerInline = function() {
         for (let i = 1; i < block.inputList.length; i++) {
           // Only display this option if there are two value or dummy inputs
           // next to each other.
-          if (block.inputList[i - 1].type !== Blockly.inputTypes.STATEMENT &&
-            block.inputList[i].type !== Blockly.inputTypes.STATEMENT) {
+          if (block.inputList[i - 1].type !==
+              Blockly.inputs.inputTypes.STATEMENT &&
+            block.inputList[i].type !== Blockly.inputs.inputTypes.STATEMENT) {
             return 'enabled';
           }
         }
@@ -361,14 +398,16 @@ const registerInline = function() {
         }
       };
       const workspace = scope.block.workspace;
-      const blockSelection = blockSelectionWeakMap.get(workspace);
+      const dragSelection = dragSelectionWeakMap.get(workspace);
       Blockly.Events.setGroup(true);
-      if (!blockSelection.size) {
+      if (!dragSelection.size) {
         apply(scope.block);
       }
-      blockSelection.forEach(function(id) {
+      dragSelection.forEach(function(id) {
         const block = workspace.getBlockById(id);
-        apply(block);
+        if (block) {
+          apply(block);
+        }
       });
       Blockly.Events.setGroup(false);
     },
@@ -389,8 +428,8 @@ const registerCollapseExpandBlock = function() {
       let workableBlocksLength = 0;
       const state = scope.block.isCollapsed();
       const workspace = scope.block.workspace;
-      const blockSelection = blockSelectionWeakMap.get(workspace);
-      blockSelection.forEach(function(id) {
+      const dragSelection = dragSelectionWeakMap.get(workspace);
+      dragSelection.forEach(function(id) {
         const block = workspace.getBlockById(id);
         if (collapseExpandOption.check(block) &&
             block.isCollapsed() === state) {
@@ -441,14 +480,16 @@ const registerCollapseExpandBlock = function() {
         }
       };
       const workspace = scope.block.workspace;
-      const blockSelection = blockSelectionWeakMap.get(workspace);
+      const dragSelection = dragSelectionWeakMap.get(workspace);
       Blockly.Events.setGroup(true);
-      if (!blockSelection.size) {
+      if (!dragSelection.size) {
         apply(scope.block);
       }
-      blockSelection.forEach(function(id) {
+      dragSelection.forEach(function(id) {
         const block = workspace.getBlockById(id);
-        apply(block);
+        if (block) {
+          apply(block);
+        }
       });
       Blockly.Events.setGroup(false);
     },
@@ -468,8 +509,8 @@ const registerDisable = function() {
       let workableBlocksLength = 0;
       const state = scope.block.isEnabled();
       const workspace = scope.block.workspace;
-      const blockSelection = blockSelectionWeakMap.get(workspace);
-      blockSelection.forEach(function(id) {
+      const dragSelection = dragSelectionWeakMap.get(workspace);
+      dragSelection.forEach(function(id) {
         const block = workspace.getBlockById(id);
         if (disableOption.check(block) &&
             block.isEnabled() === state) {
@@ -522,14 +563,16 @@ const registerDisable = function() {
         }
       };
       const workspace = scope.block.workspace;
-      const blockSelection = blockSelectionWeakMap.get(workspace);
+      const dragSelection = dragSelectionWeakMap.get(workspace);
       Blockly.Events.setGroup(true);
-      if (!blockSelection.size) {
+      if (!dragSelection.size) {
         apply(scope.block);
       }
-      blockSelection.forEach(function(id) {
+      dragSelection.forEach(function(id) {
         const block = workspace.getBlockById(id);
-        apply(block);
+        if (block) {
+          apply(block);
+        }
       });
       Blockly.Events.setGroup(false);
     },
@@ -548,12 +591,17 @@ const registerDelete = function() {
     displayText: function(scope) {
       let descendantCount = 0;
       const workspace = scope.block.workspace;
-      const blockSelection = blockSelectionWeakMap.get(workspace);
-      blockSelection.forEach(function(id) {
+      const dragSelection = dragSelectionWeakMap.get(workspace);
+      dragSelection.forEach(function(id) {
         const block = workspace.getBlockById(id);
         if (block && !hasSelectedParent(block)) {
           // Count the number of blocks that are nested in this block.
           descendantCount += block.getDescendants(false).length;
+          for (const subBlocks of block.getDescendants(false)) {
+            if (subBlocks.isShadow()) {
+              descendantCount -= 1;
+            }
+          }
           const nextBlock = block.getNextBlock();
           if (nextBlock) {
             // Blocks in the current stack would survive this block's deletion.
@@ -588,15 +636,24 @@ const registerDelete = function() {
         }
       };
       const workspace = scope.block.workspace;
-      const blockSelection = blockSelectionWeakMap.get(workspace);
+      const dragSelection = dragSelectionWeakMap.get(workspace);
+      const selected = Blockly.common.getSelected();
       Blockly.Events.setGroup(true);
-      if (!blockSelection.size) {
-        apply(scope.block);
+
+      // Handle the case where MultiselectDraggable is in use
+      if (selected && selected instanceof MultiselectDraggable) {
+        for (const element of selected.subDraggables) {
+          element[0].unselect();
+          if (element[0] instanceof Blockly.BlockSvg) {
+            apply(element[0]);
+          }
+        }
+        dragSelection.clear();
+        selected.clearAll_();
+      } else if (!dragSelection.size) {
+        apply(selected);
       }
-      blockSelection.forEach(function(id) {
-        const block = workspace.getBlockById(id);
-        apply(block);
-      });
+
       Blockly.Events.setGroup(false);
     },
     scopeType: Blockly.ContextMenuRegistry.ScopeType.BLOCK,
@@ -607,25 +664,26 @@ const registerDelete = function() {
 };
 
 /**
- * Paste multiple selected blocks from clipboard.
+ * Paste multiple selected draggables from clipboard.
  * @param {boolean} useCopyPasteCrossTab Whether to use cross tab copy paste.
  */
 const registerPaste = function(useCopyPasteCrossTab) {
   const id = 'blockPasteFromStorage';
   const pasteOption = {
     displayText: function() {
-      const workableBlocksLength = blockNumGetFromStorage(useCopyPasteCrossTab);
-      if (workableBlocksLength <= 1) {
+      const workableDraggableLength =
+          blockNumGetFromStorage(useCopyPasteCrossTab);
+      if (workableDraggableLength <= 1) {
         return Blockly.Msg['CROSS_TAB_PASTE']?
           Blockly.Msg['CROSS_TAB_PASTE'] : 'Paste';
       } else {
-        return Blockly.Msg['CROSS_TAB_PASTE_X_BLOCKS']?
-            Blockly.Msg['CROSS_TAB_PASTE_X_BLOCKS'].replace(
-                '%1', workableBlocksLength) :
+        return Blockly.Msg['CROSS_TAB_PASTE_X_ELEMENTS']?
+            Blockly.Msg['CROSS_TAB_PASTE_X_ELEMENTS'].replace(
+                '%1', workableDraggableLength) :
             (Blockly.Msg['CROSS_TAB_PASTE']?
             Blockly.Msg['CROSS_TAB_PASTE'] : 'Paste'
             ) + ' (' +
-            workableBlocksLength + ')';
+            workableDraggableLength + ')';
       }
     },
     preconditionFn: function(scope) {
@@ -634,16 +692,23 @@ const registerPaste = function(useCopyPasteCrossTab) {
           'disabled': 'enabled');
     },
     callback: function(scope) {
+      // TODO: Need to see if works for both multiple comments and blocks
       let workspace = scope.workspace;
-      const blockSelection = blockSelectionWeakMap.get(workspace);
+      const dragSelection = dragSelectionWeakMap.get(workspace);
       Blockly.Events.setGroup(true);
-      blockSelection.forEach(function(id) {
-        const block = workspace.getBlockById(id);
-        if (block) {
-          block.pathObject.updateSelected(false);
-        }
-      });
-      blockSelection.clear();
+      const multiDraggable = multiDraggableWeakMap.get(workspace);
+
+      // Update the dragSelection and multiDraggable object
+      // to remove current selection prior to pasting.
+      if (dragSelection.size) {
+        dragSelection.forEach(function(id) {
+          const element = getByID(workspace, id);
+          element.unselect();
+        });
+        dragSelection.clear();
+        multiDraggable.clearAll_();
+      }
+
       const blockList = [];
       if (useCopyPasteCrossTab) {
         dataCopyFromStorage();
@@ -652,6 +717,17 @@ const registerPaste = function(useCopyPasteCrossTab) {
         // Pasting always pastes to the main workspace, even if the copy
         // started in a flyout workspace.
         const data = JSON.parse(stringData);
+
+        // Set unique id for data to prevent bug where
+        // blocks on multiple workspaces are highlighted.
+        if (workspace.id !== Blockly.getMainWorkspace().id) {
+          if (data.blockState) {
+            data.blockState.id = Blockly.utils.idGenerator.genUid();
+          } else if (data.commentState) {
+            data.commentState.id = Blockly.utils.idGenerator.genUid();
+          }
+        }
+
         if (data.source) {
           workspace = data.source;
         }
@@ -660,10 +736,22 @@ const registerPaste = function(useCopyPasteCrossTab) {
         }
         if (data.typeCounts &&
             workspace.isCapacityAvailable(data.typeCounts)) {
-          const block = Blockly.clipboard.paste(data, workspace);
-          blockList.push(block);
-          block.pathObject.updateSelected(true);
-          blockSelectionWeakMap.get(block.workspace).add(block.id);
+          const element = Blockly.clipboard.paste(data, workspace);
+          if (element) {
+            blockList.push(element);
+            if (!element.isShadow()) {
+              element.pathObject.updateSelected(true);
+            }
+          }
+          dragSelectionWeakMap.get(workspace).add(element.id);
+          multiDraggableWeakMap.get(workspace).addSubDraggable_(element);
+        } else if (data.commentState) {
+          const element = Blockly.clipboard.paste(data, workspace);
+          if (element) {
+            element.select();
+          }
+          dragSelectionWeakMap.get(workspace).add(element.id);
+          multiDraggableWeakMap.get(workspace).addSubDraggable_(element);
         }
       });
       connectionDBList.forEach(function(connectionDB) {
@@ -671,6 +759,7 @@ const registerPaste = function(useCopyPasteCrossTab) {
             blockList[connectionDB[1]].previousConnection);
       });
       Blockly.Events.setGroup(false);
+      Blockly.common.setSelected(multiDraggable);
       return true;
     },
     scopeType: Blockly.ContextMenuRegistry.ScopeType.WORKSPACE,
@@ -702,12 +791,23 @@ const registerSelectAll = function() {
              !block.isInsertionMarker();
     },
     callback: function(scope) {
-      const blockSelection = blockSelectionWeakMap.get(scope.workspace);
-      if (Blockly.getSelected() &&
-        !blockSelection.has(Blockly.getSelected().id)) {
-        Blockly.getSelected().pathObject.updateSelected(false);
+      const multiDraggable = multiDraggableWeakMap.get(scope.workspace);
+
+      // Make sure that there is nothing in the multiDraggable (clearing)
+      // prior to selecting all blocks in workspace.
+      if (Blockly.getSelected()) {
+        if (Blockly.getSelected() instanceof MultiselectDraggable) {
+          for (const [subDraggable] of Blockly.getSelected().subDraggables) {
+            subDraggable.unselect();
+          }
+        } else {
+          Blockly.getSelected().unselect();
+        }
         Blockly.common.setSelected(null);
+        multiDraggable.clearAll_();
+        dragSelectionWeakMap.get(scope.workspace).clear();
       }
+
       const blockList = [];
       scope.workspace.getTopBlocks().forEach(function(block) {
         if (selectAllOption.check(block)) {
@@ -720,12 +820,14 @@ const registerSelectAll = function() {
         }
       });
       blockList.forEach(function(block) {
-        blockSelectionWeakMap.get(block.workspace).add(block.id);
-        if (!Blockly.common.getSelected()) {
-          Blockly.common.setSelected(block);
+        if (!block.isShadow()) {
+          block.pathObject.updateSelected(true);
         }
-        block.pathObject.updateSelected(true);
+        dragSelectionWeakMap.get(block.workspace).add(block.id);
+        multiDraggable.addSubDraggable_(block);
       });
+
+      Blockly.common.setSelected(multiDraggable);
     },
     scopeType: Blockly.ContextMenuRegistry.ScopeType.WORKSPACE,
     id,
@@ -770,13 +872,13 @@ const updateToMultiCopyToBackpack =
           }
           const backpackCount = backpack.getCount();
           let workableBlocksLength = 0;
-          const blockSelection = blockSelectionWeakMap.get(ws);
-          if (!blockSelection.size) {
+          const dragSelection = dragSelectionWeakMap.get(ws);
+          if (!dragSelection.size) {
             if (copyToBackpack.check(scope.block)) {
               workableBlocksLength++;
             }
           }
-          for (const id of blockSelection) {
+          for (const id of dragSelection) {
             if (copyToBackpack.check(ws.getBlockById(id))) {
               workableBlocksLength++;
             }
@@ -794,13 +896,13 @@ const updateToMultiCopyToBackpack =
             if (disablePreconditionContainsCheck) {
               return 'enabled';
             }
-            const blockSelection = blockSelectionWeakMap.get(ws);
-            if (!blockSelection.size) {
+            const dragSelection = dragSelectionWeakMap.get(ws);
+            if (!dragSelection.size) {
               if (copyToBackpack.check(scope.block)) {
                 return 'enabled';
               }
             }
-            for (const id of blockSelection) {
+            for (const id of dragSelection) {
               if (copyToBackpack.check(ws.getBlockById(id))) {
                 return 'enabled';
               }
@@ -813,13 +915,13 @@ const updateToMultiCopyToBackpack =
           if (!scope.block) return;
           const ws = scope.block.workspace;
           const backpack = copyToBackpack.getBackPack(ws);
-          const blockSelection = blockSelectionWeakMap.get(ws);
-          if (!blockSelection.size) {
+          const dragSelection = dragSelectionWeakMap.get(ws);
+          if (!dragSelection.size) {
             if (copyToBackpack.check(scope.block)) {
               backpack.addBlock(scope.block);
             }
           }
-          blockSelection.forEach(function(id) {
+          dragSelection.forEach(function(id) {
             const block = ws.getBlockById(id);
             if (copyToBackpack.check(block)) {
               backpack.addBlock(block);
@@ -838,12 +940,278 @@ const updateToMultiCopyToBackpack =
     };
 
 /**
+ * Modification for context menu 'commentDelete' to
+ * be available for multiple comments.
+ */
+const registerCommentDelete = function() {
+  const deleteOption = {
+    displayText: function(scope) {
+      let count = 0;
+      const workspace = scope.comment.workspace;
+      const dragSelection = dragSelectionWeakMap.get(workspace);
+      dragSelection.forEach(function(id) {
+        const comment = workspace.getCommentById(id);
+        if (comment) {
+          // Count the number of blocks that are nested in this block.
+          count += 1;
+        }
+      });
+      return (count <= 1) ?
+          Blockly.Msg['DELETE_COMMENT'] :
+          Blockly.Msg['DELETE_X_COMMENTS'].replace('%1', String(count));
+    },
+    preconditionFn: function(scope) {
+      if (scope.comment.isDeletable()) {
+        return 'enabled';
+      }
+      return 'hidden';
+    },
+    check: function(comment) {
+      return comment &&
+          deleteOption.preconditionFn({comment: comment}) === 'enabled';
+    },
+    callback: function(scope) {
+      const apply = function(comment) {
+        if (deleteOption.check(comment)) {
+          comment.workspace.hideChaff();
+          comment.dispose();
+        }
+      };
+      const workspace = scope.comment.workspace;
+      const dragSelection = dragSelectionWeakMap.get(workspace);
+      const selected = Blockly.common.getSelected();
+      Blockly.Events.setGroup(true);
+
+      // Handle the case where MultiselectDraggable is in use
+      if (selected && selected instanceof MultiselectDraggable) {
+        for (const element of selected.subDraggables) {
+          element[0].unselect();
+          if (element[0] instanceof
+              Blockly.comments.RenderedWorkspaceComment) {
+            apply(element[0]);
+          }
+        }
+        dragSelection.clear();
+        selected.clearAll_();
+      } else if (!dragSelection.size) {
+        apply(scope.comment);
+      }
+
+      Blockly.Events.setGroup(false);
+    },
+    scopeType: Blockly.ContextMenuRegistry.ScopeType.COMMENT,
+    id: 'commentDelete',
+    weight: 6,
+  };
+  Blockly.ContextMenuRegistry.registry.register(deleteOption);
+};
+
+/**
+ * Modification for context menu 'commentDuplicate' to be available for
+ * multiple comments.
+ */
+const registerCommentDuplicate = function() {
+  const duplicateOption = {
+    displayText: function(scope) {
+      let count = 0;
+      const workspace = scope.block.workspace;
+      const dragSelection = dragSelectionWeakMap.get(workspace);
+      dragSelection.forEach(function(id) {
+        const comment = workspace.getCommentById(id);
+        if (comment) {
+          count += 1;
+        }
+      });
+      if (count <= 1) {
+        return Blockly.Msg['DUPLICATE_COMMENT'];
+      } else {
+        return Blockly.Msg['DUPLICATE_X_COMMENTS']?
+            Blockly.Msg['DUPLICATE_X_COMMENTS'].replace(
+                '%1', count) :
+            Blockly.Msg['DUPLICATE_COMMENT'] + ' (' +
+            count + ')';
+      }
+    },
+    preconditionFn: function(scope) {
+      const comment = scope.comment;
+      if (comment.isDeletable() && comment.isMovable()) {
+        return 'enabled';
+      }
+      return 'hidden';
+    },
+    check: function(comment) {
+      return comment && duplicateOption.preconditionFn({comment: comment}) ===
+          'enabled';
+    },
+    callback: function(scope) {
+      const duplicatedComments = {};
+      const workspace = scope.comment.workspace;
+      const multiDraggable = multiDraggableWeakMap.get(workspace);
+      const apply = function(comment) {
+        if (duplicateOption.check(comment)) {
+          // Generate a new unique ID
+          const newId = Blockly.utils.idGenerator.genUid();
+          // Get the copy data of the block
+          const commentCopyData = comment.toCopyData();
+          // Set the new ID in the copy data
+          commentCopyData.blockState.id = newId;
+          // Paste the block with the modified copy data
+          duplicatedComments[comment.id] =
+              Blockly.clipboard.paste(commentCopyData, workspace);
+        }
+      };
+      const dragSelection = dragSelectionWeakMap.get(workspace);
+      Blockly.Events.setGroup(true);
+
+      // We want to update the dragSelection and the multiDraggable object to
+      // remove subdraggables from the current selection prior to duplicating.
+      if (dragSelection.size) {
+        dragSelection.forEach(function(id) {
+          const comment = workspace.getCommentById(id);
+          if (comment) {
+            comment.unselect();
+            apply(comment);
+          }
+        });
+        dragSelection.clear();
+        multiDraggable.clearAll_();
+      } else {
+        apply(scope.comment);
+      }
+
+      for (const [, comment] of Object.entries(duplicatedComments)) {
+        if (comment.id) {
+          dragSelection.add(comment.id);
+          multiDraggable.addSubDraggable_(comment);
+          comment.select();
+        }
+      }
+      Blockly.common.setSelected(multiDraggable);
+      Blockly.Events.setGroup(false);
+    },
+    scopeType: Blockly.ContextMenuRegistry.ScopeType.COMMENT,
+    id: 'commentDuplicate',
+    weight: 1,
+  };
+};
+
+/**
+ * Copy multiple selected comments to clipboard.
+ * @param {boolean} useCopyPasteCrossTab Whether or not to use
+ *     cross tab copy paste.
+ */
+const registerCommentCopy = function(useCopyPasteCrossTab) {
+  const copyOptions = {
+    displayText: function(scope) {
+      let workableCommentsLength = 0;
+      const workspace = scope.comment.workspace;
+      const dragSelection = dragSelectionWeakMap.get(workspace);
+      dragSelection.forEach(function(id) {
+        const comment = workspace.getCommentById(id);
+        if (comment) {
+          if (copyOptions.check(comment)) {
+            workableCommentsLength++;
+          }
+        }
+      });
+      if (workableCommentsLength <= 1) {
+        return Blockly.Msg['CROSS_TAB_COPY']?
+            Blockly.Msg['CROSS_TAB_COPY'] : 'Copy';
+      } else {
+        return Blockly.Msg['CROSS_TAB_COPY_X_COMMENTS']?
+            Blockly.Msg['CROSS_TAB_COMMENTS'].replace(
+                '%1', workableCommentsLength) :
+            (Blockly.Msg['CROSS_TAB_COPY']?
+                    Blockly.Msg['CROSS_TAB_COPY'] : 'Copy'
+            ) + ' (' +
+            workableCommentsLength + ')';
+      }
+    },
+    preconditionFn: function(scope) {
+      const workspace = scope.comment.workspace;
+      if (workspace.options.readOnly && !useCopyPasteCrossTab) {
+        return 'hidden';
+      }
+
+      const dragSelection = dragSelectionWeakMap.get(workspace);
+
+      // Fix the context menu error for backpack plugin
+      if (dragSelection === undefined) {
+        return 'hidden';
+      }
+
+      if (!dragSelection.size) {
+        if (copyOptions.check(scope.comment)) {
+          return 'enabled';
+        } else {
+          return 'disabled';
+        }
+      }
+      for (const id of dragSelection) {
+        const comment = workspace.getCommentById(id);
+        if (comment) {
+          if (copyOptions.check(comment)) {
+            return 'enabled';
+          }
+        }
+      }
+      return 'disabled';
+    },
+    check: function(comment) {
+      return comment && comment.isDeletable() &&
+          comment.isMovable();
+    },
+    callback: function(scope) {
+      const workspace = scope.comment.workspace;
+      copyData.clear();
+      workspace.hideChaff();
+
+      const apply = function(comm) {
+        if (copyOptions.check(comm)) {
+          copyData.add(JSON.stringify(comm.toCopyData()));
+        }
+      };
+
+      const selected = Blockly.common.getSelected();
+      const dragSelection = dragSelectionWeakMap.get(workspace);
+      Blockly.Events.setGroup(true);
+
+      // Handle the case where MultiselectDraggable is in use
+      if (selected && selected instanceof MultiselectDraggable) {
+        for (const element of selected.subDraggables) {
+          if (element[0] instanceof Blockly.comments.RenderedWorkspaceComment) {
+            apply(element[0]);
+          }
+        }
+      } else if (!dragSelection.size) {
+        apply(scope.comment);
+      }
+
+      if (useCopyPasteCrossTab) {
+        dataCopyToStorage();
+      }
+      Blockly.Events.setGroup(false);
+      return true;
+    },
+    scopeType: Blockly.ContextMenuRegistry.ScopeType.COMMENT,
+    id: 'commentCopyToStorage',
+    weight: 0,
+  };
+  if (Blockly.ContextMenuRegistry.registry.getItem('commentCopyToStorage') !==
+      null) {
+    Blockly.ContextMenuRegistry.registry.unregister('commentCopyToStorage');
+  }
+  Blockly.ContextMenuRegistry.registry.register(copyOptions);
+};
+
+/**
  * Unregister context menu item, should be called before registering.
  */
 export const unregisterContextMenu = function() {
   registeredContextMenu.length = 0;
   for (const id of ['blockDuplicate', 'blockComment', 'blockInline',
-    'blockCollapseExpand', 'blockDisable', 'blockDelete']) {
+    'blockCollapseExpand', 'blockDisable', 'blockDelete', 'commentDelete',
+    'commentDuplicate']) {
     if (Blockly.ContextMenuRegistry.registry.getItem(id) !== null) {
       Blockly.ContextMenuRegistry.registry.unregister(id);
       registeredContextMenu.push(id);
@@ -862,6 +1230,8 @@ export const registerOrigContextMenu = function() {
     blockCollapseExpand: Blockly.ContextMenuItems.registerCollapseExpandBlock,
     blockDisable: Blockly.ContextMenuItems.registerDisable,
     blockDelete: Blockly.ContextMenuItems.registerDelete,
+    commentDelete: Blockly.ContextMenuItems.registerCommentDelete,
+    commentDuplicate: Blockly.ContextMenuItems.registerCommentDuplicate,
   };
   for (const id of registeredContextMenu) {
     map[id]();
@@ -877,14 +1247,17 @@ export const registerOurContextMenu = function(useCopyPasteMenu, useCopyPasteCro
   if (useCopyPasteMenu) {
     registerCopy(useCopyPasteCrossTab);
     registerPaste(useCopyPasteCrossTab);
+    registerCommentCopy(useCopyPasteCrossTab);
   }
   const map = {
     blockDuplicate: registerDuplicate,
-    blockComment: registerComment,
+    blockComment: registerBlockComment,
     blockInline: registerInline,
     blockCollapseExpand: registerCollapseExpandBlock,
     blockDisable: registerDisable,
     blockDelete: registerDelete,
+    commentDelete: registerCommentDelete,
+    commentDuplicate: registerCommentDuplicate,
   };
   for (const id of registeredContextMenu) {
     map[id]();
