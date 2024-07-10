@@ -205,7 +205,6 @@ const registerDuplicate = function() {
         dragSelection.forEach(function(id) {
           const block = workspace.getBlockById(id);
           if (block) {
-            block.pathObject.updateSelected(false);
             if (!hasSelectedParent(block)) {
               apply(block);
             }
@@ -213,6 +212,7 @@ const registerDuplicate = function() {
         });
         dragSelection.clear();
         multiDraggable.clearAll_();
+        Blockly.common.setSelected(null);
       } else {
         apply(scope.block);
       }
@@ -229,9 +229,6 @@ const registerDuplicate = function() {
           }
           dragSelection.add(block.id);
           multiDraggable.addSubDraggable_(block);
-          if (!block.isShadow()) {
-            block.pathObject.updateSelected(true);
-          }
         }
       }
       connectionDBList.forEach(function(connectionDB) {
@@ -739,9 +736,6 @@ const registerPaste = function(useCopyPasteCrossTab) {
           const element = Blockly.clipboard.paste(data, workspace);
           if (element) {
             blockList.push(element);
-            if (!element.isShadow()) {
-              element.pathObject.updateSelected(true);
-            }
           }
           dragSelectionWeakMap.get(workspace).add(element.id);
           multiDraggableWeakMap.get(workspace).addSubDraggable_(element);
@@ -820,9 +814,6 @@ const registerSelectAll = function() {
         }
       });
       blockList.forEach(function(block) {
-        if (!block.isShadow()) {
-          block.pathObject.updateSelected(true);
-        }
         dragSelectionWeakMap.get(block.workspace).add(block.id);
         multiDraggable.addSubDraggable_(block);
       });

@@ -240,25 +240,34 @@ export class MultiselectDraggable {
 
   // ISelectable methods
   /**
-   * An empty function that is required for the
-   * multiselectDraggable object to be selectable.
+   * A function that updates the highlight selection
+   * of the subdraggables. Currently, this only updates
+   * the highlighting after multiselect mode is turned
+   * off. Look at updateDraggables_ method in
+   * multiselect_controls.js
    */
   select() {
-    // This just needs to be an empty function
-    // for (const draggable of this.subDraggables) {
-    //   draggable[0].select()
-    // }
+    // This needs to be worked on to see if we can make the
+    // highlighting of the subdraggables in real time.
+    for (const draggable of this.subDraggables) {
+      if (draggable[0] instanceof Blockly.BlockSvg) {
+        if (!draggable[0].isShadow()) {
+          draggable[0].select()
+        }
+      } else {
+        draggable[0].select()
+      }
+    }
   }
 
   /**
-   * An empty function that is required for the
-   * multiselectDraggable object to be selectable.
+   * A function that turns off the highlight selection
+   * of the subdraggables.
    */
   unselect() {
-    // This just needs to be an empty function
-    // for (const draggable of this.subDraggables) {
-    //   draggable[0].unselect()
-    // }
+    for (const draggable of this.subDraggables) {
+      draggable[0].unselect()
+    }
   }
 
 

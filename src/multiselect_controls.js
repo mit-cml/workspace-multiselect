@@ -160,8 +160,8 @@ export class MultiselectControls {
     // MultiDraggable object that holds subdraggables
     this.multiDraggable = multiDraggableWeakMap.get(workspace);
 
-    // Original settings for setting the start block
-    this.origSetStartBlock = Blockly.Gesture.prototype.setStartBlock;
+    // Original settings for handling the start block
+    this.origHandleBlockStart = Blockly.Gesture.prototype.handleBlockStart;
   }
 
   /**
@@ -363,29 +363,27 @@ export class MultiselectControls {
     // Not in multiselect mode
     if (!inMultipleSelectionModeWeakMap.get(this.workspace_)) {
       if (this.workspace_.id !== Blockly.getMainWorkspace().id) {
-        this.clearMultiselect();
+        this.multiDraggable.clearAll_();
+        this.dragSelection.clear();
       }
 
       // If unselecting/clicking on workspace or different workspace,
       // clear selected set
       if (!Blockly.getSelected()) {
-        this.clearMultiselect();
+        this.multiDraggable.clearAll_();
+        this.dragSelection.clear();
         Blockly.common.setSelected(null);
       } else if (Blockly.getSelected() &&
           !(Blockly.getSelected() instanceof MultiselectDraggable)) {
         // Blockly.getSelected() is not a multiselectDraggable
         // and selected block is not in dragSelection
-        this.clearMultiselect();
+        this.multiDraggable.clearAll_();
+        this.dragSelection.clear();
         this.lastSelectedElement_ = Blockly.getSelected();
         inPasteShortcut.set(this.workspace_, false);
       }
     } else {
       // In multiselect mode
-      if (Blockly.getSelected() && !(Blockly.getSelected() instanceof
-          MultiselectDraggable)) {
-        this.multiDraggable.addSubDraggable_(Blockly.getSelected());
-        Blockly.common.setSelected(this.multiDraggable);
-      }
       // Set selected to multiDraggable if dragSelection not empty
       if (this.dragSelection.size && !(Blockly.getSelected() instanceof
           MultiselectDraggable)) {
@@ -395,32 +393,8 @@ export class MultiselectControls {
         this.updateDraggables_(this.lastSelectedElement_);
         this.lastSelectedElement_ = null;
         inPasteShortcut.set(this.workspace_, false);
-      } else {
-        Blockly.common.setSelected(null);
       }
     }
-
-    // Update the selection highlight.
-    this.dragSelection.forEach((id) => {
-      const element = this.workspace_.getBlockById(id);
-      if (element && !element.isShadow()) {
-        element.pathObject.updateSelected(true);
-      }
-    });
-  }
-
-  /**
-   * Clear the multiple selection blocks status.
-   */
-  clearMultiselect() {
-    this.dragSelection.forEach((id) => {
-      const element = this.workspace_.getBlockById(id);
-      if (element) {
-        element.pathObject.updateSelected(false);
-      }
-      this.multiDraggable.removeSubDraggable_(element);
-    });
-    this.dragSelection.clear();
   }
 
   /**
@@ -428,18 +402,18 @@ export class MultiselectControls {
    * @param {!boolean} byIcon Whether to simulate a keyboard event.
    */
   enableMultiselect(byIcon = false) {
-    // Disable the setStartBlock gesture when entering multiselect mode.
-    Blockly.Gesture.prototype.setStartBlock = (function(func) {
+    // Disable the handleStartBlock gesture when entering multiselect mode.
+    Blockly.Gesture.prototype.handleBlockStart = (function(func) {
       if (func.isWrapped) {
         return func;
       }
 
       const wrappedFunc = function(block) {
-        return;
+
       };
       wrappedFunc.isWrapped = true;
       return wrappedFunc;
-    })(Blockly.Gesture.prototype.setStartBlock);
+    })(Blockly.Gesture.prototype.handleBlockStart);
 
     // Ensure that we only restore drag to move the workspace behavior
     // when it is enabled.
@@ -527,7 +501,7 @@ export class MultiselectControls {
   disableMultiselect(byIcon = false) {
     // Revert Gesture.setStartBlock to original settings
     // when disabling multiselect mode.
-    Blockly.Gesture.prototype.setStartBlock = this.origSetStartBlock;
+    Blockly.Gesture.prototype.handleBlockStart = this.origHandleBlockStart;
 
     inMultipleSelectionModeWeakMap.set(this.workspace_, false);
     if (this.dragSelect_) {

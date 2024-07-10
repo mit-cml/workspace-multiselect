@@ -339,7 +339,9 @@ const registerPaste = function(useCopyPasteCrossTab) {
       if (dragSelection.size) {
         dragSelection.forEach(function(id) {
           const element = getByID(workspace, id);
-          element.unselect();
+          if (element) {
+            element.unselect();
+          }
         });
         dragSelection.clear();
         multiDraggable.clearAll_();
@@ -372,9 +374,6 @@ const registerPaste = function(useCopyPasteCrossTab) {
           const element = Blockly.clipboard.paste(data, workspace);
           if (element) {
             blockList.push(element);
-            if (!element.isShadow()) {
-              element.pathObject.updateSelected(true);
-            }
           }
           dragSelectionWeakMap.get(workspace).add(element.id);
           multiDraggableWeakMap.get(workspace).addSubDraggable_(element);
@@ -462,9 +461,6 @@ const registerSelectAll = function() {
         }
       });
       blockList.forEach(function(block) {
-        if (!block.isShadow()) {
-          block.pathObject.updateSelected(true);
-        }
         multiDraggable.addSubDraggable_(block);
         dragSelection.add(block.id);
       });

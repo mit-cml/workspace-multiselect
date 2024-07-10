@@ -96,7 +96,7 @@ export class Multiselect {
       Shortcut.registerOurShortcut(this.useCopyPasteCrossTab_);
     }
     // Register workspace comments
-    // Blockly.ContextMenuItems.registerCommentOptions();
+    Blockly.ContextMenuItems.registerCommentOptions();
 
     this.controls_ = new MultiselectControls(
         this.workspace_, options.multiselectIcon, this.multiSelectKeys_);
