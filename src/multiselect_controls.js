@@ -321,36 +321,40 @@ export class MultiselectControls {
    * @private
    */
   updateDraggables_(draggable) {
-    if (draggable) {
-      if (draggable instanceof Blockly.BlockSvg) {
-        if ((draggable.isDeletable() || draggable.isMovable()) &&
-            !draggable.isShadow()) {
-          if (this.dragSelection.has(draggable.id)) {
-            this.dragSelection.delete(draggable.id);
-            this.justUnselectedBlock_ = draggable;
-            this.multiDraggable.removeSubDraggable_(draggable);
-            draggable.pathObject.updateSelected(false);
-          } else {
-            this.dragSelection.add(draggable.id);
-            this.justUnselectedBlock_ = null;
-            this.multiDraggable.addSubDraggable_(draggable);
-            draggable.pathObject.updateSelected(true);
-            draggable.bringToFront();
-          }
-        }
+    if (!draggable) {
+      return;
+    }
+    if (draggable instanceof Blockly.BlockSvg) {
+      // The case where the draggable is a block
+      if (!((draggable.isDeletable() || draggable.isMovable()) &&
+          !draggable.isShadow())) {
+        return;
+      }
+      if (this.dragSelection.has(draggable.id)) {
+        this.dragSelection.delete(draggable.id);
+        this.justUnselectedBlock_ = draggable;
+        this.multiDraggable.removeSubDraggable_(draggable);
+        draggable.pathObject.updateSelected(false);
       } else {
-        // The case where the draggable is not a block (e.g. ws comment)
-        if (draggable.isMovable() || draggable.isDeletable()) {
-          if (this.dragSelection.has(draggable.id)) {
-            this.dragSelection.delete(draggable.id);
-            this.multiDraggable.removeSubDraggable_(draggable);
-            draggable.unselect();
-          } else {
-            this.dragSelection.add(draggable.id);
-            this.multiDraggable.addSubDraggable_(draggable);
-            draggable.select();
-          }
-        }
+        this.dragSelection.add(draggable.id);
+        this.justUnselectedBlock_ = null;
+        this.multiDraggable.addSubDraggable_(draggable);
+        draggable.pathObject.updateSelected(true);
+        draggable.bringToFront();
+      }
+    } else {
+      // The case where the draggable is not a block (e.g. ws comment)
+      if (!(draggable.isMovable() || draggable.isDeletable())) {
+        return;
+      }
+      if (this.dragSelection.has(draggable.id)) {
+        this.dragSelection.delete(draggable.id);
+        this.multiDraggable.removeSubDraggable_(draggable);
+        draggable.unselect();
+      } else {
+        this.dragSelection.add(draggable.id);
+        this.multiDraggable.addSubDraggable_(draggable);
+        draggable.select();
       }
     }
   }
@@ -372,6 +376,15 @@ export class MultiselectControls {
       if (!Blockly.getSelected()) {
         this.multiDraggable.clearAll_();
         this.dragSelection.clear();
+        // The getAllBlocks is a workaround for a bug where holding shift
+        // selecting and going to another workspace without letting go of
+        // shift and selecting new blocks will still leave the original
+        // blocks highlighted. This can be removed if we figure out how
+        // to solve the real-time highlighting issue in the updateDraggables_
+        // function
+        this.workspace_.getAllBlocks().forEach((block) => {
+          block.pathObject.updateSelected(false);
+        });
         Blockly.common.setSelected(null);
       } else if (Blockly.getSelected() &&
           !(Blockly.getSelected() instanceof MultiselectDraggable)) {

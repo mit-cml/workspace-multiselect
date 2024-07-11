@@ -30,10 +30,8 @@ const registerCopy = function(useCopyPasteCrossTab) {
       const dragSelection = dragSelectionWeakMap.get(workspace);
       dragSelection.forEach(function(id) {
         const block = workspace.getBlockById(id);
-        if (block) {
-          if (copyOptions.check(block)) {
-            workableBlocksLength++;
-          }
+        if (block && copyOptions.check(block)) {
+          workableBlocksLength++;
         }
       });
       if (workableBlocksLength <= 1) {
@@ -71,10 +69,8 @@ const registerCopy = function(useCopyPasteCrossTab) {
       }
       for (const id of dragSelection) {
         const block = workspace.getBlockById(id);
-        if (block) {
-          if (copyOptions.check(block)) {
-            return 'enabled';
-          }
+        if (block && copyOptions.check(block)) {
+          return 'enabled';
         }
       }
       return 'disabled';
@@ -947,9 +943,15 @@ const registerCommentDelete = function() {
           count += 1;
         }
       });
-      return (count <= 1) ?
-          Blockly.Msg['DELETE_COMMENT'] :
-          Blockly.Msg['DELETE_X_COMMENTS'].replace('%1', String(count));
+      if (count <= 1) {
+        return Blockly.Msg['REMOVE_COMMENT'];
+      } else {
+        return Blockly.Msg['REMOVE_X_COMMENTS']?
+            Blockly.Msg['REMOVE_X_COMMENTS'].replace(
+                '%1', count) :
+            Blockly.Msg['REMOVE_COMMENT'] + ' (' +
+            count + ')';
+      }
     },
     preconditionFn: function(scope) {
       if (scope.comment.isDeletable()) {
@@ -1084,6 +1086,7 @@ const registerCommentDuplicate = function() {
     id: 'commentDuplicate',
     weight: 1,
   };
+  Blockly.ContextMenuRegistry.registry.register(duplicateOption);
 };
 
 /**

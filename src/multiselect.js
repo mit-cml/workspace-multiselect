@@ -96,7 +96,7 @@ export class Multiselect {
       Shortcut.registerOurShortcut(this.useCopyPasteCrossTab_);
     }
     // Register workspace comments
-    Blockly.ContextMenuItems.registerCommentOptions();
+    // Blockly.ContextMenuItems.registerCommentOptions();
 
     this.controls_ = new MultiselectControls(
         this.workspace_, options.multiselectIcon, this.multiSelectKeys_);
@@ -236,41 +236,30 @@ export class Multiselect {
           };
 
           const selected = Blockly.getSelected();
-
-          // Case where selected is a
-          // block (not a multidraggable)
-          if (selected && selected instanceof Blockly.BlockSvg &&
-              preCondition(selected)) {
-            if (ws.doubleClickPid_) {
-              clearTimeout(ws.doubleClickPid_);
-              ws.doubleClickPid_ = undefined;
+          const maybeCollapse = function(block, blockState) {
+            if (block && preCondition(block) &&
+                !hasSelectedParent(block)) {
+              block.setCollapsed(blockState);
+            }
+          };
+          if (ws.doubleClickPid_) {
+            clearTimeout(ws.doubleClickPid_);
+            ws.doubleClickPid_ = undefined;
+            // Case where selected is a
+            // block (not a multidraggable)
+            if (selected && selected instanceof Blockly.BlockSvg &&
+                preCondition(selected)) {
               if (selected.id === ws.doubleClickBlock_) {
                 const state = !selected.isCollapsed();
-                const maybeCollapse = function(block) {
-                  if (block && preCondition(block) &&
-                      !hasSelectedParent(block)) {
-                    block.setCollapsed(state);
-                  }
-                };
                 Blockly.Events.setGroup(true);
                 if (selected) {
-                  maybeCollapse(selected);
+                  maybeCollapse(selected, state);
                 }
                 Blockly.Events.setGroup(false);
                 return;
               }
-            }
-            if (!ws.doubleClickPid_) {
-              ws.doubleClickBlock_ = selected.id;
-              ws.doubleClickPid_ = setTimeout(function() {
-                ws.doubleClickPid_ = undefined;
-              }, 500);
-            }
-          } else if (selected && selected instanceof MultiselectDraggable) {
-            // Case where the selected is a multidraggable instance
-            if (ws.doubleClickPid_) {
-              clearTimeout(ws.doubleClickPid_);
-              ws.doubleClickPid_ = undefined;
+            } else if (selected && selected instanceof MultiselectDraggable) {
+              // Case where the selected is a multidraggable instance
               const dragSelection = dragSelectionWeakMap.get(ws);
               if (dragSelection.size) {
                 // Checking whether any of the blocks in
@@ -293,28 +282,23 @@ export class Multiselect {
                   state = true;
                 }
 
-                const maybeCollapse = function(block) {
-                  if (block && preCondition(block) &&
-                      !hasSelectedParent(block)) {
-                    block.setCollapsed(state);
-                  }
-                };
                 Blockly.Events.setGroup(true);
                 dragSelection.forEach(function(id) {
                   const block = ws.getBlockById(id);
                   if (block) {
-                    maybeCollapse(block);
+                    maybeCollapse(block, state);
                   }
                 });
                 Blockly.Events.setGroup(false);
                 return;
               }
             }
-            if (!ws.doubleClickPid_) {
-              ws.doubleClickPid_ = setTimeout(function() {
-                ws.doubleClickPid_ = undefined;
-              }, 500);
-            }
+          }
+          if (!ws.doubleClickPid_) {
+            ws.doubleClickBlock_ = selected.id;
+            ws.doubleClickPid_ = setTimeout(function() {
+              ws.doubleClickPid_ = undefined;
+            }, 500);
           }
         }
       };

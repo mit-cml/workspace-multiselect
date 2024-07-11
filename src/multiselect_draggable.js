@@ -43,39 +43,42 @@ export class MultiselectDraggable {
 
   /**
    * Adds a subDraggable to the multiselectDraggable object
-   * @param {Blockly.IDraggable} subDraggable A draggable object that is to
-   * be added to the multiselectDraggable object
+   * @param {Blockly.IDraggable} subDraggable A draggable object that
+   * is to be added to the multiselectDraggable object.
+   * @private
    */
   addSubDraggable_(subDraggable) {
     this.subDraggables.set(subDraggable, subDraggable.getRelativeToSurfaceXY());
-    if (subDraggable instanceof Blockly.BlockSvg) {
+    if (!(subDraggable instanceof MultiselectDraggable)) {
       this.addPointerDownEventListener_(subDraggable);
     }
   }
 
   /**
    * Removes a subDraggable to the multiselectDraggable object
-   * @param {Blockly.IDraggable} subDraggable A draggable object that is to
-   * be removed from the multiselectDraggable object
+   * @param {Blockly.IDraggable} subDraggable A draggable object that
+   * is to be removed from the multiselectDraggable object.
+   * @private
    */
   removeSubDraggable_(subDraggable) {
     this.subDraggables.delete(subDraggable);
-    if (subDraggable instanceof Blockly.BlockSvg) {
+    if (!(subDraggable instanceof MultiselectDraggable)) {
       this.removePointerDownEventListener_(subDraggable);
     }
   }
 
   // This is the feature where we added a pointer down event listener.
-  // This was added to mitigate the issue of setStartBlock overwriting the
-  // call that passes the multidraggable to Blockly.common.SetSelected().
+  // This was added to mitigate the issue of setStart[draggable] overwriting
+  // the call that passes the multidraggable to Blockly.common.SetSelected().
   // This should be updated/fixed when a more flexible gesture handling
   // system is implemented.
   /**
    * Adds a pointer down event listener to a subdraggable to mitigate issue
-   * of setStartBlock overwriting the call that passes the multidraggable
-   * to Blockly.common.SetSelected().
+   * of setStart[draggable] overwriting the call that passes the
+   * multidraggable to Blockly.common.SetSelected().
    * @param {Blockly.IDraggable} subDraggable A draggable object that will
    * have an event listener added to
+   * @private
    */
   addPointerDownEventListener_(subDraggable) {
     // Bind the handler to the correct context (class instance)
@@ -94,10 +97,11 @@ export class MultiselectDraggable {
 
   /**
    * Removes a pointer down event listener from a subdraggable to
-   * mitigate issue of setStartBlock overwriting the call that
-   *  passes the multidraggable to Blockly.common.SetSelected()
+   * mitigate issue of setStart[draggable] overwriting the call that
+   *  passes the multidraggable to Blockly.common.SetSelected().
    * @param {Blockly.IDraggable} subDraggable A draggable object
    * that will have an event listener removed from
+   * @private
    */
   removePointerDownEventListener_(subDraggable) {
     if (subDraggable) {
@@ -114,9 +118,10 @@ export class MultiselectDraggable {
 
   /**
    * The handler for the pointer down event that mitigates
-   * the issue of setStartBlock overwriting the call that passes
-   * the multidraggable to Blockly.common.SetSelected()
+   * the issue of setStart[draggable] overwriting the call that
+   * passes the multidraggable to Blockly.common.SetSelected().
    * @param {PointerEvent} event A pointer down event
+   * @private
    */
   pointerDownEventHandler_(event) {
     Blockly.common.setSelected(this);
@@ -250,12 +255,11 @@ export class MultiselectDraggable {
     // This needs to be worked on to see if we can make the
     // highlighting of the subdraggables in real time.
     for (const draggable of this.subDraggables) {
-      if (draggable[0] instanceof Blockly.BlockSvg) {
-        if (!draggable[0].isShadow()) {
-          draggable[0].select()
-        }
+      if (draggable[0] instanceof Blockly.BlockSvg &&
+          !draggable[0].isShadow()) {
+        draggable[0].select();
       } else {
-        draggable[0].select()
+        draggable[0].select();
       }
     }
   }
@@ -266,7 +270,7 @@ export class MultiselectDraggable {
    */
   unselect() {
     for (const draggable of this.subDraggables) {
-      draggable[0].unselect()
+      draggable[0].unselect();
     }
   }
 
@@ -275,9 +279,15 @@ export class MultiselectDraggable {
   /**
    * A function that is required for the
    * multiselectDraggable object to be deletable.
-   * @returns {boolean} Always true as it is deletable
+   * @returns {boolean} True if all subdraggables
+   * are deletable, otherwise false.
    */
   isDeletable() {
+    for (const draggable of this.subDraggables) {
+      if (!draggable[0].isDeletable()) {
+        return false;
+      }
+    }
     return true;
   }
 
