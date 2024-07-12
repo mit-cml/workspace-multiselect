@@ -183,7 +183,7 @@ export class MultiselectDraggable {
       this.subDraggables.set(draggable[0],
           draggable[0].getRelativeToSurfaceXY());
     }
-
+    Blockly.Events.setGroup();
     for (const draggable of this.topSubDraggables) {
       draggable.startDrag();
     }
@@ -266,12 +266,14 @@ export class MultiselectDraggable {
 
   /**
    * A function that turns off the highlight selection
-   * of the subdraggables.
+   * of the subdraggables. Currently not used as it
+   * causes a bug when selecting a block by clicking
+   * while in multiselect mode.
    */
   unselect() {
-    for (const draggable of this.subDraggables) {
-      draggable[0].unselect();
-    }
+    // for (const draggable of this.subDraggables) {
+    //   draggable[0].unselect();
+    // }
   }
 
 

@@ -162,6 +162,8 @@ export class MultiselectControls {
 
     // Original settings for handling the start block
     this.origHandleBlockStart = Blockly.Gesture.prototype.handleBlockStart;
+
+    this.origSetStartBlock = Blockly.Gesture.prototype.setStartBlock;
   }
 
   /**
@@ -192,6 +194,7 @@ export class MultiselectControls {
     }
     this.initialized_ = true;
     this.workspace_.resize();
+    this.multiDraggable.clearAll_();
   }
 
   /**
@@ -327,7 +330,7 @@ export class MultiselectControls {
     if (draggable instanceof Blockly.BlockSvg) {
       // The case where the draggable is a block
       if (!((draggable.isDeletable() || draggable.isMovable()) &&
-          !draggable.isShadow())) {
+          !draggable.isShadow()) || draggable.type === 'drag_to_dupe') {
         return;
       }
       if (this.dragSelection.has(draggable.id)) {
@@ -427,6 +430,17 @@ export class MultiselectControls {
       wrappedFunc.isWrapped = true;
       return wrappedFunc;
     })(Blockly.Gesture.prototype.handleBlockStart);
+    Blockly.Gesture.prototype.setStartBlock = (function(func) {
+      if (func.isWrapped) {
+        return func;
+      }
+
+      const wrappedFunc = function(block) {
+
+      };
+      wrappedFunc.isWrapped = true;
+      return wrappedFunc;
+    })(Blockly.Gesture.prototype.setStartBlock);
 
     // Ensure that we only restore drag to move the workspace behavior
     // when it is enabled.
@@ -515,6 +529,7 @@ export class MultiselectControls {
     // Revert Gesture.setStartBlock to original settings
     // when disabling multiselect mode.
     Blockly.Gesture.prototype.handleBlockStart = this.origHandleBlockStart;
+    Blockly.Gesture.prototype.setStartBlock = this.origSetStartBlock;
 
     inMultipleSelectionModeWeakMap.set(this.workspace_, false);
     if (this.dragSelect_) {

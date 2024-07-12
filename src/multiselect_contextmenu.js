@@ -223,8 +223,10 @@ const registerDuplicate = function() {
               duplicatedBlocks[origParentBlock.id].nextConnection,
               block.previousConnection]);
           }
-          dragSelection.add(block.id);
-          multiDraggable.addSubDraggable_(block);
+          if (block.type !== 'drag_to_dupe') {
+            dragSelection.add(block.id);
+            multiDraggable.addSubDraggable_(block);
+          }
         }
       }
       connectionDBList.forEach(function(connectionDB) {
@@ -733,8 +735,10 @@ const registerPaste = function(useCopyPasteCrossTab) {
           if (element) {
             blockList.push(element);
           }
-          dragSelectionWeakMap.get(workspace).add(element.id);
-          multiDraggableWeakMap.get(workspace).addSubDraggable_(element);
+          if (element.type !== 'drag_to_dupe') {
+            dragSelectionWeakMap.get(workspace).add(element.id);
+            multiDraggableWeakMap.get(workspace).addSubDraggable_(element);
+          }
         } else if (data.commentState) {
           const element = Blockly.clipboard.paste(data, workspace);
           if (element) {
@@ -810,8 +814,10 @@ const registerSelectAll = function() {
         }
       });
       blockList.forEach(function(block) {
-        dragSelectionWeakMap.get(block.workspace).add(block.id);
-        multiDraggable.addSubDraggable_(block);
+        if (block.type !== 'drag_to_dupe') {
+          dragSelectionWeakMap.get(block.workspace).add(block.id);
+          multiDraggable.addSubDraggable_(block);
+        }
       });
 
       Blockly.common.setSelected(multiDraggable);
