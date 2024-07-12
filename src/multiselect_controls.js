@@ -506,7 +506,6 @@ export class MultiselectControls {
     // Revert Gesture.setStartBlock to original settings
     // when disabling multiselect mode.
     Blockly.Gesture.prototype.handleBlockStart = this.origHandleBlockStart;
-    Blockly.Gesture.prototype.setStartBlock = this.origSetStartBlock;
 
     inMultipleSelectionModeWeakMap.set(this.workspace_, false);
     if (this.dragSelect_) {
