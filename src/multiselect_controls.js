@@ -162,8 +162,6 @@ export class MultiselectControls {
 
     // Original settings for handling the start block
     this.origHandleBlockStart = Blockly.Gesture.prototype.handleBlockStart;
-
-    this.origSetStartBlock = Blockly.Gesture.prototype.setStartBlock;
   }
 
   /**
@@ -419,28 +417,7 @@ export class MultiselectControls {
    */
   enableMultiselect(byIcon = false) {
     // Disable the handleStartBlock gesture when entering multiselect mode.
-    Blockly.Gesture.prototype.handleBlockStart = (function(func) {
-      if (func.isWrapped) {
-        return func;
-      }
-
-      const wrappedFunc = function(block) {
-
-      };
-      wrappedFunc.isWrapped = true;
-      return wrappedFunc;
-    })(Blockly.Gesture.prototype.handleBlockStart);
-    Blockly.Gesture.prototype.setStartBlock = (function(func) {
-      if (func.isWrapped) {
-        return func;
-      }
-
-      const wrappedFunc = function(block) {
-
-      };
-      wrappedFunc.isWrapped = true;
-      return wrappedFunc;
-    })(Blockly.Gesture.prototype.setStartBlock);
+    Blockly.Gesture.prototype.handleBlockStart = function(block) {}
 
     // Ensure that we only restore drag to move the workspace behavior
     // when it is enabled.
