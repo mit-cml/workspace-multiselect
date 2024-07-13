@@ -354,7 +354,7 @@ export class Multiselect {
    * @private
    */
   eventListenerAll_(e) {
-    // on Block Selected (must listen events of all workspaces
+        // on Block Selected (must listen events of all workspaces
     // to cover all possible selection changes)
     if (e.type === Blockly.Events.SELECTED) {
       multiselectControlsList.forEach((controls) => {

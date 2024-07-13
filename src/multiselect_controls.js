@@ -367,14 +367,16 @@ export class MultiselectControls {
   updateMultiselect() {
     // Not in multiselect mode
     if (!inMultipleSelectionModeWeakMap.get(this.workspace_)) {
+      // If clicking on different workspace, clear selected set
       if (this.workspace_.id !== Blockly.getMainWorkspace().id) {
         this.multiDraggable.clearAll_();
         this.dragSelection.clear();
       }
 
-      // If unselecting/clicking on workspace or different workspace,
+      // If unselecting/clicking on workspace,
       // clear selected set
       if (!Blockly.getSelected()) {
+        this.lastSelectedElement_ = null;
         this.multiDraggable.clearAll_();
         this.dragSelection.clear();
         // The getAllBlocks is a workaround for a bug where holding shift
@@ -391,6 +393,9 @@ export class MultiselectControls {
           !(Blockly.getSelected() instanceof MultiselectDraggable)) {
         // Blockly.getSelected() is not a multiselectDraggable
         // and selected block is not in dragSelection
+        for (const draggable of this.multiDraggable.subDraggables) {
+          draggable[0].unselect();
+        }
         this.multiDraggable.clearAll_();
         this.dragSelection.clear();
         this.lastSelectedElement_ = Blockly.getSelected();

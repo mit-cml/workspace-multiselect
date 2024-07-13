@@ -48,10 +48,10 @@ export class MultiselectDraggable {
    * @private
    */
   addSubDraggable_(subDraggable) {
-    this.subDraggables.set(subDraggable, subDraggable.getRelativeToSurfaceXY());
     if (!(subDraggable instanceof MultiselectDraggable)) {
       this.addPointerDownEventListener_(subDraggable);
     }
+    this.subDraggables.set(subDraggable, subDraggable.getRelativeToSurfaceXY());
   }
 
   /**
@@ -61,10 +61,10 @@ export class MultiselectDraggable {
    * @private
    */
   removeSubDraggable_(subDraggable) {
-    this.subDraggables.delete(subDraggable);
     if (!(subDraggable instanceof MultiselectDraggable)) {
       this.removePointerDownEventListener_(subDraggable);
     }
+    this.subDraggables.delete(subDraggable);
   }
 
   // This is the feature where we added a pointer down event listener.
@@ -124,7 +124,9 @@ export class MultiselectDraggable {
    * @private
    */
   pointerDownEventHandler_(event) {
-    Blockly.common.setSelected(this);
+    if (!inMultipleSelectionModeWeakMap.get(this.workspace)) {
+      Blockly.common.setSelected(this);
+    }
   }
 
   /**
@@ -155,6 +157,7 @@ export class MultiselectDraggable {
    * @param {Blockly.Events.BLOCK_DRAG} e A drag event
    */
   startDrag(e) {
+    Blockly.Events.setGroup("asdfasdf")
     for (const draggable of this.subDraggables) {
       if (draggable[0] instanceof
           Blockly.BlockSvg) {
@@ -232,6 +235,7 @@ export class MultiselectDraggable {
 
     this.topSubDraggables.length = 0;
     this.connectionDBList.length = 0;
+    Blockly.Events.setGroup(false)
   }
 
   /**

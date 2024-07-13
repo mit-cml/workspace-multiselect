@@ -102,6 +102,7 @@ multiselectPlugin.init(options);
 
 ## Known issues
 - [ ] Currently, we rely on DragSelect to know which block gets selected. DragSelect seems to listen to the "blocks". However, it actually works by listening to the SVG path element, which is always a rectangle with some transparent parts forming a block. For irregularly shaped blocks, if you click on the transparent area that within the SVG rectangle, it will still get selected. (a mitigation has already been introduced in v0.1.4, but a proper fix should be that Blockly implements some kind of API, so that we can know for sure where the block actually locates.)
+- [ ] Currently, there is an issue related to the pointerdown event listener workaround for the setStartBlock gesture handling. The SVG root of a block that has a next block overlaps with that next block. So, when we try to remove the pointerdown event listener for the next block, it does not matter as the pointerdown event listener for the parent (higher level) block is still present. (a fix may be introduced when the Blockly team introduces proper gesture handling for setStartBlock.)
 
 ### Note on multi-field updates
 When the multiFieldUpdate option is enable, the plugin will automatically update the fields of all selected blocks with the
