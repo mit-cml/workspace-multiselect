@@ -8,7 +8,7 @@
  * @fileoverview Multiple selection draggable class.
  */
 import * as Blockly from 'blockly/core';
-import {hasSelectedParent, inMultipleSelectionModeWeakMap} from './global';
+import {dragSelectionWeakMap, hasSelectedParent, inMultipleSelectionModeWeakMap} from './global';
 
 
 /**
@@ -29,6 +29,7 @@ export class MultiselectDraggable {
     this.topSubDraggables = [];
     this.loc = new Blockly.utils.Coordinate(0, 0);
     this.connectionDBList = [];
+    this.dragSelection = dragSelectionWeakMap.get(workspace);
   }
 
   /**
@@ -157,7 +158,10 @@ export class MultiselectDraggable {
    * @param {Blockly.Events.BLOCK_DRAG} e A drag event
    */
   startDrag(e) {
-    Blockly.Events.setGroup("asdfasdf")
+    this.inGroup = !!Blockly.Events.getGroup();
+    if (!this.inGroup) {
+      Blockly.Events.setGroup(true);
+    }
     for (const draggable of this.subDraggables) {
       if (draggable[0] instanceof
           Blockly.BlockSvg) {
@@ -235,7 +239,9 @@ export class MultiselectDraggable {
 
     this.topSubDraggables.length = 0;
     this.connectionDBList.length = 0;
-    Blockly.Events.setGroup(false)
+    if (!this.inGroup) {
+      Blockly.Events.setGroup(false);
+    }
   }
 
   /**
@@ -285,15 +291,9 @@ export class MultiselectDraggable {
   /**
    * A function that is required for the
    * multiselectDraggable object to be deletable.
-   * @returns {boolean} True if all subdraggables
-   * are deletable, otherwise false.
+   * @returns {boolean} Always true
    */
   isDeletable() {
-    for (const draggable of this.subDraggables) {
-      if (!draggable[0].isDeletable()) {
-        return false;
-      }
-    }
     return true;
   }
 
@@ -302,8 +302,26 @@ export class MultiselectDraggable {
    */
   dispose() {
     for (const draggable of this.subDraggables) {
-      this.removeSubDraggable_(draggable[0]);
-      draggable[0].dispose(true, true);
+      if (draggable[0].isDeletable()) {
+        this.removeSubDraggable_(draggable[0]);
+        this.dragSelection.delete(draggable[0].id);
+        draggable[0].dispose(true, true);
+      }
+    }
+  }
+
+  /**
+   * Sets the delete style when we drag the multidraggable over a delete
+   * area.
+   * @param {boolean} enable A boolean that determines whether to set the
+   * delete style of the blocks.
+   */
+  setDeleteStyle(enable) {
+    // TODO: Need to see compatibility with ws comments after support
+    for (const draggable of this.subDraggables) {
+      if (draggable[0].isDeletable()) {
+        draggable[0].pathObject.updateDraggingDelete(enable);
+      }
     }
   }
 

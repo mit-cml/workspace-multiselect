@@ -422,7 +422,7 @@ export class MultiselectControls {
    */
   enableMultiselect(byIcon = false) {
     // Disable the handleBlockstart gesture when entering multiselect mode.
-    Blockly.Gesture.prototype.handleBlockStart = function(block) {}
+    Blockly.Gesture.prototype.handleBlockStart = function(block) {};
 
     // Ensure that we only restore drag to move the workspace behavior
     // when it is enabled.

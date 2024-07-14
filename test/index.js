@@ -61,8 +61,6 @@ document.addEventListener('DOMContentLoaded', function() {
     zoom: {
       wheel: true,
     },
-    plugins: {
-    },
   };
   createPlayground(document.getElementById('root'), createWorkspace,
       defaultOptions);

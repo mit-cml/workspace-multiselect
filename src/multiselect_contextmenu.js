@@ -201,6 +201,7 @@ const registerDuplicate = function() {
         dragSelection.forEach(function(id) {
           const block = workspace.getBlockById(id);
           if (block) {
+            block.unselect();
             if (!hasSelectedParent(block)) {
               apply(block);
             }
