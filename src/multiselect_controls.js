@@ -412,6 +412,13 @@ export class MultiselectControls {
         this.updateDraggables_(this.lastSelectedElement_);
         this.lastSelectedElement_ = null;
         inPasteShortcut.set(this.workspace_, false);
+      } else if (!this.dragSelection.size && !(Blockly.getSelected() instanceof
+          MultiselectDraggable)) {
+        if (Blockly.getSelected() instanceof Blockly.BlockSvg &&
+            !Blockly.getSelected().isShadow()) {
+          Blockly.common.setSelected(null);
+        }
+        this.justUnselectedBlock_ = Blockly.getSelected();
       }
     }
   }
@@ -421,9 +428,6 @@ export class MultiselectControls {
    * @param {!boolean} byIcon Whether to simulate a keyboard event.
    */
   enableMultiselect(byIcon = false) {
-    // Disable the handleBlockstart gesture when entering multiselect mode.
-    Blockly.Gesture.prototype.handleBlockStart = function(block) {};
-
     // Ensure that we only restore drag to move the workspace behavior
     // when it is enabled.
     if (!this.hasDisableWorkspaceDrag_ &&
@@ -508,10 +512,6 @@ export class MultiselectControls {
    * @param {!boolean} byIcon Whether to simulate a keyboard event.
    */
   disableMultiselect(byIcon = false) {
-    // Revert Gesture.handleBlockstart to original settings
-    // when disabling multiselect mode.
-    Blockly.Gesture.prototype.handleBlockStart = this.origHandleBlockStart;
-
     inMultipleSelectionModeWeakMap.set(this.workspace_, false);
     if (this.dragSelect_) {
       if (byIcon) {

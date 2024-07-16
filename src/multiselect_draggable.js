@@ -351,4 +351,13 @@ export class MultiselectDraggable {
 
     return new Blockly.utils.Rect(top, bottom, left, right);
   }
+
+  // Backpack plugin support?
+  /**
+   * This will be updated after communicating with
+   * the Blockly team.
+   */
+  toFlyoutInfo() {
+
+  }
 }
