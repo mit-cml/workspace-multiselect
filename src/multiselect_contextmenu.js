@@ -688,7 +688,6 @@ const registerPaste = function(useCopyPasteCrossTab) {
           'disabled': 'enabled');
     },
     callback: function(scope) {
-      // TODO: Need to see if works for both multiple comments and blocks
       let workspace = scope.workspace;
       const dragSelection = dragSelectionWeakMap.get(workspace);
       Blockly.Events.setGroup(true);
@@ -1014,7 +1013,7 @@ const registerCommentDuplicate = function() {
   const duplicateOption = {
     displayText: function(scope) {
       let count = 0;
-      const workspace = scope.block.workspace;
+      const workspace = scope.comment.workspace;
       const dragSelection = dragSelectionWeakMap.get(workspace);
       dragSelection.forEach(function(id) {
         const comment = workspace.getCommentById(id);
@@ -1054,7 +1053,7 @@ const registerCommentDuplicate = function() {
           // Get the copy data of the block
           const commentCopyData = comment.toCopyData();
           // Set the new ID in the copy data
-          commentCopyData.blockState.id = newId;
+          commentCopyData.commentState.id = newId;
           // Paste the block with the modified copy data
           duplicatedComments[comment.id] =
               Blockly.clipboard.paste(commentCopyData, workspace);
@@ -1215,8 +1214,8 @@ export const unregisterContextMenu = function() {
     'commentDuplicate']) {
     if (Blockly.ContextMenuRegistry.registry.getItem(id) !== null) {
       Blockly.ContextMenuRegistry.registry.unregister(id);
-      registeredContextMenu.push(id);
     }
+    registeredContextMenu.push(id);
   }
 };
 

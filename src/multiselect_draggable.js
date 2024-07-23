@@ -73,6 +73,7 @@ export class MultiselectDraggable {
   // the call that passes the multidraggable to Blockly.common.SetSelected().
   // This should be updated/fixed when a more flexible gesture handling
   // system is implemented.
+  // TODO: Look into these after gestures have been updated
   /**
    * Adds a pointer down event listener to a subdraggable to mitigate issue
    * of setStart[draggable] overwriting the call that passes the
@@ -281,6 +282,7 @@ export class MultiselectDraggable {
    * while in multiselect mode.
    */
   unselect() {
+    // TODO: Look into this after gestures have been updated
     // for (const draggable of this.subDraggables) {
     //   draggable[0].unselect();
     // }
@@ -302,10 +304,15 @@ export class MultiselectDraggable {
    */
   dispose() {
     for (const draggable of this.subDraggables) {
-      if (draggable[0].isDeletable()) {
-        this.removeSubDraggable_(draggable[0]);
-        this.dragSelection.delete(draggable[0].id);
+      if (!draggable[0].isDeletable()) {
+        continue;
+      }
+      this.removeSubDraggable_(draggable[0]);
+      this.dragSelection.delete(draggable[0].id);
+      if (draggable[0] instanceof Blockly.BlockSvg) {
         draggable[0].dispose(true, true);
+      } else {
+        draggable[0].dispose();
       }
     }
   }
@@ -317,10 +324,10 @@ export class MultiselectDraggable {
    * delete style of the blocks.
    */
   setDeleteStyle(enable) {
-    // TODO: Need to see compatibility with ws comments after support
+    // TODO: Check this after ws comment's setDeleteStyle is fixed
     for (const draggable of this.subDraggables) {
       if (draggable[0].isDeletable()) {
-        draggable[0].pathObject.updateDraggingDelete(enable);
+        draggable[0].setDeleteStyle(enable);
       }
     }
   }
@@ -352,12 +359,24 @@ export class MultiselectDraggable {
     return new Blockly.utils.Rect(top, bottom, left, right);
   }
 
-  // Backpack plugin support?
+  // Backpack plugin support
   /**
-   * This will be updated after communicating with
-   * the Blockly team.
+   * Converts the subdraggables into flyout information for the
+   * backpack plugin.
+   * @returns {Blockly.utils.toolbox.FlyoutItemInfoArray} Returns an
+   * array of flyout info of subdraggables that can be placed
+   * in a flyout (i.e. blocks).
+   * Otherwise, it does not convert them into flyout info (i.e.
+   * ws comments).
    */
   toFlyoutInfo() {
-
+    const flyoutList = [];
+    for (const draggable of this.subDraggables) {
+      if (draggable[0].toFlyoutInfo !== undefined) {
+        const draggableFlyoutInfo = draggable[0].toFlyoutInfo();
+        flyoutList.push(...draggableFlyoutInfo);
+      }
+    }
+    return flyoutList;
   }
 }

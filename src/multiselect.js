@@ -96,7 +96,6 @@ export class Multiselect {
       Shortcut.registerOurShortcut(this.useCopyPasteCrossTab_);
     }
 
-
     this.controls_ = new MultiselectControls(
         this.workspace_, options.multiselectIcon, this.multiSelectKeys_);
     multiselectControlsList.add(this.controls_);

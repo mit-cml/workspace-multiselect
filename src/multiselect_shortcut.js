@@ -317,6 +317,7 @@ const registerCut = function(useCopyPasteCrossTab) {
   Blockly.ShortcutRegistry.registry.addKeyMapping(metaX, cutShortcut.name);
 };
 
+// TODO: Look into undo stack and adding/removing blocks from multidraggable
 /**
  * Keyboard shortcut to paste multiple selected blocks on
  * ctrl+v, cmd+v, or alt+v.
@@ -331,7 +332,6 @@ const registerPaste = function(useCopyPasteCrossTab) {
     callback: function(workspace) {
       inPasteShortcut.set(workspace, true);
       const dragSelection = dragSelectionWeakMap.get(workspace);
-      Blockly.Events.setGroup(true);
       const multiDraggable = multiDraggableWeakMap.get(workspace);
 
       // Update the dragSelection and multiDraggable object
@@ -346,6 +346,8 @@ const registerPaste = function(useCopyPasteCrossTab) {
         dragSelection.clear();
         multiDraggable.clearAll_();
       }
+
+      Blockly.Events.setGroup(true);
 
       const blockList = [];
       if (useCopyPasteCrossTab) {
@@ -392,8 +394,9 @@ const registerPaste = function(useCopyPasteCrossTab) {
         blockList[connectionDB[0]].nextConnection.connect(
             blockList[connectionDB[1]].previousConnection);
       });
-      Blockly.Events.setGroup(false);
+
       Blockly.common.setSelected(multiDraggable);
+      Blockly.Events.setGroup(false);
       return true;
     },
   };

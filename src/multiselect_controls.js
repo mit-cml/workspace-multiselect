@@ -316,8 +316,6 @@ export class MultiselectControls {
 
   /**
    * Maintain the selected draggable set list when updating.
-   * NOTE: THIS ONLY RUNS FOR BLOCKS UNTIL MORE DRAGGABLES LIKE
-   * WORKSPACE COMMENTS ARE IMPLEMENTED
    * @param {!Blockly.IDraggable} draggable The draggable to update.
    * @private
    */
@@ -377,17 +375,18 @@ export class MultiselectControls {
       // clear selected set
       if (!Blockly.getSelected()) {
         this.lastSelectedElement_ = null;
-        this.multiDraggable.clearAll_();
-        this.dragSelection.clear();
-        // The getAllBlocks is a workaround for a bug where holding shift
+        // This is a workaround for a bug where holding shift
         // selecting and going to another workspace without letting go of
         // shift and selecting new blocks will still leave the original
         // blocks highlighted. This can be removed if we figure out how
         // to solve the real-time highlighting issue in the updateDraggables_
-        // function
-        this.workspace_.getAllBlocks().forEach((block) => {
-          block.pathObject.updateSelected(false);
-        });
+        // function. However, a frame-delay related to events may be causing
+        // this issue (Blockly-side).
+        for (const draggable of this.multiDraggable.subDraggables) {
+          draggable[0].unselect();
+        }
+        this.multiDraggable.clearAll_();
+        this.dragSelection.clear();
         Blockly.common.setSelected(null);
       } else if (Blockly.getSelected() &&
           !(Blockly.getSelected() instanceof MultiselectDraggable)) {
@@ -418,7 +417,13 @@ export class MultiselectControls {
             !Blockly.getSelected().isShadow()) {
           Blockly.common.setSelected(null);
         }
-        this.justUnselectedBlock_ = Blockly.getSelected();
+        // TODO: Look into this after gesture has been updated at Blockly
+        // Currently, the setSelected is called twice even with selection of
+        // one block. This is most likely because of the handleBlockStart
+        // gesture. That is why it is separated from the if statement above.
+        if (Blockly.getSelected() instanceof Blockly.BlockSvg) {
+          this.justUnselectedBlock_ = Blockly.getSelected();
+        }
       }
     }
   }
@@ -437,11 +442,10 @@ export class MultiselectControls {
       this.hasDisableWorkspaceDrag_ = true;
     }
     this.dragSelect_ = new DragSelect({
-      // This was modified for workspace comments
       // TODO: Find a way to capture/query all types of draggables
       selectables: this.workspace_.getInjectionDiv()
           .querySelectorAll('g.blocklyDraggable:not(.blocklyInsertionMarker)' +
-              '> path.blocklyPath' + ', g.blocklyEditable ' +
+              '> path.blocklyPath' + ', g.blocklyDraggable ' +
               '> rect.blocklyCommentHighlight'
           ),
       area: this.workspace_.svgGroup_,
