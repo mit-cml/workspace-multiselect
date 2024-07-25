@@ -41,6 +41,8 @@ export class Multiselect {
     this.useCopyPasteMenu_ = true;
     this.multiFieldUpdate_ = true;
     this.multiSelectKeys_ = ['shift'];
+    this.keyboardNavKeys_ = ['ctrl', 'shift', 'k'];
+    this.registeredShortcut_ = true;
   }
 
   /**
@@ -79,7 +81,7 @@ export class Multiselect {
     });
 
     if (options.multiselectCopyPaste &&
-      options.multiselectCopyPaste.crossTab === false) {
+        options.multiselectCopyPaste.crossTab === false) {
       this.useCopyPasteCrossTab_ = false;
     }
 
@@ -92,7 +94,7 @@ export class Multiselect {
       ContextMenu.unregisterContextMenu();
       ContextMenu.registerOurContextMenu(this.useCopyPasteMenu_,
           this.useCopyPasteCrossTab_);
-      Shortcut.unregisterShortcut();
+      Shortcut.unregisterOrigShortcut();
       Shortcut.registerOurShortcut(this.useCopyPasteCrossTab_);
     }
 
@@ -118,6 +120,10 @@ export class Multiselect {
       this.origBumpNeighbours = Blockly.BlockSvg.prototype.bumpNeighbours;
       Blockly.BlockSvg.prototype.bumpNeighbours = function() {};
     }
+
+    Blockly.browserEvents.conditionalBind(
+        injectionDiv, 'keydown', this, this.unbindMultiselectCopyPaste_
+    );
   }
 
   /**
@@ -190,7 +196,7 @@ export class Multiselect {
       Blockly.ContextMenuRegistry.registry.unregister('copy_to_backpack');
       ContextMenu.registerOrigContextMenu();
 
-      Shortcut.unregisterShortcut();
+      Shortcut.unregisterOrigShortcut();
       Blockly.ShortcutRegistry.registry.unregister('selectall');
       Shortcut.registerOrigShortcut();
     }
@@ -315,8 +321,8 @@ export class Multiselect {
     if (this.multiFieldUpdate_ &&
         this.dragSelection_.has(e.blockId) &&
         (e.type === Blockly.Events.CHANGE &&
-        e.element === 'field' && e.recordUndo && e.group === '' ||
-        e.type === Blockly.Events.BLOCK_FIELD_INTERMEDIATE_CHANGE)) {
+            e.element === 'field' && e.recordUndo && e.group === '' ||
+            e.type === Blockly.Events.BLOCK_FIELD_INTERMEDIATE_CHANGE)) {
       const currentGroup = Blockly.Events.getGroup();
       if (!currentGroup) {
         Blockly.Events.setGroup(true);
@@ -370,6 +376,31 @@ export class Multiselect {
     if (this.multiSelectKeys_.indexOf(e.key.toLocaleLowerCase()) > -1 &&
         !inMultipleSelectionModeWeakMap.get(this.workspace_)) {
       this.controls_.enableMultiselect();
+    }
+  }
+
+  /**
+   * Handle a keyboard navigation key-down on the workspace.
+   * @param {KeyboardEvent} e The keyboard event.
+   * @private
+   */
+  unbindMultiselectCopyPaste_(e) {
+    // TODO: Update this to re-register/unregiser the original shortcuts after
+    //  Blockly/keyboard navigation plugin update
+    // This is to unregister the multiselect plugin's shortcuts when the user is in
+    // the keyboard navigation mode. Currently, when the user is in keyboard
+    // accessibility mode, they cannot use the normal copy/cut/paste functionalities.
+    // This is because the original (Blockly core) copy/cut/paste functions do not
+    // allow for collisions. This can be fixed either by allowing for collisions in
+    // the Blockly core copy/cut/paste functions or allowing for unregister/re-registering
+    // of the keyboard navigation plugin's copy/cut/paste functions.
+    if (this.keyboardNavKeys_.indexOf(e.key.toLocaleLowerCase() > -1) &&
+        this.workspace_.keyboardAccessibilityMode && this.registeredShortcut_) {
+      Shortcut.unregisterOurShortcut();
+      this.registeredShortcut_ = false;
+    } else if (!this.workspace_.keyboardAccessibilityMode && !this.registeredShortcut_) {
+      Shortcut.registerOurShortcut();
+      this.registeredShortcut_ = true;
     }
   }
 

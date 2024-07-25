@@ -46,12 +46,12 @@ export const inPasteShortcut = new WeakMap();
 export const connectionDBList = [];
 
 /**
- * Store the registered context menu list.
+ * Store the registeredShortcut_ context menu list.
  */
 export const registeredContextMenu = [];
 
 /**
- * Store the registered shortcut list.
+ * Store the registeredShortcut_ shortcut list.
  */
 export const registeredShortcut = [];
 
