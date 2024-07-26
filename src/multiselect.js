@@ -41,7 +41,6 @@ export class Multiselect {
     this.useCopyPasteMenu_ = true;
     this.multiFieldUpdate_ = true;
     this.multiSelectKeys_ = ['shift'];
-    this.keyboardNavKeys_ = ['ctrl', 'shift', 'k'];
     this.registeredShortcut_ = true;
   }
 
@@ -403,8 +402,8 @@ export class Multiselect {
     // either by allowing for collisions in the Blockly core
     // copy/cut/paste functions or allowing for unregister/re-registering
     // of the keyboard navigation plugin's copy/cut/paste functions.
-    if (this.keyboardNavKeys_.indexOf(e.key.toLocaleLowerCase()) > -1 &&
-        this.workspace_.keyboardAccessibilityMode && this.registeredShortcut_) {
+    if (this.workspace_.keyboardAccessibilityMode &&
+        this.registeredShortcut_) {
       Shortcut.unregisterOurShortcut();
       this.registeredShortcut_ = false;
     } else if (!this.workspace_.keyboardAccessibilityMode &&
