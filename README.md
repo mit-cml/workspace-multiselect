@@ -114,6 +114,15 @@ update to update the dropdown fields. To do this, you can use the `Multiselect.w
 within the function which updates the dependent field.  It allows you to temporarily turn off the multi-field update within the
 scope of its wrapped input function.
 
+### Note on keyboard navigation plugin
+Currently, the keyboard navigation plugin has no compatibility issues with the multiselect plugin. It is enabled by default
+in the test files. However, one thing that developers and users should note is that the regular Blockly core's copy/cut/paste shortcuts 
+and multiselect plugin's copy/cut/paste shortcuts are completely disabled when the keyboard navigation mode is turned on. This was assumed
+to be the expected behavior of the user as it defeats the purpose of having the keyboard navigation mode turned on and the user would try to
+select blocks using the cursor and copy/cut/paste with that selection. However, if a developer wants to allow for either copy/cut/paste behavior
+(Blockly Core or multiselect plugin) while the keyboard navigation mode is turned on, we would have to make the following changes described in this
+[issue](https://github.com/google/blockly-samples/issues/2424).
+
 ## API
 
 - `Multiselect.init`: Initialize the plugin.
@@ -128,7 +137,7 @@ scope of its wrapped input function.
 - [DragSelect](https://github.com/ThibaultJanBeyer/DragSelect): This plugin uses DragSelect to realize the "drag a rectangle to select multiple blocks" feature. The patching PR [#143](https://github.com/ThibaultJanBeyer/DragSelect/pull/143) and [#165](https://github.com/ThibaultJanBeyer/DragSelect/pull/165) made all this possible, and these PRs are included in [v2.6.0](https://github.com/ThibaultJanBeyer/DragSelect/releases/tag/v2.6.0).
 - [select.svg](test/media/select.svg) & [unselect.svg](test/media/unselect.svg): Free icons downloaded at [Icons8](https://icons8.com).
 - This plugin is part of the achievement by Songlin Jiang([@HollowMan6](https://github.com/HollowMan6)) participating the [Google Summer of Code 2022](https://summerofcode.withgoogle.com/programs/2022/projects/9wF06HWE) at [MIT App Inventor](https://github.com/mit-cml).
-- This plugin was updated for Blockly-v11 by Chang Min Bark([@changminbark](https://github.com/changminbark)) participating the [Google Summer of Code 2024](https://summerofcode.withgoogle.com/archive/2024/projects/9916Xzin) at [MIT App Inventor](https://github.com/mit-cml).
+- This plugin was updated for Blockly-v11 and cross-checked with other Blockly plugins by Chang Min Bark([@changminbark](https://github.com/changminbark)) participating the [Google Summer of Code 2024](https://summerofcode.withgoogle.com/archive/2024/projects/9916Xzin) at [MIT App Inventor](https://github.com/mit-cml).
 - Thanks for the sponsor from [@zakx](https://github.com/zakx) & [@laurensvalk](https://github.com/laurensvalk).
 
 ## License

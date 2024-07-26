@@ -39,6 +39,7 @@
     "src"
   ],
   "dependencies": {
+    "@blockly/keyboard-navigation": "^0.6.5",
     "dragselect": "^2.7.4"
   },
   "devDependencies": {

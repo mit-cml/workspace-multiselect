@@ -46,12 +46,12 @@ export const inPasteShortcut = new WeakMap();
 export const connectionDBList = [];
 
 /**
- * Store the registeredShortcut_ context menu list.
+ * Store the registered context menu list.
  */
 export const registeredContextMenu = [];
 
 /**
- * Store the registeredShortcut_ shortcut list.
+ * Store the registered shortcut list.
  */
 export const registeredShortcut = [];
 
@@ -59,6 +59,18 @@ export const registeredShortcut = [];
  * Store the copy time.
  */
 let timestamp = 0;
+
+// TODO: Update custom enum below into actual enum
+//  if plugin is updated to TypeScript.
+/**
+ * Object holding the names of the default shortcut items.
+ */
+export const shortcutNames = Object.freeze({
+  MULTIDELETE: 'multiselectDelete',
+  MULTICOPY: 'multiselectCopy',
+  MULTICUT: 'multiselectCut',
+  MULTIPASTE: 'multiselectPaste',
+});
 
 /**
  * Check if the current selected blockSvg set already contains the parents.
