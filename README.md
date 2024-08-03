@@ -123,6 +123,12 @@ select blocks using the cursor and copy/cut/paste with that selection. However, 
 (Blockly Core or multiselect plugin) while the keyboard navigation mode is turned on, we would have to make the following changes described in this
 [issue](https://github.com/google/blockly-samples/issues/2424).
 
+### Note on disable top blocks plugin
+The disable top blocks plugin has to be initialized after the multiselect plugin. The main reason behind this is that 
+the multiselect plugin has its own custom context menu, which allows for the disabling of any blocks (not just top blocks).
+Installing the multiselect plugin after the disable top blocks plugin overrides the disable top blocks plugin's context menu
+customization. If we install the disable top blocks plugin after the multiselect plugin, everything works as intended.
+
 ## API
 
 - `Multiselect.init`: Initialize the plugin.
