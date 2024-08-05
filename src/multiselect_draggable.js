@@ -38,6 +38,7 @@ export class MultiselectDraggable {
    */
   clearAll_() {
     for (const [subDraggable] of this.subDraggables) {
+      subDraggable.unselect();
       this.removeSubDraggable_(subDraggable);
     }
   }
@@ -191,7 +192,6 @@ export class MultiselectDraggable {
       this.subDraggables.set(draggable[0],
           draggable[0].getRelativeToSurfaceXY());
     }
-    Blockly.Events.setGroup();
     for (const draggable of this.topSubDraggables) {
       draggable.startDrag();
     }

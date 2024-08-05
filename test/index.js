@@ -31,8 +31,6 @@ function createWorkspace(blocklyDiv, options) {
   const navigationController = new NavigationController();
   navigationController.init();
   navigationController.addWorkspace(workspace);
-  // Turns on keyboard navigation.
-  navigationController.enable(workspace);
 
   // Initialize multiselect plugin.
   const multiselectPlugin = new Multiselect(workspace);

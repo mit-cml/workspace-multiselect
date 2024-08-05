@@ -1074,6 +1074,7 @@ const registerCommentDuplicate = function() {
         });
         dragSelection.clear();
         multiDraggable.clearAll_();
+        Blockly.common.setSelected(null);
       } else {
         apply(scope.comment);
       }

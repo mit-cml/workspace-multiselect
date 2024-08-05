@@ -343,7 +343,8 @@ export class Multiselect {
             return;
           }
           const block = this.workspace_.getBlockById(id);
-          if (block.type === blockType) {
+          console.log(block)
+          if (block && block.type === blockType) {
             block.setFieldValue(e.newValue, e.name);
           }
         });

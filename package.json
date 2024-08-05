@@ -39,13 +39,13 @@
     "src"
   ],
   "dependencies": {
-    "@blockly/keyboard-navigation": "^0.6.5",
     "dragselect": "^2.7.4"
   },
   "devDependencies": {
     "@blockly/dev-scripts": "^4.0.1",
     "@blockly/dev-tools": "^8.0.2",
     "@blockly/workspace-backpack": "^6.0.2",
+    "@blockly/keyboard-navigation": "^0.6.5",
     "blockly": "^11.1.1"
   },
   "peerDependencies": {
