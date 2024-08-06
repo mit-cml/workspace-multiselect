@@ -12,31 +12,36 @@ import * as Blockly from 'blockly/core';
 
 import * as ContextMenu from './multiselect_contextmenu';
 import * as Shortcut from './multiselect_shortcut';
-import {blockSelectionWeakMap, inMultipleSelectionModeWeakMap,
-  hasSelectedParent, BaseBlockDraggerWeakMap,
-  multiselectControlsList} from './global';
+import {
+  dragSelectionWeakMap, inMultipleSelectionModeWeakMap,
+  hasSelectedParent,
+  multiselectControlsList, multiDraggableWeakMap,
+} from './global';
 import {MultiselectControls} from './multiselect_controls';
+import {MultiselectDraggable} from './multiselect_draggable';
 
 /**
  * Class for using multiple select blocks on workspace.
  */
 export class Multiselect {
   /**
-   * Initalize the class data structure.
+   * Initialize the class data structure.
    * @param {!Blockly.WorkspaceSvg} workspace The workspace to sit in.
    */
   constructor(workspace) {
     this.workspace_ = workspace;
     this.origHandleWsStart_ = Blockly.Gesture.prototype.handleWsStart;
 
-    blockSelectionWeakMap.set(this.workspace_, new Set());
-    this.blockSelection_ = blockSelectionWeakMap.get(this.workspace_);
+    dragSelectionWeakMap.set(this.workspace_, new Set());
+    multiDraggableWeakMap.set(this.workspace_,
+        new MultiselectDraggable(this.workspace_));
+    this.dragSelection_ = dragSelectionWeakMap.get(this.workspace_);
     inMultipleSelectionModeWeakMap.set(this.workspace_, false);
-    BaseBlockDraggerWeakMap.set(this.workspace_, Blockly.BlockDragger);
     this.useCopyPasteCrossTab_ = true;
     this.useCopyPasteMenu_ = true;
     this.multiFieldUpdate_ = true;
     this.multiSelectKeys_ = ['shift'];
+    this.registeredShortcut_ = true;
   }
 
   /**
@@ -75,7 +80,7 @@ export class Multiselect {
     });
 
     if (options.multiselectCopyPaste &&
-      options.multiselectCopyPaste.crossTab === false) {
+        options.multiselectCopyPaste.crossTab === false) {
       this.useCopyPasteCrossTab_ = false;
     }
 
@@ -88,7 +93,7 @@ export class Multiselect {
       ContextMenu.unregisterContextMenu();
       ContextMenu.registerOurContextMenu(this.useCopyPasteMenu_,
           this.useCopyPasteCrossTab_);
-      Shortcut.unregisterShortcut();
+      Shortcut.unregisterOrigShortcut();
       Shortcut.registerOurShortcut(this.useCopyPasteCrossTab_);
     }
 
@@ -106,10 +111,6 @@ export class Multiselect {
       this.useDoubleClick_(true);
     }
 
-    if (options.baseBlockDragger) {
-      BaseBlockDraggerWeakMap.set(this.workspace_, options.baseBlockDragger);
-    }
-
     if (options.multiFieldUpdate === false) {
       this.multiFieldUpdate_ = false;
     }
@@ -117,6 +118,17 @@ export class Multiselect {
     if (!options.bumpNeighbours) {
       this.origBumpNeighbours = Blockly.BlockSvg.prototype.bumpNeighbours;
       Blockly.BlockSvg.prototype.bumpNeighbours = function() {};
+    }
+
+    Blockly.browserEvents.conditionalBind(
+        injectionDiv, 'keydown', this, this.unbindMultiselectCopyPaste_
+    );
+
+    // This is for the keyboard navigation plugin and checks whether it puts
+    // the workspace into keyboard accessibility mode by default.
+    if (this.workspace_.keyboardAccessibilityMode) {
+      Shortcut.unregisterOurShortcut();
+      this.registeredShortcut_ = false;
     }
   }
 
@@ -190,7 +202,7 @@ export class Multiselect {
       Blockly.ContextMenuRegistry.registry.unregister('copy_to_backpack');
       ContextMenu.registerOrigContextMenu();
 
-      Shortcut.unregisterShortcut();
+      Shortcut.unregisterOrigShortcut();
       Blockly.ShortcutRegistry.registry.unregister('selectall');
       Shortcut.registerOrigShortcut();
     }
@@ -230,41 +242,73 @@ export class Multiselect {
             !inMultipleSelectionModeWeakMap.get(ws)) {
           const preCondition = function(block) {
             return !block.isInFlyout && block.isMovable() &&
-            block.workspace.options.collapse;
+                block.workspace.options.collapse;
           };
-          if (Blockly.getSelected() && preCondition(Blockly.getSelected())) {
-            if (ws.doubleClickPid_) {
-              clearTimeout(ws.doubleClickPid_);
-              ws.doubleClickPid_ = undefined;
-              if (Blockly.getSelected().id === ws.doubleClickBlock_) {
-                const state = !Blockly.getSelected().isCollapsed();
-                const maybeCollapse = function(block) {
-                  if (block && preCondition(block) &&
-                  !hasSelectedParent(block)) {
-                    block.setCollapsed(state);
-                  }
-                };
+
+          const selected = Blockly.getSelected();
+          const maybeCollapse = function(block, blockState) {
+            if (block && preCondition(block) &&
+                !hasSelectedParent(block)) {
+              block.setCollapsed(blockState);
+            }
+          };
+          if (ws.doubleClickPid_) {
+            clearTimeout(ws.doubleClickPid_);
+            ws.doubleClickPid_ = undefined;
+            // Case where selected is a
+            // block (not a multidraggable)
+            if (selected && selected instanceof Blockly.BlockSvg &&
+                preCondition(selected)) {
+              if (selected.id === ws.doubleClickBlock_) {
+                const state = !selected.isCollapsed();
                 Blockly.Events.setGroup(true);
-                const blockSelection = blockSelectionWeakMap.get(ws);
-                if (Blockly.getSelected() && !blockSelection.size) {
-                  maybeCollapse(Blockly.getSelected());
+                if (selected) {
+                  maybeCollapse(selected, state);
                 }
-                blockSelection.forEach(function(id) {
+                Blockly.Events.setGroup(false);
+                return;
+              }
+            } else if (selected && selected instanceof MultiselectDraggable) {
+              // Case where the selected is a multidraggable instance
+              const dragSelection = dragSelectionWeakMap.get(ws);
+              if (dragSelection.size) {
+                // Checking whether any of the blocks in
+                // the dragSelection is not collapsed.
+                // If there are not collapsed blocks,
+                // set the maybeCollapse function to collapse
+                // those uncollapsed blocks.
+                // Otherwise, uncollapse all the collapsed blocks.
+                let notCollapsed = 0;
+                dragSelection.forEach((id) => {
+                  if (ws.getBlockById(id)) {
+                    if (!ws.getBlockById(id).isCollapsed() &&
+                        !hasSelectedParent(ws.getBlockById(id))) {
+                      notCollapsed += 1;
+                    }
+                  }
+                });
+                let state = false;
+                if (notCollapsed > 0) {
+                  state = true;
+                }
+
+                Blockly.Events.setGroup(true);
+                dragSelection.forEach(function(id) {
                   const block = ws.getBlockById(id);
                   if (block) {
-                    maybeCollapse(block);
+                    maybeCollapse(block, state);
                   }
                 });
                 Blockly.Events.setGroup(false);
                 return;
               }
             }
-            if (!ws.doubleClickPid_) {
-              ws.doubleClickBlock_ = Blockly.getSelected().id;
-              ws.doubleClickPid_ = setTimeout(function() {
-                ws.doubleClickPid_ = undefined;
-              }, 500);
-            }
+          }
+          if (!ws.doubleClickPid_) {
+            ws.doubleClickBlock_ = selected.id;
+            ws.doubleClickPid_ = setTimeout(function() {
+              ws.doubleClickPid_ = undefined;
+            }, 500);
           }
         }
       };
@@ -281,10 +325,10 @@ export class Multiselect {
   eventListener_(e) {
     // on Block field changed
     if (this.multiFieldUpdate_ &&
-        this.blockSelection_.has(e.blockId) &&
+        this.dragSelection_.has(e.blockId) &&
         (e.type === Blockly.Events.CHANGE &&
-        e.element === 'field' && e.recordUndo && e.group === '' ||
-        e.type === Blockly.Events.BLOCK_FIELD_INTERMEDIATE_CHANGE)) {
+            e.element === 'field' && e.recordUndo && e.group === '' ||
+            e.type === Blockly.Events.BLOCK_FIELD_INTERMEDIATE_CHANGE)) {
       const currentGroup = Blockly.Events.getGroup();
       if (!currentGroup) {
         Blockly.Events.setGroup(true);
@@ -294,12 +338,13 @@ export class Multiselect {
         const blockType = this.workspace_.getBlockById(e.blockId).type;
         // Update the fields to the same value for
         // the selected blocks with same type.
-        this.blockSelection_.forEach((id) => {
+        this.dragSelection_.forEach((id) => {
           if (id === e.blockId) {
             return;
           }
           const block = this.workspace_.getBlockById(id);
-          if (block.type === blockType) {
+          console.log(block)
+          if (block && block.type === blockType) {
             block.setFieldValue(e.newValue, e.name);
           }
         });
@@ -338,6 +383,34 @@ export class Multiselect {
     if (this.multiSelectKeys_.indexOf(e.key.toLocaleLowerCase()) > -1 &&
         !inMultipleSelectionModeWeakMap.get(this.workspace_)) {
       this.controls_.enableMultiselect();
+    }
+  }
+
+  /**
+   * Handle a keyboard navigation key-down on the workspace.
+   * @param {KeyboardEvent} e The keyboard event.
+   * @private
+   */
+  unbindMultiselectCopyPaste_(e) {
+    // TODO: Update this to re-register/unregister the original shortcuts after
+    //  Blockly/keyboard navigation plugin update
+    // This is to unregister the multiselect plugin's shortcuts
+    // when the user is in the keyboard navigation mode. Currently,
+    // when the user is in keyboard accessibility mode, they cannot
+    // use the normal copy/cut/paste functionalities.
+    // This is because the original (Blockly core) copy/cut/paste
+    // functions do not allow for collisions. This can be fixed
+    // either by allowing for collisions in the Blockly core
+    // copy/cut/paste functions or allowing for unregister/re-registering
+    // of the keyboard navigation plugin's copy/cut/paste functions.
+    if (this.workspace_.keyboardAccessibilityMode &&
+        this.registeredShortcut_) {
+      Shortcut.unregisterOurShortcut();
+      this.registeredShortcut_ = false;
+    } else if (!this.workspace_.keyboardAccessibilityMode &&
+        !this.registeredShortcut_) {
+      Shortcut.registerOurShortcut();
+      this.registeredShortcut_ = true;
     }
   }
 
