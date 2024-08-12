@@ -114,6 +114,25 @@ update to update the dropdown fields. To do this, you can use the `Multiselect.w
 within the function which updates the dependent field.  It allows you to temporarily turn off the multi-field update within the
 scope of its wrapped input function.
 
+## Cross-tested with the following plugins:
+**Original**
+- [x] Scroll-options plugin
+- [x] Backpack (Need to update UI in Backpack plugin side)
+
+**Workspace-related**
+- [x] Keyboard-navigation
+- [x] Shadow-block-converter
+- [x] Workspace-content-highlight
+- [x] Disable-top-blocks
+- [x] Plugin-strict-connection-checker
+
+**Blocks-related**
+- [x] Block-dynamic-connection
+- [x] Block-shareable-procedures
+- [x] Block-test
+
+For more information, please check out the following [issue page](https://github.com/mit-cml/workspace-multiselect/issues/50).
+
 ### Note on keyboard navigation plugin
 Currently, the keyboard navigation plugin has no compatibility issues with the multiselect plugin. It is enabled by default
 in the test files. However, one thing that developers and users should note is that the regular Blockly core's copy/cut/paste shortcuts 
