@@ -11,19 +11,19 @@
 import * as Blockly from 'blockly/core';
 
 /**
+ * Weakmap for storing multidraggable objects for a given workspace (as a key).
+ */
+export const multiDraggableWeakMap = new WeakMap();
+
+/**
  * Set for storing the current selected blockSvg ids.
  */
-export const blockSelectionWeakMap = new WeakMap();
+export const dragSelectionWeakMap = new WeakMap();
 
 /**
  * Store the current selection mode.
  */
 export const inMultipleSelectionModeWeakMap = new WeakMap();
-
-/**
- * Store the base BlockDragger.
- */
-export const BaseBlockDraggerWeakMap = new WeakMap();
 
 /**
  * Store the multi-select controls instances.
@@ -34,6 +34,11 @@ export const multiselectControlsList = new Set();
  * Store the copy data.
  */
 export const copyData = new Set();
+
+/**
+ * Store the paste shortcut mode.
+ */
+export const inPasteShortcut = new WeakMap();
 
 /**
  * Store the copied connections list.
@@ -55,6 +60,18 @@ export const registeredShortcut = [];
  */
 let timestamp = 0;
 
+// TODO: Update custom enum below into actual enum
+//  if plugin is updated to TypeScript.
+/**
+ * Object holding the names of the default shortcut items.
+ */
+export const shortcutNames = Object.freeze({
+  MULTIDELETE: 'multiselectDelete',
+  MULTICOPY: 'multiselectCopy',
+  MULTICUT: 'multiselectCut',
+  MULTIPASTE: 'multiselectPaste',
+});
+
 /**
  * Check if the current selected blockSvg set already contains the parents.
  * @param {!Blockly.BlockSvg} block to check.
@@ -69,11 +86,30 @@ export const hasSelectedParent = function(block, move = false) {
       block = block.getSurroundParent();
     }
 
-    if (block && blockSelectionWeakMap.get(block.workspace).has(block.id)) {
+    if (block && dragSelectionWeakMap.get(block.workspace).has(block.id)) {
       return true;
     }
   }
   return false;
+};
+
+/**
+ * Returns the corresponding object related to the id in the workspace.
+ * Currently only supports blocks and workspace comments
+ * @param {!Blockly.Workspace} workspace to check.
+ * @param {string} id The ID of the object
+ * @returns {Blockly.IDraggable} The object that is draggable
+ */
+export const getByID = function(workspace, id) {
+  // TODO: Need to figure our if there is a way to determine
+  // type of draggable just from ID, or if we have to pass into
+  // getById functions for each type
+  if (workspace.getBlockById(id)) {
+    return workspace.getBlockById(id);
+  } else if (workspace.getCommentById(id)) {
+    return workspace.getCommentById(id);
+  }
+  return null;
 };
 
 /**

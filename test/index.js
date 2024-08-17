@@ -10,8 +10,9 @@
 
 import * as Blockly from 'blockly';
 import {toolboxCategories, createPlayground} from '@blockly/dev-tools';
-import {Multiselect, MultiselectBlockDragger} from '../src/index';
+import {Multiselect} from '../src/index';
 import {Backpack} from '@blockly/workspace-backpack';
+import {NavigationController} from '@blockly/keyboard-navigation';
 
 /**
  * Create a workspace.
@@ -26,6 +27,12 @@ function createWorkspace(blocklyDiv, options) {
   const backpack = new Backpack(workspace);
   backpack.init();
 
+  // Initialize keyboard nav plugin.
+  const navigationController = new NavigationController();
+  navigationController.init();
+  navigationController.addWorkspace(workspace);
+
+  // Initialize multiselect plugin.
   const multiselectPlugin = new Multiselect(workspace);
   multiselectPlugin.init(options);
 
@@ -44,7 +51,7 @@ document.addEventListener('DOMContentLoaded', function() {
       enabledIcon: 'media/select.svg',
       disabledIcon: 'media/unselect.svg',
     },
-    multiSelectKeys: ['Shift', 'Control'],
+    multiSelectKeys: ['Shift'],
     multiselectCopyPaste: {
       crossTab: true,
       menu: true,
@@ -60,9 +67,6 @@ document.addEventListener('DOMContentLoaded', function() {
     },
     zoom: {
       wheel: true,
-    },
-    plugins: {
-      'blockDragger': MultiselectBlockDragger,
     },
   };
   createPlayground(document.getElementById('root'), createWorkspace,
