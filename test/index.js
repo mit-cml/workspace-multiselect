@@ -14,6 +14,7 @@ import {Multiselect} from '../src/index';
 import {Backpack} from '@blockly/workspace-backpack';
 import {NavigationController} from '@blockly/keyboard-navigation';
 
+const navigationController = new NavigationController();
 /**
  * Create a workspace.
  * @param {HTMLElement} blocklyDiv The blockly container div.
@@ -27,9 +28,6 @@ function createWorkspace(blocklyDiv, options) {
   const backpack = new Backpack(workspace);
   backpack.init();
 
-  // Initialize keyboard nav plugin.
-  const navigationController = new NavigationController();
-  navigationController.init();
   navigationController.addWorkspace(workspace);
 
   // Initialize multiselect plugin.
@@ -38,6 +36,10 @@ function createWorkspace(blocklyDiv, options) {
 
   return workspace;
 }
+
+Blockly.ContextMenuItems.registerCommentOptions();
+// Initialize keyboard nav plugin.
+navigationController.init();
 
 document.addEventListener('DOMContentLoaded', function() {
   const defaultOptions = {

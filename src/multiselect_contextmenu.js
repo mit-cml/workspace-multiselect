@@ -137,6 +137,7 @@ const registerCopy = function(useCopyPasteCrossTab) {
  * multiple blocks.
  */
 const registerDuplicate = function() {
+  const id = 'blockDuplicate';
   const duplicateOption = {
     displayText: function(scope) {
       let workableBlocksLength = 0;
@@ -237,9 +238,12 @@ const registerDuplicate = function() {
       Blockly.Events.setGroup(false);
     },
     scopeType: Blockly.ContextMenuRegistry.ScopeType.BLOCK,
-    id: 'blockDuplicate',
+    id,
     weight: 1,
   };
+  if (Blockly.ContextMenuRegistry.registry.getItem(id) !== null) {
+    Blockly.ContextMenuRegistry.registry.unregister(id);
+  }
   Blockly.ContextMenuRegistry.registry.register(duplicateOption);
 };
 
@@ -247,6 +251,7 @@ const registerDuplicate = function() {
  * Modification for context menu 'Comment' to be available for multiple blocks.
  */
 const registerBlockComment = function() {
+  const id = 'blockComment';
   const commentOption = {
     displayText: function(scope) {
       let workableBlocksLength = 0;
@@ -322,9 +327,12 @@ const registerBlockComment = function() {
       Blockly.Events.setGroup(false);
     },
     scopeType: Blockly.ContextMenuRegistry.ScopeType.BLOCK,
-    id: 'blockComment',
+    id,
     weight: 2,
   };
+  if (Blockly.ContextMenuRegistry.registry.getItem(id) !== null) {
+    Blockly.ContextMenuRegistry.registry.unregister(id);
+  }
   Blockly.ContextMenuRegistry.registry.register(commentOption);
 };
 
@@ -332,6 +340,7 @@ const registerBlockComment = function() {
  * Modification for context menu 'Inline' to be available for multiple blocks.
  */
 const registerInline = function() {
+  const id = 'blockInline';
   const inlineOption = {
     displayText: function(scope) {
       let workableBlocksLength = 0;
@@ -408,9 +417,12 @@ const registerInline = function() {
       Blockly.Events.setGroup(false);
     },
     scopeType: Blockly.ContextMenuRegistry.ScopeType.BLOCK,
-    id: 'blockInline',
+    id,
     weight: 3,
   };
+  if (Blockly.ContextMenuRegistry.registry.getItem(id) !== null) {
+    Blockly.ContextMenuRegistry.registry.unregister(id);
+  }
   Blockly.ContextMenuRegistry.registry.register(inlineOption);
 };
 
@@ -419,6 +431,7 @@ const registerInline = function() {
  * multiple blocks.
  */
 const registerCollapseExpandBlock = function() {
+  const id = 'blockCollapseExpand';
   const collapseExpandOption = {
     displayText: function(scope) {
       let workableBlocksLength = 0;
@@ -490,9 +503,12 @@ const registerCollapseExpandBlock = function() {
       Blockly.Events.setGroup(false);
     },
     scopeType: Blockly.ContextMenuRegistry.ScopeType.BLOCK,
-    id: 'blockCollapseExpand',
+    id,
     weight: 4,
   };
+  if (Blockly.ContextMenuRegistry.registry.getItem(id) !== null) {
+    Blockly.ContextMenuRegistry.registry.unregister(id);
+  }
   Blockly.ContextMenuRegistry.registry.register(collapseExpandOption);
 };
 
@@ -500,6 +516,7 @@ const registerCollapseExpandBlock = function() {
  * Modification for context menu 'Disable' to be available for multiple blocks.
  */
 const registerDisable = function() {
+  const id = 'blockDisable';
   const disableOption = {
     displayText: function(scope) {
       let workableBlocksLength = 0;
@@ -573,9 +590,12 @@ const registerDisable = function() {
       Blockly.Events.setGroup(false);
     },
     scopeType: Blockly.ContextMenuRegistry.ScopeType.BLOCK,
-    id: 'blockDisable',
+    id,
     weight: 5,
   };
+  if (Blockly.ContextMenuRegistry.registry.getItem(id) !== null) {
+    Blockly.ContextMenuRegistry.registry.unregister(id);
+  }
   Blockly.ContextMenuRegistry.registry.register(disableOption);
 };
 
@@ -583,6 +603,7 @@ const registerDisable = function() {
  * Modification for context menu 'Delete' to be available for multiple blocks.
  */
 const registerDelete = function() {
+  const id = 'blockDelete';
   const deleteOption = {
     displayText: function(scope) {
       let descendantCount = 0;
@@ -653,9 +674,12 @@ const registerDelete = function() {
       Blockly.Events.setGroup(false);
     },
     scopeType: Blockly.ContextMenuRegistry.ScopeType.BLOCK,
-    id: 'blockDelete',
+    id,
     weight: 6,
   };
+  if (Blockly.ContextMenuRegistry.registry.getItem(id) !== null) {
+    Blockly.ContextMenuRegistry.registry.unregister(id);
+  }
   Blockly.ContextMenuRegistry.registry.register(deleteOption);
 };
 
@@ -937,6 +961,7 @@ const updateToMultiCopyToBackpack =
  * be available for multiple comments.
  */
 const registerCommentDelete = function() {
+  const id = 'commentDelete';
   const deleteOption = {
     displayText: function(scope) {
       let count = 0;
@@ -999,9 +1024,12 @@ const registerCommentDelete = function() {
       Blockly.Events.setGroup(false);
     },
     scopeType: Blockly.ContextMenuRegistry.ScopeType.COMMENT,
-    id: 'commentDelete',
+    id,
     weight: 6,
   };
+  if (Blockly.ContextMenuRegistry.registry.getItem(id) !== null) {
+    Blockly.ContextMenuRegistry.registry.unregister(id);
+  }
   Blockly.ContextMenuRegistry.registry.register(deleteOption);
 };
 
@@ -1010,6 +1038,7 @@ const registerCommentDelete = function() {
  * multiple comments.
  */
 const registerCommentDuplicate = function() {
+  const id = 'commentDuplicate';
   const duplicateOption = {
     displayText: function(scope) {
       let count = 0;
@@ -1090,9 +1119,12 @@ const registerCommentDuplicate = function() {
       Blockly.Events.setGroup(false);
     },
     scopeType: Blockly.ContextMenuRegistry.ScopeType.COMMENT,
-    id: 'commentDuplicate',
+    id,
     weight: 1,
   };
+  if (Blockly.ContextMenuRegistry.registry.getItem(id) !== null) {
+    Blockly.ContextMenuRegistry.registry.unregister(id);
+  }
   Blockly.ContextMenuRegistry.registry.register(duplicateOption);
 };
 
@@ -1102,6 +1134,7 @@ const registerCommentDuplicate = function() {
  *     cross tab copy paste.
  */
 const registerCommentCopy = function(useCopyPasteCrossTab) {
+  const id = 'commentCopyToStorage';
   const copyOptions = {
     displayText: function(scope) {
       let workableCommentsLength = 0;
@@ -1195,12 +1228,11 @@ const registerCommentCopy = function(useCopyPasteCrossTab) {
       return true;
     },
     scopeType: Blockly.ContextMenuRegistry.ScopeType.COMMENT,
-    id: 'commentCopyToStorage',
+    id,
     weight: 0,
   };
-  if (Blockly.ContextMenuRegistry.registry.getItem('commentCopyToStorage') !==
-      null) {
-    Blockly.ContextMenuRegistry.registry.unregister('commentCopyToStorage');
+  if (Blockly.ContextMenuRegistry.registry.getItem(id) !== null) {
+    Blockly.ContextMenuRegistry.registry.unregister(id);
   }
   Blockly.ContextMenuRegistry.registry.register(copyOptions);
 };
