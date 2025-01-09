@@ -89,7 +89,7 @@ export class Multiselect {
       this.useCopyPasteMenu_ = false;
     }
 
-    if (!Blockly.ContextMenuRegistry.registry.registry_.workspaceSelectAll) {
+    if (!Blockly.ContextMenuRegistry.registry.getItem('workspaceSelectAll')) {
       ContextMenu.unregisterContextMenu();
       ContextMenu.registerOurContextMenu(this.useCopyPasteMenu_,
           this.useCopyPasteCrossTab_);
