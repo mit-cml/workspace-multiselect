@@ -89,10 +89,11 @@ export class Multiselect {
       this.useCopyPasteMenu_ = false;
     }
 
-    if (!Blockly.ContextMenuRegistry.registry.getItem('workspaceSelectAll')) {
+    if (!Blockly.ContextMenuRegistry.registry.getItem("workspaceSelectAll")) {
       ContextMenu.unregisterContextMenu();
       ContextMenu.registerOurContextMenu(this.useCopyPasteMenu_,
           this.useCopyPasteCrossTab_);
+
       Shortcut.unregisterOrigShortcut();
       Shortcut.registerOurShortcut(this.useCopyPasteCrossTab_);
     }
