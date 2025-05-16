@@ -369,6 +369,16 @@ const registerPaste = function(useCopyPasteCrossTab) {
       if (useCopyPasteCrossTab) {
         dataCopyFromStorage();
       }
+      const getPasteBlock = function (data, workspace) {
+        const block = data.blockState;
+        const {left, top, width, height} = workspace.getMetricsManager().getViewMetrics(true);
+        const centerCoords = new Blockly.utils.Coordinate(left + width / 2, top + height / 2);
+        const viewportRect = new Blockly.utils.Rect(top, top + height, left, left + width);
+        if (viewportRect.contains(block.x, block.y) && workspace.getBlockById(block.id)) {
+          return Blockly.clipboard.paste(data, workspace);
+        }
+        return Blockly.clipboard.paste(data, workspace, centerCoords);
+      };
       copyData.forEach(function(stringData) {
         const data = JSON.parse(stringData);
         // Set unique id for data to prevent bug where
@@ -389,7 +399,7 @@ const registerPaste = function(useCopyPasteCrossTab) {
         }
         if (data.typeCounts &&
             workspace.isCapacityAvailable(data.typeCounts)) {
-          const element = Blockly.clipboard.paste(data, workspace);
+          const element = getPasteBlock(data, workspace);
           if (element) {
             blockList.push(element);
           }
@@ -398,7 +408,7 @@ const registerPaste = function(useCopyPasteCrossTab) {
             multiDraggableWeakMap.get(workspace).addSubDraggable_(element);
           }
         } else if (data.commentState) {
-          const element = Blockly.clipboard.paste(data, workspace);
+          const element = getPasteBlock(data, workspace);
           if (element) {
             element.select();
           }
