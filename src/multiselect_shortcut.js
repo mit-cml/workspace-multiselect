@@ -292,6 +292,16 @@ const registerPaste = function(useCopyPasteCrossTab) {
       if (useCopyPasteCrossTab) {
         dataCopyFromStorage();
       }
+      const getPasteBlock = function (data, workspace) {
+        const block = data.blockState;
+        const {left, top, width, height} = workspace.getMetricsManager().getViewMetrics(true);
+        const centerCoords = new Blockly.utils.Coordinate(left + width / 2, top + height / 2);
+        const viewportRect = new Blockly.utils.Rect(top, top + height, left, left + width);
+        if (viewportRect.contains(block.x, block.y) && workspace.getBlockById(data.blockState.id)) {
+          return Blockly.clipboard.paste(data, workspace);
+        }
+        return Blockly.clipboard.paste(data, workspace, centerCoords);
+      }
       copyData.forEach(function(stringData) {
         // Pasting always pastes to the main workspace, even if the copy
         // started in a flyout workspace.
@@ -304,7 +314,7 @@ const registerPaste = function(useCopyPasteCrossTab) {
         }
         if (data.typeCounts &&
             workspace.isCapacityAvailable(data.typeCounts)) {
-          const block = Blockly.clipboard.paste(data, workspace);
+          const block = getPasteBlock(data, workspace);
           blockList.push(block);
           block.pathObject.updateSelected(true);
           blockSelectionWeakMap.get(block.workspace).add(block.id);
