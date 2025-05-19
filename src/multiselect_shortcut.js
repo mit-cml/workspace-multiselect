@@ -369,12 +369,16 @@ const registerPaste = function(useCopyPasteCrossTab) {
       if (useCopyPasteCrossTab) {
         dataCopyFromStorage();
       }
-      const getPasteBlock = function (data, workspace) {
+      const getPasteBlock = function(data, workspace) {
         const block = data.blockState;
-        const {left, top, width, height} = workspace.getMetricsManager().getViewMetrics(true);
-        const centerCoords = new Blockly.utils.Coordinate(left + width / 2, top + height / 2);
-        const viewportRect = new Blockly.utils.Rect(top, top + height, left, left + width);
-        if (viewportRect.contains(block.x, block.y) && workspace.getBlockById(block.id)) {
+        const {left, top, width, height} =
+            workspace.getMetricsManager().getViewMetrics(true);
+        const centerCoords = new Blockly.utils.Coordinate(
+            left + width / 2, top + height / 2);
+        const viewportRect = new Blockly.utils.Rect(
+            top, top + height, left, left + width);
+        if (viewportRect.contains(block.x, block.y) &&
+            workspace.getBlockById(block.id)) {
           return Blockly.clipboard.paste(data, workspace);
         }
         return Blockly.clipboard.paste(data, workspace, centerCoords);
