@@ -46,7 +46,7 @@
     "@blockly/dev-tools": "^8.0.12",
     "@blockly/keyboard-navigation": "^0.6.12",
     "@blockly/workspace-backpack": "^6.0.12",
-    "blockly": "^11.2.0"
+    "blockly": "^12.1.0"
   },
   "peerDependencies": {
     "blockly": ">=11"
