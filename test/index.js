@@ -12,9 +12,9 @@ import * as Blockly from 'blockly';
 import {toolboxCategories, createPlayground} from '@blockly/dev-tools';
 import {Multiselect} from '../src/index';
 import {Backpack} from '@blockly/workspace-backpack';
-import {NavigationController} from '@blockly/keyboard-navigation';
+// import {NavigationController} from '@blockly/keyboard-navigation';
 
-const navigationController = new NavigationController();
+// const navigationController = new NavigationController();
 /**
  * Create a workspace.
  * @param {HTMLElement} blocklyDiv The blockly container div.
@@ -28,7 +28,7 @@ function createWorkspace(blocklyDiv, options) {
   const backpack = new Backpack(workspace);
   backpack.init();
 
-  navigationController.addWorkspace(workspace);
+  // navigationController.addWorkspace(workspace);
 
   // Initialize multiselect plugin.
   const multiselectPlugin = new Multiselect(workspace);
@@ -38,8 +38,8 @@ function createWorkspace(blocklyDiv, options) {
 }
 
 Blockly.ContextMenuItems.registerCommentOptions();
-// Initialize keyboard nav plugin.
-navigationController.init();
+// // Initialize keyboard nav plugin.
+// navigationController.init();
 
 document.addEventListener('DOMContentLoaded', function() {
   const defaultOptions = {
