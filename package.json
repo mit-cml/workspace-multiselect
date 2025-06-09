@@ -42,11 +42,11 @@
     "dragselect": "^2.7.4"
   },
   "devDependencies": {
-    "@blockly/dev-scripts": "^4.0.7",
-    "@blockly/dev-tools": "^8.0.12",
+    "@blockly/dev-scripts": "^4.0.9",
+    "@blockly/dev-tools": "^8.1.2",
     "@blockly/keyboard-navigation": "^0.6.12",
-    "@blockly/workspace-backpack": "^6.0.12",
-    "blockly": "^11.2.0"
+    "@blockly/workspace-backpack": "^6.0.16",
+    "blockly": "^11.2.2"
   },
   "peerDependencies": {
     "blockly": ">=11"
