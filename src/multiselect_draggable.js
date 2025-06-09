@@ -32,6 +32,23 @@ export class MultiselectDraggable {
     this.dragSelection = dragSelectionWeakMap.get(workspace);
   }
 
+  canBeFocused() {
+    return true;
+  }
+
+  getFocusableTree() {
+    return this.workspace;
+  }
+
+  getFocusableElement() {
+    for (const id of this.dragSelection) {
+      const block = this.workspace.getBlockById(id);
+      if (block) {
+        return block.getSvgRoot();
+      }
+    }
+  }
+
   /**
    * Clears everything in the subDraggables
    * map of the MultiselectDraggable object.
