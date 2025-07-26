@@ -611,20 +611,33 @@ const registerDelete = function() {
       const dragSelection = dragSelectionWeakMap.get(workspace);
 
       const countDescendants = function(block) {
-        if (block && !hasSelectedParent(block)) {
-          // Count the number of blocks that are nested in this block.
-          descendantCount += block.getDescendants(false).length;
-          for (const subBlocks of block.getDescendants(false)) {
-            if (subBlocks.isShadow()) {
-              descendantCount -= 1;
+        if (!block || hasSelectedParent(block)) return;
+
+        const countBlockAndDescendants = function(currentBlock) {
+          if (currentBlock.isShadow()) return 0;
+          let count = 1; // initial block
+
+          for (const input of currentBlock.inputList) {
+            if (input.connection && input.connection.targetBlock()) {
+              const connectedBlock = input.connection.targetBlock();
+              if (input.type === Blockly.inputs.inputTypes.STATEMENT) {
+                // For statement inputs, count the entire chain of next blocks
+                let nextInChain = connectedBlock;
+                while (nextInChain) {
+                  count += countBlockAndDescendants(nextInChain);
+                  nextInChain = nextInChain.getNextBlock();
+                }
+              } else {
+                // For value inputs, just count the connected block tree
+                count += countBlockAndDescendants(connectedBlock);
+              }
             }
           }
-          const nextBlock = block.getNextBlock();
-          if (nextBlock) {
-            // Blocks in the current stack would survive this block's deletion.
-            descendantCount -= nextBlock.getDescendants(false).length;
-          }
-        }
+
+          return count;
+        };
+
+        descendantCount += countBlockAndDescendants(block);
       };
 
       if (!dragSelection.size) {
