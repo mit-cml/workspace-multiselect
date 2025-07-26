@@ -615,21 +615,18 @@ const registerDelete = function() {
 
         const countBlockAndDescendants = function(currentBlock) {
           if (currentBlock.isShadow()) return 0;
-          let count = 1; // initial block
-
+          let count = 1; // Initial block
           for (const input of currentBlock.inputList) {
             if (input.connection && input.connection.targetBlock()) {
               const connectedBlock = input.connection.targetBlock();
+              count += countBlockAndDescendants(connectedBlock);
+              // For statement inputs, also follow the next chain
               if (input.type === Blockly.inputs.inputTypes.STATEMENT) {
-                // For statement inputs, count the entire chain of next blocks
-                let nextInChain = connectedBlock;
-                while (nextInChain) {
-                  count += countBlockAndDescendants(nextInChain);
-                  nextInChain = nextInChain.getNextBlock();
+                let nextInStatement = connectedBlock.getNextBlock();
+                while (nextInStatement) {
+                  count += countBlockAndDescendants(nextInStatement);
+                  nextInStatement = nextInStatement.getNextBlock();
                 }
-              } else {
-                // For value inputs, just count the connected block tree
-                count += countBlockAndDescendants(connectedBlock);
               }
             }
           }
@@ -640,7 +637,10 @@ const registerDelete = function() {
         descendantCount += countBlockAndDescendants(block);
       };
 
-      if (!dragSelection.size) {
+      const isInMultiselection = dragSelection &&
+        dragSelection.has(scope.block.id);
+
+      if (!isInMultiselection) {
         // Handle single block selection
         countDescendants(scope.block);
       } else {
