@@ -638,9 +638,9 @@ const registerDelete = function() {
       };
 
       const isInMultiselection = dragSelection &&
-        dragSelection.has(scope.block.id);
+          dragSelection.has(scope.block.id);
 
-      if (!isInMultiselection) {
+      if (!dragSelection || dragSelection.size === 0 || !isInMultiselection) {
         // Handle single block selection
         countDescendants(scope.block);
       } else {
