@@ -210,7 +210,7 @@ const registerDuplicate = function() {
         });
         dragSelection.clear();
         multiDraggable.clearAll_();
-        Blockly.common.setSelected(null);
+        Blockly.common.setSelected(workspace);
       } else {
         apply(scope.block);
       }
@@ -234,7 +234,7 @@ const registerDuplicate = function() {
       connectionDBList.forEach(function(connectionDB) {
         connectionDB[0].connect(connectionDB[1]);
       });
-      Blockly.common.setSelected(multiDraggable);
+      Blockly.getFocusManager().updateFocusedNode(multiDraggable);
       Blockly.Events.setGroup(false);
     },
     scopeType: Blockly.ContextMenuRegistry.ScopeType.BLOCK,
@@ -801,7 +801,7 @@ const registerPaste = function(useCopyPasteCrossTab) {
             blockList[connectionDB[1]].previousConnection);
       });
       Blockly.Events.setGroup(false);
-      Blockly.common.setSelected(multiDraggable);
+      Blockly.getFocusManager().updateFocusedNode(multiDraggable);
       return true;
     },
     scopeType: Blockly.ContextMenuRegistry.ScopeType.WORKSPACE,
@@ -845,7 +845,7 @@ const registerSelectAll = function() {
         } else {
           Blockly.getSelected().unselect();
         }
-        Blockly.common.setSelected(null);
+        Blockly.common.setSelected(scope.workspace);
         multiDraggable.clearAll_();
         dragSelectionWeakMap.get(scope.workspace).clear();
       }
@@ -868,7 +868,7 @@ const registerSelectAll = function() {
         }
       });
 
-      Blockly.common.setSelected(multiDraggable);
+      Blockly.getFocusManager().updateFocusedNode(multiDraggable);
     },
     scopeType: Blockly.ContextMenuRegistry.ScopeType.WORKSPACE,
     id,
@@ -1135,7 +1135,7 @@ const registerCommentDuplicate = function() {
         });
         dragSelection.clear();
         multiDraggable.clearAll_();
-        Blockly.common.setSelected(null);
+        Blockly.common.setSelected(workspace);
       } else {
         apply(scope.comment);
       }
@@ -1147,7 +1147,7 @@ const registerCommentDuplicate = function() {
           comment.select();
         }
       }
-      Blockly.common.setSelected(multiDraggable);
+      Blockly.getFocusManager().updateFocusedNode(multiDraggable);
       Blockly.Events.setGroup(false);
     },
     scopeType: Blockly.ContextMenuRegistry.ScopeType.COMMENT,

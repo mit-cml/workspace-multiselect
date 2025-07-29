@@ -33,6 +33,50 @@ export class MultiselectDraggable {
   }
 
   /**
+   * Determines if this draggable can be focused.
+   * @returns {boolean} Always returns true.
+   */
+  canBeFocused() {
+    return true;
+  }
+
+  /**
+   * Gets the focusable element for this draggable.
+   * @returns {MultiselectDraggable} This draggable instance.
+   */
+  getFocusableElement() {
+    return this;
+  }
+
+  /**
+   * Gets the focusable tree for this draggable.
+   * @returns {Blockly.Workspace} The workspace containing this draggable.
+   */
+  getFocusableTree() {
+    return this.workspace;
+  }
+
+  /** See IFocusableNode.onNodeFocus. */
+  onNodeFocus() {
+    // for (const id of this.dragSelection) {
+    //   const block = this.workspace.getBlockById(id);
+    //   if (block) {
+    //     block.addSelect();
+    //   }
+    // }
+  }
+
+  /** See IFocusableNode.onNodeBlur. */
+  onNodeBlur() {
+    // for (const id of this.dragSelection) {
+    //   const block = this.workspace.getBlockById(id);
+    //   if (block) {
+    //     block.removeSelect();
+    //   }
+    // }
+  }
+
+  /**
    * Clears everything in the subDraggables
    * map of the MultiselectDraggable object.
    */
@@ -71,14 +115,15 @@ export class MultiselectDraggable {
 
   // This is the feature where we added a pointer down event listener.
   // This was added to mitigate the issue of setStart[draggable] overwriting
-  // the call that passes the multidraggable to Blockly.common.SetSelected().
+  // the call that passes the multidraggable to
+  // Blockly.getFocusManager().updateFocusedNode().
   // This should be updated/fixed when a more flexible gesture handling
   // system is implemented.
   // TODO: Look into these after gestures have been updated
   /**
    * Adds a pointer down event listener to a subdraggable to mitigate issue
    * of setStart[draggable] overwriting the call that passes the
-   * multidraggable to Blockly.common.SetSelected().
+   * multidraggable to Blockly.getFocusManager().updateFocusedNode().
    * @param {Blockly.IDraggable} subDraggable A draggable object that will
    * have an event listener added to
    * @private
@@ -101,7 +146,8 @@ export class MultiselectDraggable {
   /**
    * Removes a pointer down event listener from a subdraggable to
    * mitigate issue of setStart[draggable] overwriting the call that
-   *  passes the multidraggable to Blockly.common.SetSelected().
+   * passes the multidraggable to
+   * Blockly.getFocusManager().updateFocusedNode().
    * @param {Blockly.IDraggable} subDraggable A draggable object
    * that will have an event listener removed from
    * @private
@@ -122,13 +168,17 @@ export class MultiselectDraggable {
   /**
    * The handler for the pointer down event that mitigates
    * the issue of setStart[draggable] overwriting the call that
-   * passes the multidraggable to Blockly.common.SetSelected().
+   * passes the multidraggable to Blockly.getFocusManager().updateFocusedNode().
    * @param {PointerEvent} event A pointer down event
    * @private
    */
   pointerDownEventHandler_(event) {
     if (!inMultipleSelectionModeWeakMap.get(this.workspace)) {
-      Blockly.common.setSelected(this);
+      Blockly.getFocusManager().updateFocusedNode(this);
+      const gesture = this.workspace.getGesture(event);
+      if (gesture) {
+        gesture.startBlock = this;
+      }
     }
   }
 
@@ -266,12 +316,7 @@ export class MultiselectDraggable {
     // This needs to be worked on to see if we can make the
     // highlighting of the subdraggables in real time.
     for (const draggable of this.subDraggables) {
-      if (draggable[0] instanceof Blockly.BlockSvg &&
-          !draggable[0].isShadow()) {
-        draggable[0].select();
-      } else {
-        draggable[0].select();
-      }
+      draggable[0].select();
     }
   }
 
