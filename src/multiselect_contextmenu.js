@@ -235,6 +235,10 @@ const registerDuplicate = function() {
         connectionDB[0].connect(connectionDB[1]);
       });
       Blockly.getFocusManager().updateFocusedNode(multiDraggable);
+      // Call the new method to ensure outline is visible
+      if (multiDraggable.onBecomeFocused) {
+        multiDraggable.onBecomeFocused();
+      }
       Blockly.Events.setGroup(false);
     },
     scopeType: Blockly.ContextMenuRegistry.ScopeType.BLOCK,
@@ -802,6 +806,10 @@ const registerPaste = function(useCopyPasteCrossTab) {
       });
       Blockly.Events.setGroup(false);
       Blockly.getFocusManager().updateFocusedNode(multiDraggable);
+      // Call the new method to ensure outline is visible
+      if (multiDraggable.onBecomeFocused) {
+        multiDraggable.onBecomeFocused();
+      }
       return true;
     },
     scopeType: Blockly.ContextMenuRegistry.ScopeType.WORKSPACE,
@@ -869,6 +877,10 @@ const registerSelectAll = function() {
       });
 
       Blockly.getFocusManager().updateFocusedNode(multiDraggable);
+      // Call the new method to ensure outline is visible
+      if (multiDraggable.onBecomeFocused) {
+        multiDraggable.onBecomeFocused();
+      }
     },
     scopeType: Blockly.ContextMenuRegistry.ScopeType.WORKSPACE,
     id,
@@ -1148,6 +1160,10 @@ const registerCommentDuplicate = function() {
         }
       }
       Blockly.getFocusManager().updateFocusedNode(multiDraggable);
+      // Call the new method to ensure outline is visible
+      if (multiDraggable.onBecomeFocused) {
+        multiDraggable.onBecomeFocused();
+      }
       Blockly.Events.setGroup(false);
     },
     scopeType: Blockly.ContextMenuRegistry.ScopeType.COMMENT,

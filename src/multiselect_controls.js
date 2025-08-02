@@ -411,6 +411,10 @@ export class MultiselectControls {
       if (this.dragSelection.size && !(Blockly.getSelected() instanceof
           MultiselectDraggable)) {
         Blockly.getFocusManager().updateFocusedNode(this.multiDraggable);
+        // Call the new method to ensure outline is visible
+        if (this.multiDraggable.onBecomeFocused) {
+          this.multiDraggable.onBecomeFocused();
+        }
       } else if (this.lastSelectedElement_ &&
           !inPasteShortcut.get(this.workspace_)) {
         this.updateDraggables_(this.lastSelectedElement_);
@@ -534,6 +538,10 @@ export class MultiselectControls {
     // our set is not empty.
     if (this.dragSelection.size && !Blockly.getSelected()) {
       Blockly.getFocusManager().updateFocusedNode(this.multiDraggable);
+      // Call the new method to ensure outline is visible
+      if (this.multiDraggable.onBecomeFocused) {
+        this.multiDraggable.onBecomeFocused();
+      }
     }
     if (this.hasDisableWorkspaceDrag_) {
       this.workspace_.options.moveOptions.drag = true;
@@ -575,5 +583,23 @@ Blockly.Css.register(`
 
 .blocklyMultiselect>image:active, .blocklyMultiselect>svg>image:active {
   opacity: .8;
+}
+
+.blocklyMultiselectOutline {
+  pointer-events: none;
+}
+
+.blocklyMultiselectOutlineRect {
+  pointer-events: all;
+  cursor: move;
+}
+
+.blocklyMultiselectOutlineRect:focus {
+  outline: none;
+  stroke-width: 3;
+}
+
+.blocklyMultiselectOutlineRect:hover {
+  stroke-opacity: 0.8;
 }
 `);

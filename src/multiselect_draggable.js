@@ -30,6 +30,9 @@ export class MultiselectDraggable {
     this.loc = new Blockly.utils.Coordinate(0, 0);
     this.connectionDBList = [];
     this.dragSelection = dragSelectionWeakMap.get(workspace);
+    
+    // Create DOM element for focus management
+    this.createSelectionOutline_();
   }
 
   /**
@@ -42,10 +45,10 @@ export class MultiselectDraggable {
 
   /**
    * Gets the focusable element for this draggable.
-   * @returns {MultiselectDraggable} This draggable instance.
+   * @returns {Element} The DOM element that can hold focus.
    */
   getFocusableElement() {
-    return this;
+    return this.selectionOutline_;
   }
 
   /**
@@ -56,24 +59,40 @@ export class MultiselectDraggable {
     return this.workspace;
   }
 
+  /**
+   * Gets the SVG root element for this draggable.
+   * @returns {Element} The selection outline element.
+   */
+  getSvgRoot() {
+    return this.selectionOutline_;
+  }
+
   /** See IFocusableNode.onNodeFocus. */
   onNodeFocus() {
-    // for (const id of this.dragSelection) {
-    //   const block = this.workspace.getBlockById(id);
-    //   if (block) {
-    //     block.addSelect();
-    //   }
-    // }
+    // Highlight all selected blocks when the multiselect outline gains focus
+    for (const id of this.dragSelection) {
+      const block = this.workspace.getBlockById(id);
+      if (block) {
+        block.addSelect();
+      }
+    }
+    
+    // Ensure the outline is visible and highlighted
+    this.updateSelectionOutline_();
   }
 
   /** See IFocusableNode.onNodeBlur. */
   onNodeBlur() {
-    // for (const id of this.dragSelection) {
-    //   const block = this.workspace.getBlockById(id);
-    //   if (block) {
-    //     block.removeSelect();
-    //   }
-    // }
+    // Remove highlight from selected blocks when focus is lost
+    // (but only if we're not in multiselect mode)
+    if (!inMultipleSelectionModeWeakMap.get(this.workspace)) {
+      for (const id of this.dragSelection) {
+        const block = this.workspace.getBlockById(id);
+        if (block) {
+          block.removeSelect();
+        }
+      }
+    }
   }
 
   /**
@@ -84,6 +103,115 @@ export class MultiselectDraggable {
     for (const [subDraggable] of this.subDraggables) {
       subDraggable.unselect();
       this.removeSubDraggable_(subDraggable);
+    }
+    this.hideSelectionOutline_();
+  }
+
+  /**
+   * Creates a visual selection outline DOM element that can hold focus.
+   * This outline appears around all selected items like in Google Slides.
+   * @private
+   */
+  createSelectionOutline_() {
+    // Create the selection outline group
+    this.selectionOutlineGroup_ = Blockly.utils.dom.createSvgElement(
+      Blockly.utils.Svg.G,
+      {
+        'class': 'blocklyMultiselectOutline',
+        'style': 'pointer-events: none;'
+      },
+      this.workspace.getCanvas()
+    );
+
+    // Create the actual outline rectangle
+    this.selectionOutline_ = Blockly.utils.dom.createSvgElement(
+      Blockly.utils.Svg.RECT,
+      {
+        'class': 'blocklyMultiselectOutlineRect',
+        'fill': 'none',
+        'stroke': '#4285f4',
+        'stroke-width': '2',
+        'stroke-dasharray': '5,5',
+        'rx': '4',
+        'ry': '4',
+        'style': 'pointer-events: all;',
+        'tabindex': '0',
+        'role': 'button',
+        'aria-label': 'Multiple selected blocks'
+      },
+      this.selectionOutlineGroup_
+    );
+
+    // Initially hide the outline
+    this.hideSelectionOutline_();
+
+    // Add focus/blur event listeners
+    this.selectionOutline_.addEventListener('focus', this.onNodeFocus.bind(this));
+    this.selectionOutline_.addEventListener('blur', this.onNodeBlur.bind(this));
+    
+    // Add keyboard event handling for accessibility
+    this.selectionOutline_.addEventListener('keydown', (e) => {
+      // Allow keyboard navigation and interaction
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        // Toggle selection or perform action
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        // Clear selection
+        this.workspace.getFocusManager().updateFocusedNode(null);
+      }
+    });
+  }
+
+  /**
+   * Updates the position and size of the selection outline to encompass
+   * all selected items.
+   * @private
+   */
+  updateSelectionOutline_() {
+    if (this.subDraggables.size === 0) {
+      this.hideSelectionOutline_();
+      return;
+    }
+
+    const bounds = this.getBoundingRectangle();
+    if (!bounds || bounds.left === Infinity) {
+      this.hideSelectionOutline_();
+      return;
+    }
+
+    // Add padding around the selection
+    const padding = 8;
+    const x = bounds.left - padding;
+    const y = bounds.top - padding;
+    const width = bounds.right - bounds.left + (padding * 2);
+    const height = bounds.bottom - bounds.top + (padding * 2);
+
+    this.selectionOutline_.setAttribute('x', x);
+    this.selectionOutline_.setAttribute('y', y);
+    this.selectionOutline_.setAttribute('width', width);
+    this.selectionOutline_.setAttribute('height', height);
+
+    this.showSelectionOutline_();
+  }
+
+  /**
+   * Shows the selection outline.
+   * @private
+   */
+  showSelectionOutline_() {
+    if (this.selectionOutlineGroup_) {
+      this.selectionOutlineGroup_.style.display = 'block';
+    }
+  }
+
+  /**
+   * Hides the selection outline.
+   * @private
+   */
+  hideSelectionOutline_() {
+    if (this.selectionOutlineGroup_) {
+      this.selectionOutlineGroup_.style.display = 'none';
     }
   }
 
@@ -98,6 +226,9 @@ export class MultiselectDraggable {
       this.addPointerDownEventListener_(subDraggable);
     }
     this.subDraggables.set(subDraggable, subDraggable.getRelativeToSurfaceXY());
+    
+    // Update the visual outline when items are added
+    this.updateSelectionOutline_();
   }
 
   /**
@@ -111,6 +242,9 @@ export class MultiselectDraggable {
       this.removePointerDownEventListener_(subDraggable);
     }
     this.subDraggables.delete(subDraggable);
+    
+    // Update the visual outline when items are removed
+    this.updateSelectionOutline_();
   }
 
   // This is the feature where we added a pointer down event listener.
@@ -264,6 +398,9 @@ export class MultiselectDraggable {
             this.subDraggables.get(draggable)), e);
       }
     }
+    
+    // Update the outline position during drag
+    this.updateSelectionOutline_();
   }
 
   /**
@@ -293,6 +430,9 @@ export class MultiselectDraggable {
     if (!this.inGroup) {
       Blockly.Events.setGroup(false);
     }
+    
+    // Update the outline position after drag ends
+    this.updateSelectionOutline_();
   }
 
   /**
@@ -318,6 +458,9 @@ export class MultiselectDraggable {
     for (const draggable of this.subDraggables) {
       draggable[0].select();
     }
+    
+    // Update and show the outline when selected
+    this.updateSelectionOutline_();
   }
 
   /**
@@ -331,6 +474,21 @@ export class MultiselectDraggable {
     // for (const draggable of this.subDraggables) {
     //   draggable[0].unselect();
     // }
+    
+    // Hide the outline when unselected
+    this.hideSelectionOutline_();
+  }
+
+  /**
+   * Called when this multiselect draggable becomes the focused node.
+   * Updates the outline and ensures it's visible.
+   */
+  onBecomeFocused() {
+    this.updateSelectionOutline_();
+    if (this.selectionOutline_) {
+      // Programmatically focus the outline element
+      this.selectionOutline_.focus();
+    }
   }
 
 
@@ -359,6 +517,13 @@ export class MultiselectDraggable {
       } else {
         draggable[0].dispose();
       }
+    }
+    
+    // Clean up the selection outline DOM elements
+    if (this.selectionOutlineGroup_) {
+      Blockly.utils.dom.removeNode(this.selectionOutlineGroup_);
+      this.selectionOutlineGroup_ = null;
+      this.selectionOutline_ = null;
     }
   }
 

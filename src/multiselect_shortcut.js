@@ -434,6 +434,10 @@ const registerPaste = function(useCopyPasteCrossTab) {
       });
 
       Blockly.getFocusManager().updateFocusedNode(multiDraggable);
+      // Call the new method to ensure outline is visible
+      if (multiDraggable.onBecomeFocused) {
+        multiDraggable.onBecomeFocused();
+      }
       Blockly.Events.setGroup(false);
       return true;
     },
@@ -517,6 +521,10 @@ const registerSelectAll = function() {
       });
 
       Blockly.getFocusManager().updateFocusedNode(multiDraggable);
+      // Call the new method to ensure outline is visible
+      if (multiDraggable.onBecomeFocused) {
+        multiDraggable.onBecomeFocused();
+      }
       return true;
     },
   };
