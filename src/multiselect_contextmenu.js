@@ -614,7 +614,6 @@ const registerDelete = function() {
         if (!block || hasSelectedParent(block)) return;
 
         const countBlockAndDescendants = function(currentBlock) {
-          if (currentBlock.isShadow()) return 0;
           let count = 1; // Initial block
           for (const input of currentBlock.inputList) {
             if (input.connection && input.connection.targetBlock()) {
