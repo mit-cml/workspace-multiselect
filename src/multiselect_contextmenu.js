@@ -611,23 +611,36 @@ const registerDelete = function() {
       const dragSelection = dragSelectionWeakMap.get(workspace);
 
       const countDescendants = function(block) {
-        if (block && !hasSelectedParent(block)) {
-          // Count the number of blocks that are nested in this block.
-          descendantCount += block.getDescendants(false).length;
-          for (const subBlocks of block.getDescendants(false)) {
-            if (subBlocks.isShadow()) {
-              descendantCount -= 1;
+        if (!block || hasSelectedParent(block)) return;
+
+        const countBlockAndDescendants = function(currentBlock) {
+          if (currentBlock.isShadow()) return 0;
+          let count = 1; // Initial block
+          for (const input of currentBlock.inputList) {
+            if (input.connection && input.connection.targetBlock()) {
+              const connectedBlock = input.connection.targetBlock();
+              count += countBlockAndDescendants(connectedBlock);
+              // For statement inputs, also follow the next chain
+              if (input.type === Blockly.inputs.inputTypes.STATEMENT) {
+                let nextInStatement = connectedBlock.getNextBlock();
+                while (nextInStatement) {
+                  count += countBlockAndDescendants(nextInStatement);
+                  nextInStatement = nextInStatement.getNextBlock();
+                }
+              }
             }
           }
-          const nextBlock = block.getNextBlock();
-          if (nextBlock) {
-            // Blocks in the current stack would survive this block's deletion.
-            descendantCount -= nextBlock.getDescendants(false).length;
-          }
-        }
+
+          return count;
+        };
+
+        descendantCount += countBlockAndDescendants(block);
       };
 
-      if (!dragSelection.size) {
+      const isInMultiselection = dragSelection &&
+          dragSelection.has(scope.block.id);
+
+      if (!dragSelection || dragSelection.size === 0 || !isInMultiselection) {
         // Handle single block selection
         countDescendants(scope.block);
       } else {
