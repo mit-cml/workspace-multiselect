@@ -441,7 +441,7 @@ export class Multiselect {
               'blocklyDropdownMenu') > -1)) {
         this.controls_.revertLastUnselectedBlock();
       }
-      this.controls_.disableMultiselect();
+      // this.controls_.disableMultiselect();
     }
   }
 }

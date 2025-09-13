@@ -387,7 +387,7 @@ export class MultiselectControls {
         }
         this.multiDraggable.clearAll_();
         this.dragSelection.clear();
-        Blockly.common.setSelected(null);
+        Blockly.common.setSelected(this.workspace_);
       } else if (Blockly.getSelected() &&
           !(Blockly.getSelected() instanceof MultiselectDraggable)) {
         // Blockly.getSelected() is not a multiselectDraggable
@@ -410,7 +410,11 @@ export class MultiselectControls {
       // Set selected to multiDraggable if dragSelection not empty
       if (this.dragSelection.size && !(Blockly.getSelected() instanceof
           MultiselectDraggable)) {
-        Blockly.common.setSelected(this.multiDraggable);
+        Blockly.getFocusManager().updateFocusedNode(this.multiDraggable);
+        // Call the new method to ensure outline is visible
+        if (this.multiDraggable.onBecomeFocused) {
+          this.multiDraggable.onBecomeFocused();
+        }
       } else if (this.lastSelectedElement_ &&
           !inPasteShortcut.get(this.workspace_)) {
         this.updateDraggables_(this.lastSelectedElement_);
@@ -420,7 +424,7 @@ export class MultiselectControls {
           MultiselectDraggable)) {
         if (Blockly.getSelected() instanceof Blockly.BlockSvg &&
             !Blockly.getSelected().isShadow()) {
-          Blockly.common.setSelected(null);
+          Blockly.common.setSelected(this.workspace_);
         }
         // TODO: Look into this after gesture has been updated at Blockly
         // Currently, the setSelected is called twice even with selection of
@@ -533,7 +537,11 @@ export class MultiselectControls {
     // Ensure that Blockly selects multidraggable if
     // our set is not empty.
     if (this.dragSelection.size && !Blockly.getSelected()) {
-      Blockly.common.setSelected(this.multiDraggable);
+      Blockly.getFocusManager().updateFocusedNode(this.multiDraggable);
+      // Call the new method to ensure outline is visible
+      if (this.multiDraggable.onBecomeFocused) {
+        this.multiDraggable.onBecomeFocused();
+      }
     }
     if (this.hasDisableWorkspaceDrag_) {
       this.workspace_.options.moveOptions.drag = true;
@@ -575,5 +583,23 @@ Blockly.Css.register(`
 
 .blocklyMultiselect>image:active, .blocklyMultiselect>svg>image:active {
   opacity: .8;
+}
+
+.blocklyMultiselectOutline {
+  pointer-events: none;
+}
+
+.blocklyMultiselectOutlineRect {
+  pointer-events: all;
+  cursor: move;
+}
+
+.blocklyMultiselectOutlineRect:focus {
+  outline: none;
+  stroke-width: 3;
+}
+
+.blocklyMultiselectOutlineRect:hover {
+  stroke-opacity: 0.8;
 }
 `);
