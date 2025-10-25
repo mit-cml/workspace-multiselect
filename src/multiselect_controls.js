@@ -453,7 +453,7 @@ export class MultiselectControls {
               '> path.blocklyPath' + ', g.blocklyDraggable ' +
               '> rect.blocklyCommentHighlight'
           ),
-      area: this.workspace_.svgGroup_,
+      area: this.workspace_.getSvgGroup(),
       multiselectMode: true,
       draggability: false,
       usePointerEvents: true,
