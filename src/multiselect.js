@@ -64,12 +64,12 @@ export class Multiselect {
         injectionDiv, 'focusout', this, this.onBlur_);
     injectionDiv.addEventListener('mouseenter', () => {
       if (options.workspaceAutoFocus === false ||
-          document.activeElement === this.workspace_.svgGroup_.parentElement ||
+          document.activeElement === this.workspace_.getSvgGroup().parentElement ||
           document.activeElement.nodeName.toLowerCase() === 'input' ||
           document.activeElement.nodeName.toLowerCase() === 'textarea') {
         return;
       }
-      this.workspace_.svgGroup_.parentElement.focus();
+      this.workspace_.getSvgGroup().parentElement.focus();
     });
     this.eventListenerWrapper_ = this.eventListener_.bind(this);
     this.workspace_.addChangeListener(this.eventListenerWrapper_);
