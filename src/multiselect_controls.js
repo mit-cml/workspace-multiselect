@@ -392,18 +392,13 @@ export class MultiselectControls {
           !(Blockly.getSelected() instanceof MultiselectDraggable)) {
         // Blockly.getSelected() is not a multiselectDraggable
         // and selected block is not in dragSelection
-        if (this.dragSelection.size > 1) {
-          // Preserve multiselection when shift held on right click
-          Blockly.common.setSelected(this.multiDraggable);
-        } else {
-          for (const draggable of this.multiDraggable.subDraggables) {
-            draggable[0].unselect();
-          }
-          this.multiDraggable.clearAll_();
-          this.dragSelection.clear();
-          this.lastSelectedElement_ = Blockly.getSelected();
-          inPasteShortcut.set(this.workspace_, false);
+        for (const draggable of this.multiDraggable.subDraggables) {
+          draggable[0].unselect();
         }
+        this.multiDraggable.clearAll_();
+        this.dragSelection.clear();
+        this.lastSelectedElement_ = Blockly.getSelected();
+        inPasteShortcut.set(this.workspace_, false);
       }
     } else {
       // In multiselect mode
