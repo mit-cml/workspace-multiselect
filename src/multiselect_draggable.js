@@ -69,52 +69,86 @@ export class MultiselectDraggable {
     this.subDraggables.delete(subDraggable);
   }
 
-  // This is the feature where we added a pointer down event listener.
+  // This is the feature where we added pointer down event listeners.
   // This was added to mitigate the issue of setStart[draggable] overwriting
-  // the call that passes the multidraggable to Blockly.common.SetSelected().
+  // the call that passes the multidraggable to Blockly.common.SetSelected()
+  // and to clear multi-selection when clicking unselected child blocks.
   // This should be updated/fixed when a more flexible gesture handling
   // system is implemented.
   // TODO: Look into these after gestures have been updated
   /**
-   * Adds a pointer down event listener to a subdraggable to mitigate issue
+   * Adds pointer down event listeners to a subdraggable to mitigate issue
    * of setStart[draggable] overwriting the call that passes the
-   * multidraggable to Blockly.common.SetSelected().
+   * multidraggable to Blockly.common.SetSelected() and to clear
+   * multi-selection when clicking unselected child blocks.
    * @param {Blockly.IDraggable} subDraggable A draggable object that will
    * have an event listener added to
    * @private
    */
   addPointerDownEventListener_(subDraggable) {
-    // Bind the handler to the correct context (class instance)
+    // Bind the handlers to the correct context (class instance)
     // i.e. it creates a new function where the 'this' of the new function
     // is set to whatever is passed into the bind method argument.
     // In this case, it is the multiselectDraggable class/object.
+    const captureHandler = subDraggable instanceof Blockly.BlockSvg ?
+        this.pointerDownEventHandlerCapture_.bind(this) : null;
     const handler = this.pointerDownEventHandler_.bind(this);
 
-    // Store the handler function in the subDraggable object
+    // Store the handler functions in the subDraggable object
+    subDraggable.pointerDownHandlerCapture = captureHandler;
     subDraggable.pointerDownHandler = handler;
 
     // When adding/removing an event listener, we must pass in named functions
     // as anonymous functions are different function instances in memory
+    if (captureHandler) {
+      subDraggable.getSvgRoot().addEventListener('pointerdown', captureHandler, true);
+    }
     subDraggable.getSvgRoot().addEventListener('pointerdown', handler);
   }
 
   /**
-   * Removes a pointer down event listener from a subdraggable to
+   * Removes pointer down event listeners from a subdraggable to
    * mitigate issue of setStart[draggable] overwriting the call that
-   *  passes the multidraggable to Blockly.common.SetSelected().
+   *  passes the multidraggable to Blockly.common.SetSelected() and
+   * to clear multi-selection when clicking unselected child blocks.
    * @param {Blockly.IDraggable} subDraggable A draggable object
    * that will have an event listener removed from
    * @private
    */
   removePointerDownEventListener_(subDraggable) {
     if (subDraggable) {
-      // Retrieve the stored handler function
+      // Retrieve the stored handler functions
+      const captureHandler = subDraggable.pointerDownHandlerCapture;
       const handler = subDraggable.pointerDownHandler;
+      if (captureHandler) {
+        subDraggable.getSvgRoot().removeEventListener('pointerdown', captureHandler, true);
+
+        // Clean up the stored handler reference
+        delete subDraggable.pointerDownHandlerCapture;
+      }
       if (handler) {
         subDraggable.getSvgRoot().removeEventListener('pointerdown', handler);
 
         // Clean up the stored handler reference
         delete subDraggable.pointerDownHandler;
+      }
+    }
+  }
+
+  /**
+   * The capture handler for the pointer down event that clears
+   * multi-selection when an unselected child block of a selected
+   * block is clicked, allowing the child to be selected.
+   * @param {PointerEvent} event A pointer down event
+   * @private
+   */
+  pointerDownEventHandlerCapture_(event) {
+    if (!inMultipleSelectionModeWeakMap.get(this.workspace)) {
+      const clickedBlock = this.workspace.getBlockById(
+          event.target.closest('[data-id]').getAttribute('data-id'));
+      if (!this.subDraggables.has(clickedBlock)) {
+        this.clearAll_();
+        this.dragSelection.clear();
       }
     }
   }
