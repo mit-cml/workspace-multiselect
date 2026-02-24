@@ -23,6 +23,10 @@ gh-pages/examples
 # Optional npm cache directory
 .npm
 
+# Playwright
+/test-results/
+/playwright-report/
+
 # IDEs and editors
 .idea
 *.sublime-workspace
