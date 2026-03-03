@@ -8,13 +8,15 @@ test.describe("selection count", () => {
 			{ type: "math_number", id: "block2" },
 			{ type: "math_number", id: "block3" },
 		]);
-		await page.keyboard.down("Shift");
+		await act(page.keyboard.down("Shift"));
 		await act(page.mouse.click(...(await getBlock(page, "block1"))));
 		await act(page.mouse.click(...(await getBlock(page, "block2"))));
-		await page.keyboard.up("Shift");
-		await page.mouse.click(...(await getBlock(page, "block1")), {
-			button: "right",
-		});
+		await act(page.keyboard.up("Shift"));
+		await act(
+			page.mouse.click(...(await getBlock(page, "block1")), {
+				button: "right",
+			}),
+		);
 	});
 
 	test("copy", async ({ page }) => {
@@ -50,19 +52,21 @@ test.describe("comment count", () => {
 			{ type: "math_number", id: "block6", ...comment },
 			{ type: "math_number", id: "block7", ...comment },
 		]);
-		await page.keyboard.down("Shift");
+		await act(page.keyboard.down("Shift"));
 		await act(page.mouse.click(...(await getBlock(page, "block2"))));
 		await act(page.mouse.click(...(await getBlock(page, "block3"))));
 		await act(page.mouse.click(...(await getBlock(page, "block4"))));
 		await act(page.mouse.click(...(await getBlock(page, "block5"))));
 		await act(page.mouse.click(...(await getBlock(page, "block6"))));
-		await page.keyboard.up("Shift");
+		await act(page.keyboard.up("Shift"));
 	});
 
-	test("add", async ({ page }) => {
-		await page.mouse.click(...(await getBlock(page, "block2")), {
-			button: "right",
-		});
+	test("add", async ({ page, act }) => {
+		await act(
+			page.mouse.click(...(await getBlock(page, "block2")), {
+				button: "right",
+			}),
+		);
 		expect(
 			await page
 				.getByRole("menuitem", { name: "Add Comment (2)" })
@@ -70,10 +74,12 @@ test.describe("comment count", () => {
 		).toBe("Add Comment (2)");
 	});
 
-	test("remove", async ({ page }) => {
-		await page.mouse.click(...(await getBlock(page, "block4")), {
-			button: "right",
-		});
+	test("remove", async ({ page, act }) => {
+		await act(
+			page.mouse.click(...(await getBlock(page, "block4")), {
+				button: "right",
+			}),
+		);
 		expect(
 			await page
 				.getByRole("menuitem", { name: "Remove Comment (3)" })
@@ -93,19 +99,21 @@ test.describe("inputs count", () => {
 			{ type: "math_arithmetic", id: "block6", inline: false },
 			{ type: "math_arithmetic", id: "block7", inline: false },
 		]);
-		await page.keyboard.down("Shift");
+		await act(page.keyboard.down("Shift"));
 		await act(page.mouse.click(...(await getBlock(page, "block2"))));
 		await act(page.mouse.click(...(await getBlock(page, "block3"))));
 		await act(page.mouse.click(...(await getBlock(page, "block4"))));
 		await act(page.mouse.click(...(await getBlock(page, "block5"))));
 		await act(page.mouse.click(...(await getBlock(page, "block6"))));
-		await page.keyboard.up("Shift");
+		await act(page.keyboard.up("Shift"));
 	});
 
-	test("external", async ({ page }) => {
-		await page.mouse.click(...(await getBlock(page, "block2")), {
-			button: "right",
-		});
+	test("external", async ({ page, act }) => {
+		await act(
+			page.mouse.click(...(await getBlock(page, "block2")), {
+				button: "right",
+			}),
+		);
 		expect(
 			await page
 				.getByRole("menuitem", { name: "External Inputs (2)" })
@@ -113,10 +121,12 @@ test.describe("inputs count", () => {
 		).toBe("External Inputs (2)");
 	});
 
-	test("inline", async ({ page }) => {
-		await page.mouse.click(...(await getBlock(page, "block4")), {
-			button: "right",
-		});
+	test("inline", async ({ page, act }) => {
+		await act(
+			page.mouse.click(...(await getBlock(page, "block4")), {
+				button: "right",
+			}),
+		);
 		expect(
 			await page
 				.getByRole("menuitem", { name: "Inline Inputs (3)" })
@@ -136,19 +146,21 @@ test.describe("collapse/expand count", () => {
 			{ type: "math_number", id: "block6", collapsed: true },
 			{ type: "math_number", id: "block7", collapsed: true },
 		]);
-		await page.keyboard.down("Shift");
+		await act(page.keyboard.down("Shift"));
 		await act(page.mouse.click(...(await getBlock(page, "block2"))));
 		await act(page.mouse.click(...(await getBlock(page, "block3"))));
 		await act(page.mouse.click(...(await getBlock(page, "block4"))));
 		await act(page.mouse.click(...(await getBlock(page, "block5"))));
 		await act(page.mouse.click(...(await getBlock(page, "block6"))));
-		await page.keyboard.up("Shift");
+		await act(page.keyboard.up("Shift"));
 	});
 
-	test("collapse", async ({ page }) => {
-		await page.mouse.click(...(await getBlock(page, "block2")), {
-			button: "right",
-		});
+	test("collapse", async ({ page, act }) => {
+		await act(
+			page.mouse.click(...(await getBlock(page, "block2")), {
+				button: "right",
+			}),
+		);
 		expect(
 			await page
 				.getByRole("menuitem", { name: "Collapse Block (2)" })
@@ -156,10 +168,12 @@ test.describe("collapse/expand count", () => {
 		).toBe("Collapse Block (2)");
 	});
 
-	test("expand", async ({ page }) => {
-		await page.mouse.click(...(await getBlock(page, "block4")), {
-			button: "right",
-		});
+	test("expand", async ({ page, act }) => {
+		await act(
+			page.mouse.click(...(await getBlock(page, "block4")), {
+				button: "right",
+			}),
+		);
 		expect(
 			await page
 				.getByRole("menuitem", { name: "Expand Block (3)" })
@@ -179,19 +193,21 @@ test.describe("disable/enable count", () => {
 			{ type: "math_number", id: "block6", enabled: false },
 			{ type: "math_number", id: "block7", enabled: false },
 		]);
-		await page.keyboard.down("Shift");
+		await act(page.keyboard.down("Shift"));
 		await act(page.mouse.click(...(await getBlock(page, "block2"))));
 		await act(page.mouse.click(...(await getBlock(page, "block3"))));
 		await act(page.mouse.click(...(await getBlock(page, "block4"))));
 		await act(page.mouse.click(...(await getBlock(page, "block5"))));
 		await act(page.mouse.click(...(await getBlock(page, "block6"))));
-		await page.keyboard.up("Shift");
+		await act(page.keyboard.up("Shift"));
 	});
 
-	test("disable", async ({ page }) => {
-		await page.mouse.click(...(await getBlock(page, "block2")), {
-			button: "right",
-		});
+	test("disable", async ({ page, act }) => {
+		await act(
+			page.mouse.click(...(await getBlock(page, "block2")), {
+				button: "right",
+			}),
+		);
 		expect(
 			await page
 				.getByRole("menuitem", { name: "Disable Block (2)" })
@@ -199,10 +215,12 @@ test.describe("disable/enable count", () => {
 		).toBe("Disable Block (2)");
 	});
 
-	test("enable", async ({ page }) => {
-		await page.mouse.click(...(await getBlock(page, "block4")), {
-			button: "right",
-		});
+	test("enable", async ({ page, act }) => {
+		await act(
+			page.mouse.click(...(await getBlock(page, "block4")), {
+				button: "right",
+			}),
+		);
 		expect(
 			await page
 				.getByRole("menuitem", { name: "Enable Block (3)" })
