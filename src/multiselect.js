@@ -371,11 +371,11 @@ export class Multiselect {
     if (this.multiFieldUpdate_ &&
         this.dragSelection_.has(e.blockId) &&
         (e.type === Blockly.Events.CHANGE &&
-            e.element === 'field' && e.recordUndo && e.group === '' ||
+            e.element === 'field' && e.recordUndo ||
             e.type === Blockly.Events.BLOCK_FIELD_INTERMEDIATE_CHANGE)) {
       const currentGroup = Blockly.Events.getGroup();
       if (!currentGroup) {
-        Blockly.Events.setGroup(true);
+        Blockly.Events.setGroup(e.group);
         e.group = Blockly.Events.getGroup();
       }
       try {
