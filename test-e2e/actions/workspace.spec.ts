@@ -14,14 +14,16 @@ test("duplicate", async ({ page, act }) => {
 		{ type: "math_number", id: "block2" },
 		{ type: "math_number", id: "block3" },
 	]);
-	await page.keyboard.down("Shift");
+	await act(page.keyboard.down("Shift"));
 	await act(page.mouse.click(...(await getBlock(page, "block1"))));
 	await act(page.mouse.click(...(await getBlock(page, "block2"))));
-	await page.keyboard.up("Shift");
+	await act(page.keyboard.up("Shift"));
 
-	await page.mouse.click(...(await getBlock(page, "block1")), {
-		button: "right",
-	});
+	await act(
+		page.mouse.click(...(await getBlock(page, "block1")), {
+			button: "right",
+		}),
+	);
 	await act(page.getByRole("menuitem", { name: "Duplicate (2)" }).click());
 
 	expect(await getAllBlockIds(page)).toHaveLength(5);
@@ -38,12 +40,12 @@ test("copy and paste", async ({ page, act }) => {
 		{ type: "math_number", id: "block2" },
 		{ type: "math_number", id: "block3" },
 	]);
-	await page.keyboard.down("Shift");
+	await act(page.keyboard.down("Shift"));
 	await act(page.mouse.click(...(await getBlock(page, "block1"))));
 	await act(page.mouse.click(...(await getBlock(page, "block2"))));
-	await page.keyboard.up("Shift");
+	await act(page.keyboard.up("Shift"));
 
-	await page.keyboard.press("Control+C");
+	await act(page.keyboard.press("Control+C"));
 	expect(await getAllBlockIds(page)).toEqual(["block1", "block2", "block3"]);
 	expect(await getSelectedBlockIds(page)).toEqual(["block1", "block2"]);
 
@@ -62,10 +64,10 @@ test("cut and paste", async ({ page, act }) => {
 		{ type: "math_number", id: "block2" },
 		{ type: "math_number", id: "block3" },
 	]);
-	await page.keyboard.down("Shift");
+	await act(page.keyboard.down("Shift"));
 	await act(page.mouse.click(...(await getBlock(page, "block1"))));
 	await act(page.mouse.click(...(await getBlock(page, "block2"))));
-	await page.keyboard.up("Shift");
+	await act(page.keyboard.up("Shift"));
 
 	await act(page.keyboard.press("Control+X"));
 	expect(await getAllBlockIds(page)).toEqual(["block3"]);
@@ -81,10 +83,10 @@ test("delete", async ({ page, act }) => {
 		{ type: "math_number", id: "block2" },
 		{ type: "math_number", id: "block3" },
 	]);
-	await page.keyboard.down("Shift");
+	await act(page.keyboard.down("Shift"));
 	await act(page.mouse.click(...(await getBlock(page, "block1"))));
 	await act(page.mouse.click(...(await getBlock(page, "block2"))));
-	await page.keyboard.up("Shift");
+	await act(page.keyboard.up("Shift"));
 
 	await act(page.keyboard.press("Delete"));
 
@@ -97,10 +99,10 @@ test("undo", async ({ page, act }) => {
 		{ type: "math_number", id: "block1" },
 		{ type: "math_number", id: "block2" },
 	]);
-	await page.keyboard.down("Shift");
+	await act(page.keyboard.down("Shift"));
 	await act(page.mouse.click(...(await getBlock(page, "block1"))));
 	await act(page.mouse.click(...(await getBlock(page, "block2"))));
-	await page.keyboard.up("Shift");
+	await act(page.keyboard.up("Shift"));
 	await act(page.keyboard.press("Delete"));
 
 	await act(page.keyboard.press("Control+Z"));
@@ -113,10 +115,10 @@ test("redo", async ({ page, act }) => {
 		{ type: "math_number", id: "block1" },
 		{ type: "math_number", id: "block2" },
 	]);
-	await page.keyboard.down("Shift");
+	await act(page.keyboard.down("Shift"));
 	await act(page.mouse.click(...(await getBlock(page, "block1"))));
 	await act(page.mouse.click(...(await getBlock(page, "block2"))));
-	await page.keyboard.up("Shift");
+	await act(page.keyboard.up("Shift"));
 	await act(page.keyboard.press("Delete"));
 	await act(page.keyboard.press("Control+Z"));
 
@@ -131,19 +133,18 @@ test("dragging moves selected blocks together", async ({ page, act }) => {
 		{ type: "math_number", id: "block2" },
 		{ type: "math_number", id: "block3" },
 	]);
-	await page.keyboard.down("Shift");
+	await act(page.keyboard.down("Shift"));
 	await act(page.mouse.click(...(await getBlock(page, "block1"))));
 	await act(page.mouse.click(...(await getBlock(page, "block2"))));
-	await page.keyboard.up("Shift");
+	await act(page.keyboard.up("Shift"));
 	const block1BoundsStart = await getBlockBounds(page, "block1");
 	const block2BoundsStart = await getBlockBounds(page, "block2");
 	const block3BoundsStart = await getBlockBounds(page, "block3");
 
-	await page.mouse.move(...(await getBlock(page, "block1")));
-	await page.mouse.down();
-	await page.mouse.move(
-		block1BoundsStart.left + 100,
-		block1BoundsStart.top + 100,
+	await act(page.mouse.move(...(await getBlock(page, "block1"))));
+	await act(page.mouse.down());
+	await act(
+		page.mouse.move(block1BoundsStart.left + 100, block1BoundsStart.top + 100),
 	);
 	await act(page.mouse.up());
 
