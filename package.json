@@ -10,7 +10,8 @@
     "predeploy": "blockly-scripts predeploy",
     "prepublishOnly": "npm run clean && npm run build",
     "start": "blockly-scripts start",
-    "test": "blockly-scripts test"
+    "test": "blockly-scripts test",
+    "test:e2e": "playwright test"
   },
   "main": "./dist/index.js",
   "module": "./src/index.js",
@@ -46,6 +47,7 @@
     "@blockly/dev-tools": "^8.1.2",
     "@blockly/keyboard-navigation": "^0.6.14",
     "@blockly/workspace-backpack": "^6.0.16",
+    "@playwright/test": "^1.58.2",
     "blockly": "^11.2.2"
   },
   "peerDependencies": {
