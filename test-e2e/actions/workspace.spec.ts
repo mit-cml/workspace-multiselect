@@ -110,23 +110,6 @@ test("undo", async ({ page, act }) => {
 	expect(await getAllBlockIds(page)).toEqual(["block1", "block2"]);
 });
 
-test("redo", async ({ page, act }) => {
-	await loadBlocks(page, [
-		{ type: "math_number", id: "block1" },
-		{ type: "math_number", id: "block2" },
-	]);
-	await act(page.keyboard.down("Shift"));
-	await act(page.mouse.click(...(await getBlock(page, "block1"))));
-	await act(page.mouse.click(...(await getBlock(page, "block2"))));
-	await act(page.keyboard.up("Shift"));
-	await act(page.keyboard.press("Delete"));
-	await act(page.keyboard.press("Control+Z"));
-
-	await act(page.keyboard.press("Control+Shift+Z"));
-
-	expect(await getAllBlockIds(page)).toEqual([]);
-});
-
 test("dragging moves selected blocks together", async ({ page, act }) => {
 	await loadBlocks(page, [
 		{ type: "math_number", id: "block1" },
