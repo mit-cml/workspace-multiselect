@@ -1,5 +1,5 @@
 import { expect } from "@playwright/test";
-import { getBlock, loadBlocks, test } from "./test";
+import { getBlock, loadBlocks, test } from "../test";
 
 test.describe("selection count", () => {
 	test.beforeEach(async ({ page, act }) => {
