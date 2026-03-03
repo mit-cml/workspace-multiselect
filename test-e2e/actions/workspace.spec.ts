@@ -104,6 +104,7 @@ test("undo", async ({ page, act }) => {
 	await act(page.mouse.click(...(await getBlock(page, "block2"))));
 	await act(page.keyboard.up("Shift"));
 	await act(page.keyboard.press("Delete"));
+	expect(await getAllBlockIds(page)).toEqual([]);
 
 	await act(page.keyboard.press("Control+Z"));
 
