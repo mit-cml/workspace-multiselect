@@ -160,3 +160,14 @@ test("dragging rectangle deselects overlapping blocks", async ({
 
 	expect(await getSelectedBlockIds(page)).toEqual([]);
 });
+
+test("select all", async ({ page, act }) => {
+	await loadBlocks(page, [
+		{ type: "math_number", id: "block1" },
+		{ type: "math_number", id: "block2" },
+	]);
+
+	await act(page.keyboard.press("Control+A"));
+
+	expect(await getSelectedBlockIds(page)).toEqual(["block1", "block2"]);
+});

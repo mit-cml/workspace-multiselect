@@ -6,18 +6,7 @@ import {
 	getSelectedBlockIds,
 	loadBlocks,
 	test,
-} from "./test";
-
-test("select all", async ({ page, act }) => {
-	await loadBlocks(page, [
-		{ type: "math_number", id: "block1" },
-		{ type: "math_number", id: "block2" },
-	]);
-
-	await act(page.keyboard.press("Control+A"));
-
-	expect(await getSelectedBlockIds(page)).toEqual(["block1", "block2"]);
-});
+} from "../test";
 
 test("duplicate", async ({ page, act }) => {
 	await loadBlocks(page, [
