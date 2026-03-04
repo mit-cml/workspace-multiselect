@@ -3,11 +3,13 @@ import { getBlock, loadBlocks, test } from "../test";
 
 test.describe("selection count", () => {
 	test.beforeEach(async ({ page, act }) => {
-		await loadBlocks(page, [
-			{ type: "math_number", id: "block1" },
-			{ type: "math_number", id: "block2" },
-			{ type: "math_number", id: "block3" },
-		]);
+		await act(
+			loadBlocks(page, [
+				{ type: "math_number", id: "block1" },
+				{ type: "math_number", id: "block2" },
+				{ type: "math_number", id: "block3" },
+			]),
+		);
 		await act(page.keyboard.down("Shift"));
 		await act(page.mouse.click(...(await getBlock(page, "block1"))));
 		await act(page.mouse.click(...(await getBlock(page, "block2"))));
@@ -43,15 +45,17 @@ test.describe("selection count", () => {
 test.describe("comment count", () => {
 	test.beforeEach(async ({ page, act }) => {
 		const comment = { icons: { comment: { text: "" } } };
-		await loadBlocks(page, [
-			{ type: "math_number", id: "block1" },
-			{ type: "math_number", id: "block2" },
-			{ type: "math_number", id: "block3" },
-			{ type: "math_number", id: "block4", ...comment },
-			{ type: "math_number", id: "block5", ...comment },
-			{ type: "math_number", id: "block6", ...comment },
-			{ type: "math_number", id: "block7", ...comment },
-		]);
+		await act(
+			loadBlocks(page, [
+				{ type: "math_number", id: "block1" },
+				{ type: "math_number", id: "block2" },
+				{ type: "math_number", id: "block3" },
+				{ type: "math_number", id: "block4", ...comment },
+				{ type: "math_number", id: "block5", ...comment },
+				{ type: "math_number", id: "block6", ...comment },
+				{ type: "math_number", id: "block7", ...comment },
+			]),
+		);
 		await act(page.keyboard.down("Shift"));
 		await act(page.mouse.click(...(await getBlock(page, "block2"))));
 		await act(page.mouse.click(...(await getBlock(page, "block3"))));
@@ -90,15 +94,17 @@ test.describe("comment count", () => {
 
 test.describe("inputs count", () => {
 	test.beforeEach(async ({ page, act }) => {
-		await loadBlocks(page, [
-			{ type: "math_arithmetic", id: "block1" },
-			{ type: "math_arithmetic", id: "block2" },
-			{ type: "math_arithmetic", id: "block3" },
-			{ type: "math_arithmetic", id: "block4", inline: false },
-			{ type: "math_arithmetic", id: "block5", inline: false },
-			{ type: "math_arithmetic", id: "block6", inline: false },
-			{ type: "math_arithmetic", id: "block7", inline: false },
-		]);
+		await act(
+			loadBlocks(page, [
+				{ type: "math_arithmetic", id: "block1" },
+				{ type: "math_arithmetic", id: "block2" },
+				{ type: "math_arithmetic", id: "block3" },
+				{ type: "math_arithmetic", id: "block4", inline: false },
+				{ type: "math_arithmetic", id: "block5", inline: false },
+				{ type: "math_arithmetic", id: "block6", inline: false },
+				{ type: "math_arithmetic", id: "block7", inline: false },
+			]),
+		);
 		await act(page.keyboard.down("Shift"));
 		await act(page.mouse.click(...(await getBlock(page, "block2"))));
 		await act(page.mouse.click(...(await getBlock(page, "block3"))));
@@ -137,15 +143,17 @@ test.describe("inputs count", () => {
 
 test.describe("collapse/expand count", () => {
 	test.beforeEach(async ({ page, act }) => {
-		await loadBlocks(page, [
-			{ type: "math_number", id: "block1" },
-			{ type: "math_number", id: "block2" },
-			{ type: "math_number", id: "block3" },
-			{ type: "math_number", id: "block4", collapsed: true },
-			{ type: "math_number", id: "block5", collapsed: true },
-			{ type: "math_number", id: "block6", collapsed: true },
-			{ type: "math_number", id: "block7", collapsed: true },
-		]);
+		await act(
+			loadBlocks(page, [
+				{ type: "math_number", id: "block1" },
+				{ type: "math_number", id: "block2" },
+				{ type: "math_number", id: "block3" },
+				{ type: "math_number", id: "block4", collapsed: true },
+				{ type: "math_number", id: "block5", collapsed: true },
+				{ type: "math_number", id: "block6", collapsed: true },
+				{ type: "math_number", id: "block7", collapsed: true },
+			]),
+		);
 		await act(page.keyboard.down("Shift"));
 		await act(page.mouse.click(...(await getBlock(page, "block2"))));
 		await act(page.mouse.click(...(await getBlock(page, "block3"))));
@@ -184,15 +192,17 @@ test.describe("collapse/expand count", () => {
 
 test.describe("disable/enable count", () => {
 	test.beforeEach(async ({ page, act }) => {
-		await loadBlocks(page, [
-			{ type: "math_number", id: "block1" },
-			{ type: "math_number", id: "block2" },
-			{ type: "math_number", id: "block3" },
-			{ type: "math_number", id: "block4", enabled: false },
-			{ type: "math_number", id: "block5", enabled: false },
-			{ type: "math_number", id: "block6", enabled: false },
-			{ type: "math_number", id: "block7", enabled: false },
-		]);
+		await act(
+			loadBlocks(page, [
+				{ type: "math_number", id: "block1" },
+				{ type: "math_number", id: "block2" },
+				{ type: "math_number", id: "block3" },
+				{ type: "math_number", id: "block4", enabled: false },
+				{ type: "math_number", id: "block5", enabled: false },
+				{ type: "math_number", id: "block6", enabled: false },
+				{ type: "math_number", id: "block7", enabled: false },
+			]),
+		);
 		await act(page.keyboard.down("Shift"));
 		await act(page.mouse.click(...(await getBlock(page, "block2"))));
 		await act(page.mouse.click(...(await getBlock(page, "block3"))));
