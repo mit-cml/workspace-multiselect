@@ -12,12 +12,14 @@ test("editing boolean field updates selected boolean blocks", async ({
 	page,
 	act,
 }) => {
-	await loadBlocks(page, [
-		{ type: "logic_boolean", id: "block1" },
-		{ type: "logic_boolean", id: "block2" },
-		{ type: "math_number", id: "block3" },
-		{ type: "logic_boolean", id: "block4" },
-	]);
+	await act(
+		loadBlocks(page, [
+			{ type: "logic_boolean", id: "block1" },
+			{ type: "logic_boolean", id: "block2" },
+			{ type: "math_number", id: "block3" },
+			{ type: "logic_boolean", id: "block4" },
+		]),
+	);
 	await act(page.keyboard.down("Shift"));
 	await act(page.mouse.click(...(await getBlock(page, "block1"))));
 	await act(page.mouse.click(...(await getBlock(page, "block2"))));
@@ -42,12 +44,14 @@ test("editing number field updates selected number blocks", async ({
 	page,
 	act,
 }) => {
-	await loadBlocks(page, [
-		{ type: "math_number", id: "block1" },
-		{ type: "math_number", id: "block2" },
-		{ type: "logic_boolean", id: "block3" },
-		{ type: "math_number", id: "block4" },
-	]);
+	await act(
+		loadBlocks(page, [
+			{ type: "math_number", id: "block1" },
+			{ type: "math_number", id: "block2" },
+			{ type: "logic_boolean", id: "block3" },
+			{ type: "math_number", id: "block4" },
+		]),
+	);
 	await act(page.keyboard.down("Shift"));
 	await act(page.mouse.click(...(await getBlock(page, "block1"))));
 	await act(page.mouse.click(...(await getBlock(page, "block2"))));
@@ -73,10 +77,12 @@ test("editing number field updates selected number blocks", async ({
 });
 
 test("undo boolean field multi-edit", async ({ page, act }) => {
-	await loadBlocks(page, [
-		{ type: "logic_boolean", id: "block1" },
-		{ type: "logic_boolean", id: "block2" },
-	]);
+	await act(
+		loadBlocks(page, [
+			{ type: "logic_boolean", id: "block1" },
+			{ type: "logic_boolean", id: "block2" },
+		]),
+	);
 	await act(page.keyboard.down("Shift"));
 	await act(page.mouse.click(...(await getBlock(page, "block1"))));
 	await act(page.mouse.click(...(await getBlock(page, "block2"))));
@@ -93,10 +99,12 @@ test("undo boolean field multi-edit", async ({ page, act }) => {
 });
 
 test("undo number field multi-edit", async ({ page, act }) => {
-	await loadBlocks(page, [
-		{ type: "math_number", id: "block1" },
-		{ type: "math_number", id: "block2" },
-	]);
+	await act(
+		loadBlocks(page, [
+			{ type: "math_number", id: "block1" },
+			{ type: "math_number", id: "block2" },
+		]),
+	);
 	await act(page.keyboard.down("Shift"));
 	await act(page.mouse.click(...(await getBlock(page, "block1"))));
 	await act(page.mouse.click(...(await getBlock(page, "block2"))));

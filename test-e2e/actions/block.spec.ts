@@ -11,12 +11,14 @@ import {
 } from "../test";
 
 test("double clicking collapses selected blocks", async ({ page, act }) => {
-	await loadBlocks(page, [
-		{ type: "math_number", id: "block1" },
-		{ type: "math_number", id: "block2" },
-		{ type: "math_number", id: "block3", collapsed: true },
-		{ type: "math_number", id: "block4" },
-	]);
+	await act(
+		loadBlocks(page, [
+			{ type: "math_number", id: "block1" },
+			{ type: "math_number", id: "block2" },
+			{ type: "math_number", id: "block3", collapsed: true },
+			{ type: "math_number", id: "block4" },
+		]),
+	);
 	await act(page.keyboard.down("Shift"));
 	await act(page.mouse.click(...(await getBlock(page, "block1"))));
 	await act(page.mouse.click(...(await getBlock(page, "block2"))));
@@ -40,12 +42,14 @@ test("double clicking expands selected blocks when all collapsed", async ({
 	page,
 	act,
 }) => {
-	await loadBlocks(page, [
-		{ type: "math_number", id: "block1", collapsed: true },
-		{ type: "math_number", id: "block2", collapsed: true },
-		{ type: "math_number", id: "block3", collapsed: true },
-		{ type: "math_number", id: "block4", collapsed: true },
-	]);
+	await act(
+		loadBlocks(page, [
+			{ type: "math_number", id: "block1", collapsed: true },
+			{ type: "math_number", id: "block2", collapsed: true },
+			{ type: "math_number", id: "block3", collapsed: true },
+			{ type: "math_number", id: "block4", collapsed: true },
+		]),
+	);
 	await act(page.keyboard.down("Shift"));
 	await act(page.mouse.click(...(await getBlock(page, "block1"))));
 	await act(page.mouse.click(...(await getBlock(page, "block2"))));
@@ -66,11 +70,13 @@ test("double clicking expands selected blocks when all collapsed", async ({
 });
 
 test("add comment", async ({ page, act }) => {
-	await loadBlocks(page, [
-		{ type: "math_number", id: "block1" },
-		{ type: "math_number", id: "block2" },
-		{ type: "math_number", id: "block3" },
-	]);
+	await act(
+		loadBlocks(page, [
+			{ type: "math_number", id: "block1" },
+			{ type: "math_number", id: "block2" },
+			{ type: "math_number", id: "block3" },
+		]),
+	);
 	await act(page.keyboard.down("Shift"));
 	await act(page.mouse.click(...(await getBlock(page, "block1"))));
 	await act(page.mouse.click(...(await getBlock(page, "block2"))));
@@ -91,11 +97,13 @@ test("add comment", async ({ page, act }) => {
 
 test("remove comment", async ({ page, act }) => {
 	const comment = { icons: { comment: { text: "" } } };
-	await loadBlocks(page, [
-		{ type: "math_number", id: "block1", ...comment },
-		{ type: "math_number", id: "block2", ...comment },
-		{ type: "math_number", id: "block3", ...comment },
-	]);
+	await act(
+		loadBlocks(page, [
+			{ type: "math_number", id: "block1", ...comment },
+			{ type: "math_number", id: "block2", ...comment },
+			{ type: "math_number", id: "block3", ...comment },
+		]),
+	);
 	await act(page.keyboard.down("Shift"));
 	await act(page.mouse.click(...(await getBlock(page, "block1"))));
 	await act(page.mouse.click(...(await getBlock(page, "block2"))));
@@ -115,11 +123,13 @@ test("remove comment", async ({ page, act }) => {
 });
 
 test("external inputs", async ({ page, act }) => {
-	await loadBlocks(page, [
-		{ type: "math_arithmetic", id: "block1" },
-		{ type: "math_arithmetic", id: "block2" },
-		{ type: "math_arithmetic", id: "block3" },
-	]);
+	await act(
+		loadBlocks(page, [
+			{ type: "math_arithmetic", id: "block1" },
+			{ type: "math_arithmetic", id: "block2" },
+			{ type: "math_arithmetic", id: "block3" },
+		]),
+	);
 	await act(page.keyboard.down("Shift"));
 	await act(page.mouse.click(...(await getBlock(page, "block1"))));
 	await act(page.mouse.click(...(await getBlock(page, "block2"))));
@@ -141,11 +151,13 @@ test("external inputs", async ({ page, act }) => {
 });
 
 test("inline inputs", async ({ page, act }) => {
-	await loadBlocks(page, [
-		{ type: "math_arithmetic", id: "block1", inline: false },
-		{ type: "math_arithmetic", id: "block2", inline: false },
-		{ type: "math_arithmetic", id: "block3", inline: false },
-	]);
+	await act(
+		loadBlocks(page, [
+			{ type: "math_arithmetic", id: "block1", inline: false },
+			{ type: "math_arithmetic", id: "block2", inline: false },
+			{ type: "math_arithmetic", id: "block3", inline: false },
+		]),
+	);
 	await act(page.keyboard.down("Shift"));
 	await act(page.mouse.click(...(await getBlock(page, "block1"))));
 	await act(page.mouse.click(...(await getBlock(page, "block2"))));
@@ -165,11 +177,13 @@ test("inline inputs", async ({ page, act }) => {
 });
 
 test("disable", async ({ page, act }) => {
-	await loadBlocks(page, [
-		{ type: "math_number", id: "block1" },
-		{ type: "math_number", id: "block2" },
-		{ type: "math_number", id: "block3" },
-	]);
+	await act(
+		loadBlocks(page, [
+			{ type: "math_number", id: "block1" },
+			{ type: "math_number", id: "block2" },
+			{ type: "math_number", id: "block3" },
+		]),
+	);
 	await act(page.keyboard.down("Shift"));
 	await act(page.mouse.click(...(await getBlock(page, "block1"))));
 	await act(page.mouse.click(...(await getBlock(page, "block2"))));
@@ -189,11 +203,13 @@ test("disable", async ({ page, act }) => {
 });
 
 test("enable", async ({ page, act }) => {
-	await loadBlocks(page, [
-		{ type: "math_number", id: "block1", enabled: false },
-		{ type: "math_number", id: "block2", enabled: false },
-		{ type: "math_number", id: "block3", enabled: false },
-	]);
+	await act(
+		loadBlocks(page, [
+			{ type: "math_number", id: "block1", enabled: false },
+			{ type: "math_number", id: "block2", enabled: false },
+			{ type: "math_number", id: "block3", enabled: false },
+		]),
+	);
 	await act(page.keyboard.down("Shift"));
 	await act(page.mouse.click(...(await getBlock(page, "block1"))));
 	await act(page.mouse.click(...(await getBlock(page, "block2"))));

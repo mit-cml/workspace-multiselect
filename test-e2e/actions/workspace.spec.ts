@@ -9,11 +9,13 @@ import {
 } from "../test";
 
 test("duplicate", async ({ page, act }) => {
-	await loadBlocks(page, [
-		{ type: "math_number", id: "block1" },
-		{ type: "math_number", id: "block2" },
-		{ type: "math_number", id: "block3" },
-	]);
+	await act(
+		loadBlocks(page, [
+			{ type: "math_number", id: "block1" },
+			{ type: "math_number", id: "block2" },
+			{ type: "math_number", id: "block3" },
+		]),
+	);
 	await act(page.keyboard.down("Shift"));
 	await act(page.mouse.click(...(await getBlock(page, "block1"))));
 	await act(page.mouse.click(...(await getBlock(page, "block2"))));
@@ -35,11 +37,13 @@ test("duplicate", async ({ page, act }) => {
 });
 
 test("copy and paste", async ({ page, act }) => {
-	await loadBlocks(page, [
-		{ type: "math_number", id: "block1" },
-		{ type: "math_number", id: "block2" },
-		{ type: "math_number", id: "block3" },
-	]);
+	await act(
+		loadBlocks(page, [
+			{ type: "math_number", id: "block1" },
+			{ type: "math_number", id: "block2" },
+			{ type: "math_number", id: "block3" },
+		]),
+	);
 	await act(page.keyboard.down("Shift"));
 	await act(page.mouse.click(...(await getBlock(page, "block1"))));
 	await act(page.mouse.click(...(await getBlock(page, "block2"))));
@@ -59,11 +63,13 @@ test("copy and paste", async ({ page, act }) => {
 });
 
 test("cut and paste", async ({ page, act }) => {
-	await loadBlocks(page, [
-		{ type: "math_number", id: "block1" },
-		{ type: "math_number", id: "block2" },
-		{ type: "math_number", id: "block3" },
-	]);
+	await act(
+		loadBlocks(page, [
+			{ type: "math_number", id: "block1" },
+			{ type: "math_number", id: "block2" },
+			{ type: "math_number", id: "block3" },
+		]),
+	);
 	await act(page.keyboard.down("Shift"));
 	await act(page.mouse.click(...(await getBlock(page, "block1"))));
 	await act(page.mouse.click(...(await getBlock(page, "block2"))));
@@ -78,11 +84,13 @@ test("cut and paste", async ({ page, act }) => {
 });
 
 test("delete", async ({ page, act }) => {
-	await loadBlocks(page, [
-		{ type: "math_number", id: "block1" },
-		{ type: "math_number", id: "block2" },
-		{ type: "math_number", id: "block3" },
-	]);
+	await act(
+		loadBlocks(page, [
+			{ type: "math_number", id: "block1" },
+			{ type: "math_number", id: "block2" },
+			{ type: "math_number", id: "block3" },
+		]),
+	);
 	await act(page.keyboard.down("Shift"));
 	await act(page.mouse.click(...(await getBlock(page, "block1"))));
 	await act(page.mouse.click(...(await getBlock(page, "block2"))));
@@ -95,10 +103,12 @@ test("delete", async ({ page, act }) => {
 });
 
 test("undo", async ({ page, act }) => {
-	await loadBlocks(page, [
-		{ type: "math_number", id: "block1" },
-		{ type: "math_number", id: "block2" },
-	]);
+	await act(
+		loadBlocks(page, [
+			{ type: "math_number", id: "block1" },
+			{ type: "math_number", id: "block2" },
+		]),
+	);
 	await act(page.keyboard.down("Shift"));
 	await act(page.mouse.click(...(await getBlock(page, "block1"))));
 	await act(page.mouse.click(...(await getBlock(page, "block2"))));
@@ -112,11 +122,13 @@ test("undo", async ({ page, act }) => {
 });
 
 test("dragging moves selected blocks together", async ({ page, act }) => {
-	await loadBlocks(page, [
-		{ type: "math_number", id: "block1" },
-		{ type: "math_number", id: "block2" },
-		{ type: "math_number", id: "block3" },
-	]);
+	await act(
+		loadBlocks(page, [
+			{ type: "math_number", id: "block1" },
+			{ type: "math_number", id: "block2" },
+			{ type: "math_number", id: "block3" },
+		]),
+	);
 	await act(page.keyboard.down("Shift"));
 	await act(page.mouse.click(...(await getBlock(page, "block1"))));
 	await act(page.mouse.click(...(await getBlock(page, "block2"))));

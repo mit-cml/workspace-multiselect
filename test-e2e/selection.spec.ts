@@ -9,10 +9,12 @@ import {
 } from "./test";
 
 test("shift click selects blocks", async ({ page, act }) => {
-	await loadBlocks(page, [
-		{ type: "math_number", id: "block1" },
-		{ type: "math_number", id: "block2" },
-	]);
+	await act(
+		loadBlocks(page, [
+			{ type: "math_number", id: "block1" },
+			{ type: "math_number", id: "block2" },
+		]),
+	);
 
 	await act(page.keyboard.down("Shift"));
 	await act(page.mouse.click(...(await getBlock(page, "block1"))));
@@ -22,10 +24,12 @@ test("shift click selects blocks", async ({ page, act }) => {
 });
 
 test("shift click adds block to selection", async ({ page, act }) => {
-	await loadBlocks(page, [
-		{ type: "math_number", id: "block1" },
-		{ type: "math_number", id: "block2" },
-	]);
+	await act(
+		loadBlocks(page, [
+			{ type: "math_number", id: "block1" },
+			{ type: "math_number", id: "block2" },
+		]),
+	);
 	await act(page.mouse.click(...(await getBlock(page, "block1"))));
 
 	await act(page.keyboard.down("Shift"));
@@ -35,10 +39,12 @@ test("shift click adds block to selection", async ({ page, act }) => {
 });
 
 test("shift click removes block from selection", async ({ page, act }) => {
-	await loadBlocks(page, [
-		{ type: "math_number", id: "block1" },
-		{ type: "math_number", id: "block2" },
-	]);
+	await act(
+		loadBlocks(page, [
+			{ type: "math_number", id: "block1" },
+			{ type: "math_number", id: "block2" },
+		]),
+	);
 	await act(page.keyboard.down("Shift"));
 	await act(page.mouse.click(...(await getBlock(page, "block1"))));
 	await act(page.mouse.click(...(await getBlock(page, "block2"))));
@@ -49,10 +55,12 @@ test("shift click removes block from selection", async ({ page, act }) => {
 });
 
 test("shift click on empty space keeps selection", async ({ page, act }) => {
-	await loadBlocks(page, [
-		{ type: "math_number", id: "block1" },
-		{ type: "math_number", id: "block2" },
-	]);
+	await act(
+		loadBlocks(page, [
+			{ type: "math_number", id: "block1" },
+			{ type: "math_number", id: "block2" },
+		]),
+	);
 	await act(page.keyboard.down("Shift"));
 	await act(page.mouse.click(...(await getBlock(page, "block1"))));
 	await act(page.mouse.click(...(await getBlock(page, "block2"))));
@@ -63,10 +71,12 @@ test("shift click on empty space keeps selection", async ({ page, act }) => {
 });
 
 test("releasing shift keeps selection", async ({ page, act }) => {
-	await loadBlocks(page, [
-		{ type: "math_number", id: "block1" },
-		{ type: "math_number", id: "block2" },
-	]);
+	await act(
+		loadBlocks(page, [
+			{ type: "math_number", id: "block1" },
+			{ type: "math_number", id: "block2" },
+		]),
+	);
 	await act(page.keyboard.down("Shift"));
 	await act(page.mouse.click(...(await getBlock(page, "block1"))));
 	await act(page.mouse.click(...(await getBlock(page, "block2"))));
@@ -77,10 +87,12 @@ test("releasing shift keeps selection", async ({ page, act }) => {
 });
 
 test("clicking empty space clears selection", async ({ page, act }) => {
-	await loadBlocks(page, [
-		{ type: "math_number", id: "block1" },
-		{ type: "math_number", id: "block2" },
-	]);
+	await act(
+		loadBlocks(page, [
+			{ type: "math_number", id: "block1" },
+			{ type: "math_number", id: "block2" },
+		]),
+	);
 	await act(page.keyboard.down("Shift"));
 	await act(page.mouse.click(...(await getBlock(page, "block1"))));
 	await act(page.mouse.click(...(await getBlock(page, "block2"))));
@@ -95,11 +107,13 @@ test("clicking block clears selection to single block", async ({
 	page,
 	act,
 }) => {
-	await loadBlocks(page, [
-		{ type: "math_number", id: "block1" },
-		{ type: "math_number", id: "block2" },
-		{ type: "math_number", id: "block3" },
-	]);
+	await act(
+		loadBlocks(page, [
+			{ type: "math_number", id: "block1" },
+			{ type: "math_number", id: "block2" },
+			{ type: "math_number", id: "block3" },
+		]),
+	);
 	await act(page.keyboard.down("Shift"));
 	await act(page.mouse.click(...(await getBlock(page, "block1"))));
 	await act(page.mouse.click(...(await getBlock(page, "block2"))));
@@ -111,11 +125,13 @@ test("clicking block clears selection to single block", async ({
 });
 
 test("dragging rectangle selects overlapping blocks", async ({ page, act }) => {
-	await loadBlocks(page, [
-		{ type: "math_number", id: "block1" },
-		{ type: "math_number", id: "block2" },
-		{ type: "math_number", id: "block3" },
-	]);
+	await act(
+		loadBlocks(page, [
+			{ type: "math_number", id: "block1" },
+			{ type: "math_number", id: "block2" },
+			{ type: "math_number", id: "block3" },
+		]),
+	);
 	const block1Bounds = await getBlockBounds(page, "block1");
 	const block2Bounds = await getBlockBounds(page, "block2");
 
@@ -138,11 +154,13 @@ test("dragging rectangle deselects overlapping blocks", async ({
 	page,
 	act,
 }) => {
-	await loadBlocks(page, [
-		{ type: "math_number", id: "block1" },
-		{ type: "math_number", id: "block2" },
-		{ type: "math_number", id: "block3" },
-	]);
+	await act(
+		loadBlocks(page, [
+			{ type: "math_number", id: "block1" },
+			{ type: "math_number", id: "block2" },
+			{ type: "math_number", id: "block3" },
+		]),
+	);
 	const block1Bounds = await getBlockBounds(page, "block1");
 	const block2Bounds = await getBlockBounds(page, "block2");
 	await act(page.keyboard.down("Shift"));
@@ -166,10 +184,12 @@ test("dragging rectangle deselects overlapping blocks", async ({
 });
 
 test("select all", async ({ page, act }) => {
-	await loadBlocks(page, [
-		{ type: "math_number", id: "block1" },
-		{ type: "math_number", id: "block2" },
-	]);
+	await act(
+		loadBlocks(page, [
+			{ type: "math_number", id: "block1" },
+			{ type: "math_number", id: "block2" },
+		]),
+	);
 
 	await act(page.keyboard.press("Control+A"));
 
