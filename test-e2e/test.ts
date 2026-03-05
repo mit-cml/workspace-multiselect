@@ -17,11 +17,19 @@ export const test = base.extend<{
 			await page.evaluate(async () => {
 				const workspace = Blockly.getMainWorkspace() as WorkspaceSvg;
 				let eventFired = false;
-				const listener = workspace.addChangeListener(() => {
+				const events: object[] = [];
+				const listener = workspace.addChangeListener((event) => {
 					eventFired = true;
+					events.push(event.toJson());
 				});
 				try {
+					let frames = 0;
 					do {
+						if (++frames > 10) {
+							throw new Error(
+								`Blockly events still firing after 10 frames:\n${JSON.stringify(events, null, 2)}`,
+							);
+						}
 						eventFired = false;
 						await new Promise((resolve) =>
 							requestAnimationFrame(() => setTimeout(resolve, 0)),
