@@ -85,16 +85,11 @@ export const getBlock = (page: Page, id: string) =>
 		const block = workspace.getBlockById(id);
 		if (!block) throw new Error(`Block "${id}" not found`);
 		const blockBounds = block.getBoundingRectangleWithoutChildren();
-		const blockConstants = workspace.getRenderer().getConstants();
-		const blockInset = Math.max(
-			blockConstants.CORNER_RADIUS,
-			blockConstants.TAB_WIDTH,
-		);
 		const { x, y } = Blockly.utils.svgMath.wsToScreenCoordinates(
 			workspace,
 			new Blockly.utils.Coordinate(
-				blockBounds.left + blockInset,
-				blockBounds.top + blockInset,
+				(blockBounds.left + blockBounds.right) / 2,
+				blockBounds.top + 1,
 			),
 		);
 		return [x, y] as const;
