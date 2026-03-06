@@ -62,12 +62,27 @@ Blockly.Blocks['radix'] = {
   },
 };
 
+Blockly.Blocks['validator_call_counter'] = {
+  init() {
+    this.appendDummyInput()
+        .appendField(
+            new Blockly.FieldDropdown([['a', 'A'], ['b', 'B']]),
+            'VALUE');
+    this.getField('VALUE').setValidator(function() {
+      const validatorCallCounts = window.validatorCallCounts ??= {};
+      const id = this.getSourceBlock().id;
+      validatorCallCounts[id] = (validatorCallCounts[id] || 0) + 1;
+    });
+  },
+};
+
 document.addEventListener('DOMContentLoaded', function() {
   toolboxCategories.contents.push({
     name: 'Test',
     kind: 'category',
     contents: [
       {type: 'radix', kind: 'block'},
+      {type: 'validator_call_counter', kind: 'block'},
     ],
   });
 
