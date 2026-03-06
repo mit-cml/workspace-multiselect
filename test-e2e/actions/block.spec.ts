@@ -87,7 +87,11 @@ test("add comment", async ({ page, act }) => {
 			button: "right",
 		}),
 	);
-	await act(page.getByRole("menuitem", { name: "Add Comment (2)" }).click());
+	await act(
+		page
+			.getByRole("menuitem", { exact: true, name: "Add Comment (2)" })
+			.click(),
+	);
 
 	expect(await hasBlockComment(page, "block1")).toBe(true);
 	expect(await hasBlockComment(page, "block2")).toBe(true);
@@ -114,7 +118,11 @@ test("remove comment", async ({ page, act }) => {
 			button: "right",
 		}),
 	);
-	await act(page.getByRole("menuitem", { name: "Remove Comment (2)" }).click());
+	await act(
+		page
+			.getByRole("menuitem", { exact: true, name: "Remove Comment (2)" })
+			.click(),
+	);
 
 	expect(await hasBlockComment(page, "block1")).toBe(false);
 	expect(await hasBlockComment(page, "block2")).toBe(false);
@@ -141,7 +149,9 @@ test("external inputs", async ({ page, act }) => {
 		}),
 	);
 	await act(
-		page.getByRole("menuitem", { name: "External Inputs (2)" }).click(),
+		page
+			.getByRole("menuitem", { exact: true, name: "External Inputs (2)" })
+			.click(),
 	);
 
 	expect(await hasInlineInputs(page, "block1")).toBe(false);
@@ -168,7 +178,11 @@ test("inline inputs", async ({ page, act }) => {
 			button: "right",
 		}),
 	);
-	await act(page.getByRole("menuitem", { name: "Inline Inputs (2)" }).click());
+	await act(
+		page
+			.getByRole("menuitem", { exact: true, name: "Inline Inputs (2)" })
+			.click(),
+	);
 
 	expect(await hasInlineInputs(page, "block1")).toBe(true);
 	expect(await hasInlineInputs(page, "block2")).toBe(true);
@@ -194,7 +208,11 @@ test("disable", async ({ page, act }) => {
 			button: "right",
 		}),
 	);
-	await act(page.getByRole("menuitem", { name: "Disable Block (2)" }).click());
+	await act(
+		page
+			.getByRole("menuitem", { exact: true, name: "Disable Block (2)" })
+			.click(),
+	);
 
 	expect(await isBlockEnabled(page, "block1")).toBe(false);
 	expect(await isBlockEnabled(page, "block2")).toBe(false);
@@ -220,7 +238,11 @@ test("enable", async ({ page, act }) => {
 			button: "right",
 		}),
 	);
-	await act(page.getByRole("menuitem", { name: "Enable Block (2)" }).click());
+	await act(
+		page
+			.getByRole("menuitem", { exact: true, name: "Enable Block (2)" })
+			.click(),
+	);
 
 	expect(await isBlockEnabled(page, "block1")).toBe(true);
 	expect(await isBlockEnabled(page, "block2")).toBe(true);

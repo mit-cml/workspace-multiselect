@@ -23,20 +23,24 @@ test.describe("selection count", () => {
 
 	test("copy", async ({ page }) => {
 		expect(
-			await page.getByRole("menuitem", { name: "Copy (2)" }).textContent(),
+			await page
+				.getByRole("menuitem", { exact: true, name: "Copy (2)" })
+				.textContent(),
 		).toBe("Copy (2)");
 	});
 
 	test("duplicate", async ({ page }) => {
 		expect(
-			await page.getByRole("menuitem", { name: "Duplicate (2)" }).textContent(),
+			await page
+				.getByRole("menuitem", { exact: true, name: "Duplicate (2)" })
+				.textContent(),
 		).toBe("Duplicate (2)");
 	});
 
 	test("delete", async ({ page }) => {
 		expect(
 			await page
-				.getByRole("menuitem", { name: "Delete 2 Blocks" })
+				.getByRole("menuitem", { exact: true, name: "Delete 2 Blocks" })
 				.textContent(),
 		).toBe("Delete 2 Blocks");
 	});
@@ -73,7 +77,7 @@ test.describe("comment count", () => {
 		);
 		expect(
 			await page
-				.getByRole("menuitem", { name: "Add Comment (2)" })
+				.getByRole("menuitem", { exact: true, name: "Add Comment (2)" })
 				.textContent(),
 		).toBe("Add Comment (2)");
 	});
@@ -86,7 +90,7 @@ test.describe("comment count", () => {
 		);
 		expect(
 			await page
-				.getByRole("menuitem", { name: "Remove Comment (3)" })
+				.getByRole("menuitem", { exact: true, name: "Remove Comment (3)" })
 				.textContent(),
 		).toBe("Remove Comment (3)");
 	});
@@ -122,7 +126,7 @@ test.describe("inputs count", () => {
 		);
 		expect(
 			await page
-				.getByRole("menuitem", { name: "External Inputs (2)" })
+				.getByRole("menuitem", { exact: true, name: "External Inputs (2)" })
 				.textContent(),
 		).toBe("External Inputs (2)");
 	});
@@ -135,7 +139,7 @@ test.describe("inputs count", () => {
 		);
 		expect(
 			await page
-				.getByRole("menuitem", { name: "Inline Inputs (3)" })
+				.getByRole("menuitem", { exact: true, name: "Inline Inputs (3)" })
 				.textContent(),
 		).toBe("Inline Inputs (3)");
 	});
@@ -171,7 +175,7 @@ test.describe("collapse/expand count", () => {
 		);
 		expect(
 			await page
-				.getByRole("menuitem", { name: "Collapse Block (2)" })
+				.getByRole("menuitem", { exact: true, name: "Collapse Block (2)" })
 				.textContent(),
 		).toBe("Collapse Block (2)");
 	});
@@ -184,7 +188,7 @@ test.describe("collapse/expand count", () => {
 		);
 		expect(
 			await page
-				.getByRole("menuitem", { name: "Expand Block (3)" })
+				.getByRole("menuitem", { exact: true, name: "Expand Block (3)" })
 				.textContent(),
 		).toBe("Expand Block (3)");
 	});
@@ -220,7 +224,7 @@ test.describe("disable/enable count", () => {
 		);
 		expect(
 			await page
-				.getByRole("menuitem", { name: "Disable Block (2)" })
+				.getByRole("menuitem", { exact: true, name: "Disable Block (2)" })
 				.textContent(),
 		).toBe("Disable Block (2)");
 	});
@@ -233,7 +237,7 @@ test.describe("disable/enable count", () => {
 		);
 		expect(
 			await page
-				.getByRole("menuitem", { name: "Enable Block (3)" })
+				.getByRole("menuitem", { exact: true, name: "Enable Block (3)" })
 				.textContent(),
 		).toBe("Enable Block (3)");
 	});

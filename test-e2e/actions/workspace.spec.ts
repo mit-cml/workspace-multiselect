@@ -26,7 +26,9 @@ test("duplicate", async ({ page, act }) => {
 			button: "right",
 		}),
 	);
-	await act(page.getByRole("menuitem", { name: "Duplicate (2)" }).click());
+	await act(
+		page.getByRole("menuitem", { exact: true, name: "Duplicate (2)" }).click(),
+	);
 
 	expect(await getAllBlockIds(page)).toHaveLength(5);
 	const selectedBlockIds = await getSelectedBlockIds(page);

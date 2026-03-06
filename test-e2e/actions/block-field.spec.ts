@@ -27,7 +27,7 @@ test("editing boolean field updates selected boolean blocks", async ({
 	await act(page.keyboard.up("Shift"));
 
 	await act(page.mouse.click(...(await getBlockField(page, "block1", "BOOL"))));
-	await act(page.getByRole("option", { name: "FALSE" }).click());
+	await act(page.getByRole("option", { name: "false", exact: true }).click());
 
 	expect(await getBlockFieldValue(page, "block1", "BOOL")).toBe("FALSE");
 	expect(await getBlockFieldValue(page, "block2", "BOOL")).toBe("FALSE");
@@ -97,7 +97,7 @@ test("editing field does not copy dependent field to other blocks", async ({
 	await act(
 		page.mouse.click(...(await getBlockField(page, "block1", "RADIX"))),
 	);
-	await act(page.getByRole("option", { name: "binary" }).click());
+	await act(page.getByRole("option", { name: "binary", exact: true }).click());
 
 	expect(await getBlockFieldValue(page, "block1", "NUM")).toBe("111");
 	expect(await getBlockFieldValue(page, "block2", "NUM")).toBe("101010");
@@ -122,7 +122,7 @@ test("undo boolean field multi-edit", async ({ page, act }) => {
 	await act(page.mouse.click(...(await getBlock(page, "block2"))));
 	await act(page.keyboard.up("Shift"));
 	await act(page.mouse.click(...(await getBlockField(page, "block1", "BOOL"))));
-	await act(page.getByRole("option", { name: "FALSE" }).click());
+	await act(page.getByRole("option", { name: "false", exact: true }).click());
 	expect(await getBlockFieldValue(page, "block1", "BOOL")).toBe("FALSE");
 	expect(await getBlockFieldValue(page, "block2", "BOOL")).toBe("FALSE");
 
@@ -169,7 +169,7 @@ test("undo dependent field multi-edit", async ({ page, act }) => {
 	await act(
 		page.mouse.click(...(await getBlockField(page, "block1", "RADIX"))),
 	);
-	await act(page.getByRole("option", { name: "binary" }).click());
+	await act(page.getByRole("option", { name: "binary", exact: true }).click());
 	expect(await getBlockFieldValue(page, "block1", "NUM")).toBe("111");
 	expect(await getBlockFieldValue(page, "block2", "NUM")).toBe("101010");
 
