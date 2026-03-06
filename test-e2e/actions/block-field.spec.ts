@@ -76,6 +76,40 @@ test("editing number field updates selected number blocks", async ({
 	]);
 });
 
+test("editing field does not copy dependent field to other blocks", async ({
+	page,
+	act,
+}) => {
+	await act(
+		loadBlocks(page, [
+			{ type: "radix", id: "block1", fields: { NUM: "7" } },
+			{ type: "radix", id: "block2", fields: { NUM: "42" } },
+			{ type: "math_number", id: "block3" },
+			{ type: "radix", id: "block4" },
+		]),
+	);
+	await act(page.keyboard.down("Shift"));
+	await act(page.mouse.click(...(await getBlock(page, "block1"))));
+	await act(page.mouse.click(...(await getBlock(page, "block2"))));
+	await act(page.mouse.click(...(await getBlock(page, "block3"))));
+	await act(page.keyboard.up("Shift"));
+
+	await act(
+		page.mouse.click(...(await getBlockField(page, "block1", "RADIX"))),
+	);
+	await act(page.getByRole("option", { name: "binary" }).click());
+
+	expect(await getBlockFieldValue(page, "block1", "NUM")).toBe("111");
+	expect(await getBlockFieldValue(page, "block2", "NUM")).toBe("101010");
+	expect(await getBlockFieldValue(page, "block3", "NUM")).toBe(0);
+	expect(await getBlockFieldValue(page, "block4", "NUM")).toBe("0");
+	expect(await getSelectedBlockIds(page)).toEqual([
+		"block1",
+		"block2",
+		"block3",
+	]);
+});
+
 test("undo boolean field multi-edit", async ({ page, act }) => {
 	await act(
 		loadBlocks(page, [
@@ -119,4 +153,28 @@ test("undo number field multi-edit", async ({ page, act }) => {
 
 	expect(await getBlockFieldValue(page, "block1", "NUM")).toBe(0);
 	expect(await getBlockFieldValue(page, "block2", "NUM")).toBe(0);
+});
+
+test("undo dependent field multi-edit", async ({ page, act }) => {
+	await act(
+		loadBlocks(page, [
+			{ type: "radix", id: "block1", fields: { NUM: "7" } },
+			{ type: "radix", id: "block2", fields: { NUM: "42" } },
+		]),
+	);
+	await act(page.keyboard.down("Shift"));
+	await act(page.mouse.click(...(await getBlock(page, "block1"))));
+	await act(page.mouse.click(...(await getBlock(page, "block2"))));
+	await act(page.keyboard.up("Shift"));
+	await act(
+		page.mouse.click(...(await getBlockField(page, "block1", "RADIX"))),
+	);
+	await act(page.getByRole("option", { name: "binary" }).click());
+	expect(await getBlockFieldValue(page, "block1", "NUM")).toBe("111");
+	expect(await getBlockFieldValue(page, "block2", "NUM")).toBe("101010");
+
+	await act(page.keyboard.press("Control+Z"));
+
+	expect(await getBlockFieldValue(page, "block1", "NUM")).toBe("7");
+	expect(await getBlockFieldValue(page, "block2", "NUM")).toBe("42");
 });

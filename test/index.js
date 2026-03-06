@@ -41,7 +41,36 @@ Blockly.ContextMenuItems.registerCommentOptions();
 // Initialize keyboard nav plugin.
 navigationController.init();
 
+Blockly.Blocks['radix'] = {
+  init() {
+    this.appendDummyInput()
+        .appendField(
+            new Blockly.FieldDropdown([['decimal', 'DEC'], ['binary', 'BIN']]),
+            'RADIX')
+        .appendField(
+            new Blockly.FieldTextInput('0'),
+            'NUM');
+    const radixes = {DEC: 10, BIN: 2};
+    this.getField('RADIX').setValidator(function(newValue) {
+      const block = this.getSourceBlock();
+      const oldNum = parseInt(block.getFieldValue('NUM'), radixes[this.getValue()]);
+      const newNum = oldNum.toString(radixes[newValue]);
+      Multiselect.withoutMultiFieldUpdates(() => {
+        block.setFieldValue(newNum, 'NUM');
+      });
+    });
+  },
+};
+
 document.addEventListener('DOMContentLoaded', function() {
+  toolboxCategories.contents.push({
+    name: 'Test',
+    kind: 'category',
+    contents: [
+      {type: 'radix', kind: 'block'},
+    ],
+  });
+
   const defaultOptions = {
     toolbox: toolboxCategories,
     useDoubleClick: true,
