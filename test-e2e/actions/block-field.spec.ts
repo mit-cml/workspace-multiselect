@@ -1,3 +1,9 @@
+declare global {
+	interface Window {
+		validatorCallCounts: Record<string, number>;
+	}
+}
+
 import { expect } from "@playwright/test";
 import {
 	getBlock,
@@ -177,4 +183,27 @@ test("undo dependent field multi-edit", async ({ page, act }) => {
 
 	expect(await getBlockFieldValue(page, "block1", "NUM")).toBe("7");
 	expect(await getBlockFieldValue(page, "block2", "NUM")).toBe("42");
+});
+
+test("editing field runs validator once per block", async ({ page, act }) => {
+	await act(
+		loadBlocks(page, [
+			{ type: "validator_call_counter", id: "block1" },
+			{ type: "validator_call_counter", id: "block2" },
+		]),
+	);
+	await act(page.keyboard.down("Shift"));
+	await act(page.mouse.click(...(await getBlock(page, "block1"))));
+	await act(page.mouse.click(...(await getBlock(page, "block2"))));
+	await act(page.keyboard.up("Shift"));
+
+	await act(
+		page.mouse.click(...(await getBlockField(page, "block1", "VALUE"))),
+	);
+	await act(page.getByRole("option", { name: "b", exact: true }).click());
+	expect(await getBlockFieldValue(page, "block1", "VALUE")).toBe("B");
+	expect(await getBlockFieldValue(page, "block2", "VALUE")).toBe("B");
+
+	expect(await page.evaluate(() => window.validatorCallCounts.block1)).toBe(1);
+	expect(await page.evaluate(() => window.validatorCallCounts.block2)).toBe(1);
 });
