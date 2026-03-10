@@ -369,6 +369,13 @@ export class Multiselect {
         (e.type === Blockly.Events.CHANGE &&
             e.element === 'field' && e.recordUndo ||
             e.type === Blockly.Events.BLOCK_FIELD_INTERMEDIATE_CHANGE)) {
+      if (this.multiFieldUpdateGroup_ !== e.group) {
+        this.multiFieldUpdateGroup_ = e.group;
+        this.multiFieldUpdateSourceBlockId_ = e.blockId;
+      }
+      if (e.blockId !== this.multiFieldUpdateSourceBlockId_) {
+        return;
+      }
       const currentGroup = Blockly.Events.getGroup();
       if (!currentGroup) {
         Blockly.Events.setGroup(e.group);
@@ -383,8 +390,7 @@ export class Multiselect {
             return;
           }
           const block = this.workspace_.getBlockById(id);
-          if (block && block.type === blockType &&
-              block.getFieldValue(e.name) !== e.newValue) {
+          if (block && block.type === blockType) {
             block.setFieldValue(e.newValue, e.name);
           }
         });
