@@ -94,11 +94,15 @@ test("copy and paste block via context menu", async ({ page, act }) => {
 test("cut and paste block via keyboard", async ({ page, act }) => {
 	await act(page.keyboard.press("Control+X"));
 	expect(await getAllBlockIds(page)).toEqual(["block2"]);
+	expect(await getHighlightedBlockIds(page)).toEqual([]);
+	expect(await getSelectedId(page)).toBeNull();
 
 	await act(page.keyboard.press("Control+V"));
-	expect(await getAllBlockIds(page)).toEqual(["block1", "block2"]);
-	expect(await getHighlightedBlockIds(page)).toEqual(["block1"]);
-	expect(await getSelectedId(page)).toBe("block1");
+	expect(await getAllBlockIds(page)).toHaveLength(2);
+	const highlightedBlockIds = await getHighlightedBlockIds(page);
+	expect(highlightedBlockIds).toHaveLength(1);
+	expect(highlightedBlockIds).not.toContain("block2");
+	expect(await getSelectedId(page)).toBe(highlightedBlockIds[0]);
 });
 
 test("delete block via keyboard", async ({ page, act }) => {

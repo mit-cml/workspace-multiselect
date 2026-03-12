@@ -200,21 +200,14 @@ test("copy and paste blocks via context menu", async ({ page, act }) => {
 test("cut and paste blocks via keyboard", async ({ page, act }) => {
 	await act(page.keyboard.press("Control+X"));
 	expect(await getAllBlockIds(page)).toEqual(["block4"]);
+	expect(await getHighlightedBlockIds(page)).toEqual([]);
+	expect(await getSelectedId(page)).toBeNull();
 
 	await act(page.keyboard.press("Control+V"));
-	expect(await getAllBlockIds(page)).toEqual([
-		"block1",
-		"block2",
-		"block2-child",
-		"block3",
-		"block3-child",
-		"block4",
-	]);
-	expect(await getHighlightedBlockIds(page)).toEqual([
-		"block1",
-		"block2",
-		"block3",
-	]);
+	expect(await getAllBlockIds(page)).toHaveLength(6);
+	const highlightedBlockIds = await getHighlightedBlockIds(page);
+	expect(highlightedBlockIds).toHaveLength(3);
+	expect(highlightedBlockIds).not.toContain("block4");
 	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 });
 

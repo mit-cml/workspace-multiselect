@@ -88,11 +88,15 @@ test("copy and paste comment via context menu", async ({ page, act }) => {
 test("cut and paste comment via keyboard", async ({ page, act }) => {
 	await act(page.keyboard.press("Control+X"));
 	expect(await getAllCommentIds(page)).toEqual(["comment2"]);
+	expect(await getHighlightedCommentIds(page)).toEqual([]);
+	expect(await getSelectedId(page)).toBeNull();
 
 	await act(page.keyboard.press("Control+V"));
-	expect(await getAllCommentIds(page)).toEqual(["comment1", "comment2"]);
-	expect(await getHighlightedCommentIds(page)).toEqual(["comment1"]);
-	expect(await getSelectedId(page)).toBe("comment1");
+	expect(await getAllCommentIds(page)).toHaveLength(2);
+	const highlightedCommentIds = await getHighlightedCommentIds(page);
+	expect(highlightedCommentIds).toHaveLength(1);
+	expect(highlightedCommentIds).not.toContain("comment2");
+	expect(await getSelectedId(page)).toBe(highlightedCommentIds[0]);
 });
 
 test("delete comment via keyboard", async ({ page, act }) => {

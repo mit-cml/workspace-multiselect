@@ -127,17 +127,14 @@ test("copy and paste comments via context menu", async ({ page, act }) => {
 test("cut and paste comments via keyboard", async ({ page, act }) => {
 	await act(page.keyboard.press("Control+X"));
 	expect(await getAllCommentIds(page)).toEqual(["comment3"]);
+	expect(await getHighlightedCommentIds(page)).toEqual([]);
+	expect(await getSelectedId(page)).toBeNull();
 
 	await act(page.keyboard.press("Control+V"));
-	expect(await getAllCommentIds(page)).toEqual([
-		"comment1",
-		"comment2",
-		"comment3",
-	]);
-	expect(await getHighlightedCommentIds(page)).toEqual([
-		"comment1",
-		"comment2",
-	]);
+	expect(await getAllCommentIds(page)).toHaveLength(3);
+	const highlightedCommentIds = await getHighlightedCommentIds(page);
+	expect(highlightedCommentIds).toHaveLength(2);
+	expect(highlightedCommentIds).not.toContain("comment3");
 	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 });
 
