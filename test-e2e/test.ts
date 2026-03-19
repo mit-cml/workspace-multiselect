@@ -49,7 +49,7 @@ export const loadBlocks = (page: Page, blocks: serialization.blocks.State[]) =>
 		Blockly.serialization.workspaces.load(
 			{
 				blocks: {
-					blocks: blocks.map((block, index) => ({ y: index, ...block })),
+					blocks: blocks.map((block, index) => ({ ...block, y: index })),
 				},
 			},
 			workspace,
@@ -118,15 +118,22 @@ export const getBlockField = (page: Page, id: string, fieldName: string) =>
 		[id, fieldName],
 	);
 
+export const getGridSpacing = (page: Page) =>
+	page.evaluate(() => {
+		const workspace = Blockly.getMainWorkspace() as WorkspaceSvg;
+		return workspace.getGrid()?.getSpacing() ?? null;
+	});
+
 export const getEmptySpace = (page: Page) =>
 	page.evaluate(() => {
 		const workspace = Blockly.getMainWorkspace() as WorkspaceSvg;
 		const blocksBounds = workspace.getBlocksBoundingBox();
+		const halfGridSpacing = (workspace.getGrid()?.getSpacing() ?? 25) / 2;
 		const { x, y } = Blockly.utils.svgMath.wsToScreenCoordinates(
 			workspace,
 			new Blockly.utils.Coordinate(
-				blocksBounds.right + 1,
-				blocksBounds.bottom + 1,
+				blocksBounds.right + halfGridSpacing,
+				blocksBounds.bottom + halfGridSpacing,
 			),
 		);
 		return [x, y] as const;

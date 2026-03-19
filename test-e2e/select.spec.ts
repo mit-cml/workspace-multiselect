@@ -3,12 +3,13 @@ import {
 	getBlock,
 	getBlockBounds,
 	getEmptySpace,
+	getGridSpacing,
 	getSelectedBlockIds,
 	loadBlocks,
 	test,
 } from "./test";
 
-test("shift click selects blocks", async ({ page, act }) => {
+test("shift click selects block", async ({ page, act }) => {
 	await act(
 		loadBlocks(page, [
 			{ type: "math_number", id: "block1" },
@@ -103,10 +104,7 @@ test("clicking empty space clears selection", async ({ page, act }) => {
 	expect(await getSelectedBlockIds(page)).toEqual([]);
 });
 
-test("clicking block clears selection to single block", async ({
-	page,
-	act,
-}) => {
+test("clicking block clears selection", async ({ page, act }) => {
 	await act(
 		loadBlocks(page, [
 			{ type: "math_number", id: "block1" },
@@ -124,7 +122,7 @@ test("clicking block clears selection to single block", async ({
 	expect(await getSelectedBlockIds(page)).toEqual(["block3"]);
 });
 
-test("dragging rectangle selects overlapping blocks", async ({ page, act }) => {
+test("dragging rectangle selects blocks", async ({ page, act }) => {
 	await act(
 		loadBlocks(page, [
 			{ type: "math_number", id: "block1" },
@@ -134,9 +132,17 @@ test("dragging rectangle selects overlapping blocks", async ({ page, act }) => {
 	);
 	const block1Bounds = await getBlockBounds(page, "block1");
 	const block2Bounds = await getBlockBounds(page, "block2");
+	const gridSpacing = await getGridSpacing(page);
+	if (gridSpacing === null) throw new Error("Workspace has no grid");
+	const halfGridSpacing = gridSpacing / 2;
 
 	await act(page.keyboard.down("Shift"));
-	await act(page.mouse.move(block1Bounds.left, block1Bounds.top));
+	await act(
+		page.mouse.move(
+			block1Bounds.left - halfGridSpacing,
+			block1Bounds.top - halfGridSpacing,
+		),
+	);
 	await act(page.mouse.down());
 	await act(
 		page.mouse.move(
@@ -150,10 +156,7 @@ test("dragging rectangle selects overlapping blocks", async ({ page, act }) => {
 	expect(await getSelectedBlockIds(page)).toEqual(["block1", "block2"]);
 });
 
-test("dragging rectangle deselects overlapping blocks", async ({
-	page,
-	act,
-}) => {
+test("dragging rectangle deselects blocks", async ({ page, act }) => {
 	await act(
 		loadBlocks(page, [
 			{ type: "math_number", id: "block1" },
@@ -168,8 +171,17 @@ test("dragging rectangle deselects overlapping blocks", async ({
 	await act(page.mouse.click(...(await getBlock(page, "block2"))));
 	await act(page.keyboard.up("Shift"));
 
+	const gridSpacing = await getGridSpacing(page);
+	if (gridSpacing === null) throw new Error("Workspace has no grid");
+	const halfGridSpacing = gridSpacing / 2;
+
 	await act(page.keyboard.down("Shift"));
-	await act(page.mouse.move(block1Bounds.left, block1Bounds.top));
+	await act(
+		page.mouse.move(
+			block1Bounds.left - halfGridSpacing,
+			block1Bounds.top - halfGridSpacing,
+		),
+	);
 	await act(page.mouse.down());
 	await act(
 		page.mouse.move(
@@ -183,7 +195,7 @@ test("dragging rectangle deselects overlapping blocks", async ({
 	expect(await getSelectedBlockIds(page)).toEqual([]);
 });
 
-test("select all", async ({ page, act }) => {
+test("select all blocks via keyboard", async ({ page, act }) => {
 	await act(
 		loadBlocks(page, [
 			{ type: "math_number", id: "block1" },
@@ -192,6 +204,28 @@ test("select all", async ({ page, act }) => {
 	);
 
 	await act(page.keyboard.press("Control+A"));
+
+	expect(await getSelectedBlockIds(page)).toEqual(["block1", "block2"]);
+});
+
+test("select all blocks via context menu", async ({ page, act }) => {
+	await act(
+		loadBlocks(page, [
+			{ type: "math_number", id: "block1" },
+			{ type: "math_number", id: "block2" },
+		]),
+	);
+
+	await act(
+		page.mouse.click(...(await getEmptySpace(page)), {
+			button: "right",
+		}),
+	);
+	await act(
+		page
+			.getByRole("menuitem", { exact: true, name: "Select all Blocks" })
+			.click(),
+	);
 
 	expect(await getSelectedBlockIds(page)).toEqual(["block1", "block2"]);
 });
