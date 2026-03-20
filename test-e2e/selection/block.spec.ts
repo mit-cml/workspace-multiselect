@@ -7,7 +7,7 @@ import {
 	getSelectedBlockIds,
 	loadBlocks,
 	test,
-} from "./test";
+} from "../test";
 
 test("shift click selects block", async ({ page, act }) => {
 	await act(

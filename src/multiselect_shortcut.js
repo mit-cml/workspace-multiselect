@@ -378,15 +378,14 @@ const registerPaste = function(useCopyPasteCrossTab) {
         dataCopyFromStorage();
       }
       const getPasteBlock = function(data, workspace) {
-        const block = data.blockState;
+        const state = data.blockState || data.commentState;
         const {left, top, width, height} =
             workspace.getMetricsManager().getViewMetrics(true);
         const centerCoords = new Blockly.utils.Coordinate(
             left + width / 2, top + height / 2);
         const viewportRect = new Blockly.utils.Rect(
             top, top + height, left, left + width);
-        if (viewportRect.contains(block.x, block.y) &&
-            workspace.getBlockById(block.id)) {
+        if (viewportRect.contains(state.x, state.y)) {
           return Blockly.clipboard.paste(data, workspace);
         }
         return Blockly.clipboard.paste(data, workspace, centerCoords);
