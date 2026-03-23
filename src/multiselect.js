@@ -41,7 +41,6 @@ export class Multiselect {
     this.useCopyPasteMenu_ = true;
     this.multiFieldUpdate_ = true;
     this.multiSelectKeys_ = ['shift'];
-    this.registeredShortcut_ = true;
   }
 
   /**
@@ -140,16 +139,6 @@ export class Multiselect {
       Blockly.BlockSvg.prototype.bumpNeighbours = function() {};
     }
 
-    Blockly.browserEvents.conditionalBind(
-        injectionDiv, 'keydown', this, this.unbindMultiselectCopyPaste_
-    );
-
-    // This is for the keyboard navigation plugin and checks whether it puts
-    // the workspace into keyboard accessibility mode by default.
-    if (this.workspace_.keyboardAccessibilityMode) {
-      Shortcut.unregisterOurShortcut();
-      this.registeredShortcut_ = false;
-    }
   }
 
   /**
@@ -429,34 +418,6 @@ export class Multiselect {
     if (this.multiSelectKeys_.indexOf(e.key.toLocaleLowerCase()) > -1 &&
         !inMultipleSelectionModeWeakMap.get(this.workspace_)) {
       this.controls_.enableMultiselect();
-    }
-  }
-
-  /**
-   * Handle a keyboard navigation key-down on the workspace.
-   * @param {KeyboardEvent} e The keyboard event.
-   * @private
-   */
-  unbindMultiselectCopyPaste_(e) {
-    // TODO: Update this to re-register/unregister the original shortcuts after
-    //  Blockly/keyboard navigation plugin update
-    // This is to unregister the multiselect plugin's shortcuts
-    // when the user is in the keyboard navigation mode. Currently,
-    // when the user is in keyboard accessibility mode, they cannot
-    // use the normal copy/cut/paste functionalities.
-    // This is because the original (Blockly core) copy/cut/paste
-    // functions do not allow for collisions. This can be fixed
-    // either by allowing for collisions in the Blockly core
-    // copy/cut/paste functions or allowing for unregister/re-registering
-    // of the keyboard navigation plugin's copy/cut/paste functions.
-    if (this.workspace_.keyboardAccessibilityMode &&
-        this.registeredShortcut_) {
-      Shortcut.unregisterOurShortcut();
-      this.registeredShortcut_ = false;
-    } else if (!this.workspace_.keyboardAccessibilityMode &&
-        !this.registeredShortcut_) {
-      Shortcut.registerOurShortcut();
-      this.registeredShortcut_ = true;
     }
   }
 
