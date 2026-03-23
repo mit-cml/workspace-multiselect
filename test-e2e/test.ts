@@ -1,5 +1,10 @@
 import { test as base, type Page } from "@playwright/test";
-import type { comments, serialization, WorkspaceSvg } from "blockly";
+import type {
+	comments,
+	IComponent,
+	serialization,
+	WorkspaceSvg,
+} from "blockly";
 
 type RenderedWorkspaceComment = comments.RenderedWorkspaceComment;
 
@@ -113,8 +118,8 @@ export const getBlockField = (page: Page, id: string, fieldName: string) =>
 				);
 			const fieldBounds = svgRoot.getBoundingClientRect();
 			return [
-				fieldBounds.x + fieldBounds.width / 2,
-				fieldBounds.y + fieldBounds.height / 2,
+				(fieldBounds.left + fieldBounds.right) / 2,
+				(fieldBounds.top + fieldBounds.bottom) / 2,
 			] as const;
 		},
 		[id, fieldName],
@@ -294,3 +299,38 @@ export const getSelectedCommentIds = (page: Page) =>
 			.map((comment) => comment.id)
 			.sort(),
 	);
+
+export const isMultiselectEnabled = (page: Page) =>
+	page.evaluate(() => {
+		const icon = document.querySelector(
+			".blocklyMultiselect image",
+		) as SVGImageElement | null;
+		if (!icon) throw new Error("Multiselect icon not found");
+		const href = icon.getAttributeNS("http://www.w3.org/1999/xlink", "href");
+		if (!href) throw new Error("Multiselect icon has no href");
+		const workspace = Blockly.getMainWorkspace() as WorkspaceSvg;
+		const controls = workspace
+			.getComponentManager()
+			.getComponent("multiselectControls") as
+			| (IComponent & { enabled_img: string; disabled_img: string })
+			| undefined;
+		if (!controls) throw new Error("Multiselect controls not found");
+		if (href === controls.enabled_img) return true;
+		if (href === controls.disabled_img) return false;
+		throw new Error(
+			`Multiselect icon href "${href}" does not match either icon`,
+		);
+	});
+
+export const getMultiselectIcon = (page: Page) =>
+	page.evaluate(() => {
+		const icon = document.querySelector(
+			".blocklyMultiselect image",
+		) as SVGImageElement | null;
+		if (!icon) throw new Error("Multiselect icon not found");
+		const bounds = icon.getBoundingClientRect();
+		return [
+			(bounds.left + bounds.right) / 2,
+			(bounds.top + bounds.bottom) / 2,
+		] as const;
+	});

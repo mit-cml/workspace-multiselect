@@ -87,7 +87,7 @@ test("releasing shift keeps selection", async ({ page, act }) => {
 	expect(await getSelectedBlockIds(page)).toEqual(["block1", "block2"]);
 });
 
-test("clicking empty space clears selection", async ({ page, act }) => {
+test("clicking selected block keeps selection", async ({ page, act }) => {
 	await act(
 		loadBlocks(page, [
 			{ type: "math_number", id: "block1" },
@@ -99,12 +99,36 @@ test("clicking empty space clears selection", async ({ page, act }) => {
 	await act(page.mouse.click(...(await getBlock(page, "block2"))));
 	await act(page.keyboard.up("Shift"));
 
-	await act(page.mouse.click(...(await getEmptySpace(page))));
+	await act(page.mouse.click(...(await getBlock(page, "block1"))));
 
-	expect(await getSelectedBlockIds(page)).toEqual([]);
+	expect(await getSelectedBlockIds(page)).toEqual(["block1", "block2"]);
 });
 
-test("clicking block clears selection", async ({ page, act }) => {
+test("clicking selected child block keeps selection", async ({ page, act }) => {
+	await act(
+		loadBlocks(page, [
+			{
+				type: "math_arithmetic",
+				id: "parent",
+				inputs: {
+					A: { block: { type: "math_number", id: "child" } },
+				},
+			},
+			{ type: "math_number", id: "other" },
+		]),
+	);
+	await act(page.keyboard.down("Shift"));
+	await act(page.mouse.click(...(await getBlock(page, "parent"))));
+	await act(page.mouse.click(...(await getBlock(page, "child"))));
+	await act(page.mouse.click(...(await getBlock(page, "other"))));
+	await act(page.keyboard.up("Shift"));
+
+	await act(page.mouse.click(...(await getBlock(page, "child"))));
+
+	expect(await getSelectedBlockIds(page)).toEqual(["child", "other", "parent"]);
+});
+
+test("clicking unselected block clears selection", async ({ page, act }) => {
 	await act(
 		loadBlocks(page, [
 			{ type: "math_number", id: "block1" },
@@ -122,7 +146,50 @@ test("clicking block clears selection", async ({ page, act }) => {
 	expect(await getSelectedBlockIds(page)).toEqual(["block3"]);
 });
 
-test("dragging rectangle selects blocks", async ({ page, act }) => {
+test("clicking unselected child block clears selection", async ({
+	page,
+	act,
+}) => {
+	await act(
+		loadBlocks(page, [
+			{
+				type: "math_arithmetic",
+				id: "parent",
+				inputs: {
+					A: { block: { type: "math_number", id: "child" } },
+				},
+			},
+			{ type: "math_number", id: "other" },
+		]),
+	);
+	await act(page.keyboard.down("Shift"));
+	await act(page.mouse.click(...(await getBlock(page, "parent"))));
+	await act(page.mouse.click(...(await getBlock(page, "other"))));
+	await act(page.keyboard.up("Shift"));
+
+	await act(page.mouse.click(...(await getBlock(page, "child"))));
+
+	expect(await getSelectedBlockIds(page)).toEqual(["child"]);
+});
+
+test("clicking empty space clears selection", async ({ page, act }) => {
+	await act(
+		loadBlocks(page, [
+			{ type: "math_number", id: "block1" },
+			{ type: "math_number", id: "block2" },
+		]),
+	);
+	await act(page.keyboard.down("Shift"));
+	await act(page.mouse.click(...(await getBlock(page, "block1"))));
+	await act(page.mouse.click(...(await getBlock(page, "block2"))));
+	await act(page.keyboard.up("Shift"));
+
+	await act(page.mouse.click(...(await getEmptySpace(page))));
+
+	expect(await getSelectedBlockIds(page)).toEqual([]);
+});
+
+test("shift dragging rectangle selects blocks", async ({ page, act }) => {
 	await act(
 		loadBlocks(page, [
 			{ type: "math_number", id: "block1" },
@@ -156,7 +223,7 @@ test("dragging rectangle selects blocks", async ({ page, act }) => {
 	expect(await getSelectedBlockIds(page)).toEqual(["block1", "block2"]);
 });
 
-test("dragging rectangle deselects blocks", async ({ page, act }) => {
+test("shift dragging rectangle deselects blocks", async ({ page, act }) => {
 	await act(
 		loadBlocks(page, [
 			{ type: "math_number", id: "block1" },

@@ -62,19 +62,19 @@ test("releasing shift keeps selection", async ({ page, act }) => {
 	expect(await getSelectedCommentIds(page)).toEqual(["comment1", "comment2"]);
 });
 
-test("clicking empty space clears selection", async ({ page, act }) => {
+test("clicking selected comment keeps selection", async ({ page, act }) => {
 	await act(loadComments(page, [{ id: "comment1" }, { id: "comment2" }]));
 	await act(page.keyboard.down("Shift"));
 	await act(page.mouse.click(...(await getComment(page, "comment1"))));
 	await act(page.mouse.click(...(await getComment(page, "comment2"))));
 	await act(page.keyboard.up("Shift"));
 
-	await act(page.mouse.click(...(await getEmptySpace(page))));
+	await act(page.mouse.click(...(await getComment(page, "comment1"))));
 
-	expect(await getSelectedCommentIds(page)).toEqual([]);
+	expect(await getSelectedCommentIds(page)).toEqual(["comment1", "comment2"]);
 });
 
-test("clicking comment clears selection", async ({ page, act }) => {
+test("clicking unselected comment clears selection", async ({ page, act }) => {
 	await act(
 		loadComments(page, [
 			{ id: "comment1" },
@@ -92,7 +92,19 @@ test("clicking comment clears selection", async ({ page, act }) => {
 	expect(await getSelectedCommentIds(page)).toEqual(["comment3"]);
 });
 
-test("dragging rectangle selects comments", async ({ page, act }) => {
+test("clicking empty space clears selection", async ({ page, act }) => {
+	await act(loadComments(page, [{ id: "comment1" }, { id: "comment2" }]));
+	await act(page.keyboard.down("Shift"));
+	await act(page.mouse.click(...(await getComment(page, "comment1"))));
+	await act(page.mouse.click(...(await getComment(page, "comment2"))));
+	await act(page.keyboard.up("Shift"));
+
+	await act(page.mouse.click(...(await getEmptySpace(page))));
+
+	expect(await getSelectedCommentIds(page)).toEqual([]);
+});
+
+test("shift dragging rectangle selects comments", async ({ page, act }) => {
 	await act(
 		loadComments(page, [
 			{ id: "comment1" },
@@ -126,7 +138,7 @@ test("dragging rectangle selects comments", async ({ page, act }) => {
 	expect(await getSelectedCommentIds(page)).toEqual(["comment1", "comment2"]);
 });
 
-test("dragging rectangle deselects comments", async ({ page, act }) => {
+test("shift dragging rectangle deselects comments", async ({ page, act }) => {
 	await act(
 		loadComments(page, [
 			{ id: "comment1" },
