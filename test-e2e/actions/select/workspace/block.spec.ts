@@ -94,8 +94,8 @@ test("copy and paste block via context menu", async ({ page, act }) => {
 test("cut and paste block via keyboard", async ({ page, act }) => {
 	await act(page.keyboard.press("Control+X"));
 	expect(await getAllBlockIds(page)).toEqual(["block2"]);
-	expect(await getHighlightedBlockIds(page)).toEqual([]);
-	expect(await getSelectedId(page)).toBeNull();
+	expect(await getHighlightedBlockIds(page)).toEqual(["block2"]);
+	expect(await getSelectedId(page)).toBe("block2");
 
 	await act(page.keyboard.press("Control+V"));
 	expect(await getAllBlockIds(page)).toHaveLength(2);
@@ -109,8 +109,8 @@ test("delete block via keyboard", async ({ page, act }) => {
 	await act(page.keyboard.press("Delete"));
 
 	expect(await getAllBlockIds(page)).toEqual(["block2"]);
-	expect(await getHighlightedBlockIds(page)).toEqual([]);
-	expect(await getSelectedId(page)).toBeNull();
+	expect(await getHighlightedBlockIds(page)).toEqual(["block2"]);
+	expect(await getSelectedId(page)).toBe("block2");
 });
 
 test("delete block via context menu", async ({ page, act }) => {
@@ -126,8 +126,8 @@ test("delete block via context menu", async ({ page, act }) => {
 	);
 
 	expect(await getAllBlockIds(page)).toEqual(["block2"]);
-	expect(await getHighlightedBlockIds(page)).toEqual([]);
-	expect(await getSelectedId(page)).toBeNull();
+	expect(await getHighlightedBlockIds(page)).toEqual(["block2"]);
+	expect(await getSelectedId(page)).toBe("block2");
 });
 
 test("drag block to trash", async ({ page, act }) => {
@@ -139,8 +139,8 @@ test("drag block to trash", async ({ page, act }) => {
 	await act(page.mouse.up());
 
 	expect(await getAllBlockIds(page)).toEqual(["block2"]);
-	expect(await getHighlightedBlockIds(page)).toEqual([]);
-	expect(await getSelectedId(page)).toBe("block1");
+	expect(await getHighlightedBlockIds(page)).toEqual(["block2"]);
+	expect(await getSelectedId(page)).toBe("block2");
 
 	await openTrash(page);
 	await getBlock(page, { type: "logic_boolean", workspace: "trash" });
