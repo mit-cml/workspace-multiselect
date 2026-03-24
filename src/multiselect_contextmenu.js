@@ -524,13 +524,13 @@ const registerDisable = function() {
   const disableOption = {
     displayText: function(scope) {
       let workableBlocksLength = 0;
-      const state = scope.block.isEnabled();
+      const state = !scope.block.hasDisabledReason(Blockly.constants.MANUALLY_DISABLED);
       const workspace = scope.block.workspace;
       const dragSelection = dragSelectionWeakMap.get(workspace);
       dragSelection.forEach(function(id) {
         const block = workspace.getBlockById(id);
         if (disableOption.check(block) &&
-            block.isEnabled() === state) {
+            !block.hasDisabledReason(Blockly.constants.MANUALLY_DISABLED) === state) {
           workableBlocksLength++;
         }
       });
@@ -560,7 +560,11 @@ const registerDisable = function() {
       const block = scope.block;
       if (!block.isInFlyout && block.workspace.options.disable &&
           block.isEditable()) {
-        if (block.getInheritedDisabled()) {
+        const disabledReasons = block.getDisabledReasons();
+        const isDisabledForOtherReason =
+          disabledReasons.size >
+          (disabledReasons.has(Blockly.constants.MANUALLY_DISABLED) ? 1 : 0);
+        if (block.getInheritedDisabled() || isDisabledForOtherReason) {
           return 'disabled';
         }
         return 'enabled';
@@ -570,13 +574,13 @@ const registerDisable = function() {
     check: function(block) {
       return block &&
              disableOption.preconditionFn({block: block}) === 'enabled' &&
-             (!hasSelectedParent(block) || !block.isEnabled());
+             (!hasSelectedParent(block) || block.hasDisabledReason(Blockly.constants.MANUALLY_DISABLED));
     },
     callback: function(scope) {
-      const state = !scope.block.isEnabled();
+      const state = scope.block.hasDisabledReason(Blockly.constants.MANUALLY_DISABLED);
       const apply = function(block) {
         if (disableOption.check(block)) {
-          block.setEnabled(state);
+          block.setDisabledReason(!state, Blockly.constants.MANUALLY_DISABLED);
         }
       };
       const workspace = scope.block.workspace;
