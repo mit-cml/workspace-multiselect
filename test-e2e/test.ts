@@ -218,16 +218,15 @@ export const loadComments = (
 	page.evaluate((comments) => {
 		const workspace = Blockly.getMainWorkspace() as WorkspaceSvg;
 		const commentHeight = 100;
-		const minBlockHeight = workspace
-			.getRenderer()
-			.getConstants().MIN_BLOCK_HEIGHT;
+		const gridSpacing = workspace.getGrid()?.getSpacing() ?? null;
+		if (gridSpacing === null) throw new Error("Workspace has no grid");
 		Blockly.serialization.workspaces.load(
 			{
 				workspaceComments: comments.map((comment, index) => ({
 					...comment,
 					height: commentHeight,
 					x: 0,
-					y: index * (commentHeight + minBlockHeight),
+					y: index * (commentHeight + gridSpacing),
 				})),
 			},
 			workspace,
