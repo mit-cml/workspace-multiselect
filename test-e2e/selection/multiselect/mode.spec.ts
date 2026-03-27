@@ -5,7 +5,7 @@ import {
 	isMultiselectEnabled,
 	loadBlocks,
 	test,
-} from "../test";
+} from "../../test";
 
 test("pressing shift in workspace enables multiselect", async ({
 	page,
