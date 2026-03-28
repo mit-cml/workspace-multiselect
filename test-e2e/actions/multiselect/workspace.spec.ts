@@ -4,6 +4,7 @@ import {
 	getBlock,
 	getBlockBounds,
 	getEmptySpace,
+	getFlyoutBlock,
 	getGridSpacing,
 	getSelectedBlockIds,
 	loadBlocks,
@@ -172,4 +173,23 @@ test("drag blocks", async ({ page, act }) => {
 	expect(block3BoundsEnd.left).toBeCloseTo(block3BoundsStart.left);
 	expect(block3BoundsEnd.top).toBeCloseTo(block3BoundsStart.top);
 	expect(await getSelectedBlockIds(page)).toEqual(["block1", "block2"]);
+});
+
+test("opening toolbox keeps selection", async ({ page, act }) => {
+	await act(page.getByRole("treeitem", { name: "Logic" }).click());
+
+	expect(await getSelectedBlockIds(page)).toEqual(["block1", "block2"]);
+});
+
+test("dragging block from toolbox selects new block", async ({ page, act }) => {
+	await act(page.getByRole("treeitem", { name: "Logic" }).click());
+	await act(page.mouse.move(...(await getFlyoutBlock(page, "controls_if"))));
+	await act(page.mouse.down());
+	await act(page.mouse.move(...(await getEmptySpace(page))));
+	await act(page.mouse.up());
+
+	const selectedIds = await getSelectedBlockIds(page);
+	expect(selectedIds).toHaveLength(1);
+	expect(selectedIds).not.toContain("block1");
+	expect(selectedIds).not.toContain("block2");
 });

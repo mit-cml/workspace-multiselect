@@ -4,7 +4,9 @@ import {
 	getComment,
 	getCommentBounds,
 	getEmptySpace,
+	getFlyoutBlock,
 	getGridSpacing,
+	getSelectedBlockIds,
 	getSelectedCommentIds,
 	loadComments,
 	test,
@@ -152,4 +154,21 @@ test("drag comment", async ({ page, act }) => {
 	expect(comment2BoundsEnd.left).toBeCloseTo(comment2BoundsStart.left);
 	expect(comment2BoundsEnd.top).toBeCloseTo(comment2BoundsStart.top);
 	expect(await getSelectedCommentIds(page)).toEqual(["comment1"]);
+});
+
+test("opening toolbox keeps selection", async ({ page, act }) => {
+	await act(page.getByRole("treeitem", { name: "Logic" }).click());
+
+	expect(await getSelectedCommentIds(page)).toEqual(["comment1"]);
+});
+
+test("dragging block from toolbox selects new block", async ({ page, act }) => {
+	await act(page.getByRole("treeitem", { name: "Logic" }).click());
+	await act(page.mouse.move(...(await getFlyoutBlock(page, "controls_if"))));
+	await act(page.mouse.down());
+	await act(page.mouse.move(...(await getEmptySpace(page))));
+	await act(page.mouse.up());
+
+	expect(await getSelectedCommentIds(page)).toEqual([]);
+	expect(await getSelectedBlockIds(page)).toHaveLength(1);
 });
