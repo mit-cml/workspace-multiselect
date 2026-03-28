@@ -106,6 +106,13 @@ test("add comment to blocks", async ({ page, act }) => {
 			button: "right",
 		}),
 	);
+	expect(await getSelectedBlockIds(page)).toEqual([
+		"block2",
+		"block3",
+		"block4",
+		"block5",
+		"block6",
+	]);
 	await act(
 		page
 			.getByRole("menuitem", { exact: true, name: "Add Comment (2)" })
@@ -169,6 +176,13 @@ test("remove comment from blocks", async ({ page, act }) => {
 			button: "right",
 		}),
 	);
+	expect(await getSelectedBlockIds(page)).toEqual([
+		"block2",
+		"block3",
+		"block4",
+		"block5",
+		"block6",
+	]);
 	await act(
 		page
 			.getByRole("menuitem", { exact: true, name: "Remove Comment (3)" })
@@ -216,6 +230,13 @@ test("switch blocks to external inputs", async ({ page, act }) => {
 			button: "right",
 		}),
 	);
+	expect(await getSelectedBlockIds(page)).toEqual([
+		"block2",
+		"block3",
+		"block4",
+		"block5",
+		"block6",
+	]);
 	await act(
 		page
 			.getByRole("menuitem", { exact: true, name: "External Inputs (2)" })
@@ -263,6 +284,13 @@ test("switch blocks to inline inputs", async ({ page, act }) => {
 			button: "right",
 		}),
 	);
+	expect(await getSelectedBlockIds(page)).toEqual([
+		"block2",
+		"block3",
+		"block4",
+		"block5",
+		"block6",
+	]);
 	await act(
 		page
 			.getByRole("menuitem", { exact: true, name: "Inline Inputs (3)" })
@@ -310,6 +338,13 @@ test("disable blocks", async ({ page, act }) => {
 			button: "right",
 		}),
 	);
+	expect(await getSelectedBlockIds(page)).toEqual([
+		"block2",
+		"block3",
+		"block4",
+		"block5",
+		"block6",
+	]);
 	await act(
 		page
 			.getByRole("menuitem", { exact: true, name: "Disable Block (2)" })
@@ -357,6 +392,13 @@ test("enable blocks", async ({ page, act }) => {
 			button: "right",
 		}),
 	);
+	expect(await getSelectedBlockIds(page)).toEqual([
+		"block2",
+		"block3",
+		"block4",
+		"block5",
+		"block6",
+	]);
 	await act(
 		page
 			.getByRole("menuitem", { exact: true, name: "Enable Block (3)" })

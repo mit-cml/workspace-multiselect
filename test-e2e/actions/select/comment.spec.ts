@@ -23,6 +23,7 @@ test("duplicate comment via context menu", async ({ page, act }) => {
 			button: "right",
 		}),
 	);
+	expect(await getSelectedCommentIds(page)).toEqual(["comment1"]);
 	await act(
 		page
 			.getByRole("menuitem", { exact: true, name: "Duplicate Comment" })
@@ -55,6 +56,7 @@ test("copy and paste comment via context menu", async ({ page, act }) => {
 			button: "right",
 		}),
 	);
+	expect(await getSelectedCommentIds(page)).toEqual(["comment1"]);
 	await act(page.getByRole("menuitem", { exact: true, name: "Copy" }).click());
 	expect(await getAllCommentIds(page)).toEqual(["comment1", "comment2"]);
 	expect(await getSelectedCommentIds(page)).toEqual(["comment1"]);
@@ -94,6 +96,7 @@ test("delete comment via context menu", async ({ page, act }) => {
 			button: "right",
 		}),
 	);
+	expect(await getSelectedCommentIds(page)).toEqual(["comment1"]);
 	await act(
 		page.getByRole("menuitem", { exact: true, name: "Remove Comment" }).click(),
 	);
@@ -156,14 +159,9 @@ test("drag comment", async ({ page, act }) => {
 	expect(await getSelectedCommentIds(page)).toEqual(["comment1"]);
 });
 
-test("opening toolbox keeps selection", async ({ page, act }) => {
-	await act(page.getByRole("treeitem", { name: "Logic" }).click());
-
-	expect(await getSelectedCommentIds(page)).toEqual(["comment1"]);
-});
-
 test("dragging block from toolbox selects new block", async ({ page, act }) => {
 	await act(page.getByRole("treeitem", { name: "Logic" }).click());
+	expect(await getSelectedCommentIds(page)).toEqual(["comment1"]);
 	await act(page.mouse.move(...(await getFlyoutBlock(page, "controls_if"))));
 	await act(page.mouse.down());
 	await act(page.mouse.move(...(await getEmptySpace(page))));
