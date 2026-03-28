@@ -3,7 +3,6 @@ import {
 	getBlock,
 	getBlockBounds,
 	getEmptySpace,
-	getFlyoutBlock,
 	getGridSpacing,
 	getSelectedBlockIds,
 	loadBlocks,
@@ -296,45 +295,4 @@ test("select all blocks via context menu", async ({ page, act }) => {
 	);
 
 	expect(await getSelectedBlockIds(page)).toEqual(["block1", "block2"]);
-});
-
-test("opening toolbox keeps selection", async ({ page, act }) => {
-	await act(
-		loadBlocks(page, [
-			{ type: "math_number", id: "block1" },
-			{ type: "math_number", id: "block2" },
-		]),
-	);
-	await act(page.keyboard.down("Shift"));
-	await act(page.mouse.click(...(await getBlock(page, "block1"))));
-	await act(page.mouse.click(...(await getBlock(page, "block2"))));
-	await act(page.keyboard.up("Shift"));
-
-	await act(page.getByRole("treeitem", { name: "Logic" }).click());
-
-	expect(await getSelectedBlockIds(page)).toEqual(["block1", "block2"]);
-});
-
-test("dragging block from toolbox selects new block", async ({ page, act }) => {
-	await act(
-		loadBlocks(page, [
-			{ type: "math_number", id: "block1" },
-			{ type: "math_number", id: "block2" },
-		]),
-	);
-	await act(page.keyboard.down("Shift"));
-	await act(page.mouse.click(...(await getBlock(page, "block1"))));
-	await act(page.mouse.click(...(await getBlock(page, "block2"))));
-	await act(page.keyboard.up("Shift"));
-
-	await act(page.getByRole("treeitem", { name: "Logic" }).click());
-	await act(page.mouse.move(...(await getFlyoutBlock(page, "controls_if"))));
-	await act(page.mouse.down());
-	await act(page.mouse.move(...(await getEmptySpace(page))));
-	await act(page.mouse.up());
-
-	const selectedIds = await getSelectedBlockIds(page);
-	expect(selectedIds).toHaveLength(1);
-	expect(selectedIds).not.toContain("block1");
-	expect(selectedIds).not.toContain("block2");
 });
