@@ -31,6 +31,7 @@ test("duplicate blocks via context menu", async ({ page, act }) => {
 			button: "right",
 		}),
 	);
+	expect(await getSelectedBlockIds(page)).toEqual(["block1", "block2"]);
 	await act(
 		page.getByRole("menuitem", { exact: true, name: "Duplicate (2)" }).click(),
 	);
@@ -63,6 +64,7 @@ test("copy and paste blocks via context menu", async ({ page, act }) => {
 			button: "right",
 		}),
 	);
+	expect(await getSelectedBlockIds(page)).toEqual(["block1", "block2"]);
 	await act(
 		page.getByRole("menuitem", { exact: true, name: "Copy (2)" }).click(),
 	);
@@ -107,6 +109,7 @@ test("delete blocks via context menu", async ({ page, act }) => {
 			button: "right",
 		}),
 	);
+	expect(await getSelectedBlockIds(page)).toEqual(["block1", "block2"]);
 	await act(
 		page
 			.getByRole("menuitem", { exact: true, name: "Delete 2 Blocks" })
@@ -175,14 +178,9 @@ test("drag blocks", async ({ page, act }) => {
 	expect(await getSelectedBlockIds(page)).toEqual(["block1", "block2"]);
 });
 
-test("opening toolbox keeps selection", async ({ page, act }) => {
-	await act(page.getByRole("treeitem", { name: "Logic" }).click());
-
-	expect(await getSelectedBlockIds(page)).toEqual(["block1", "block2"]);
-});
-
 test("dragging block from toolbox selects new block", async ({ page, act }) => {
 	await act(page.getByRole("treeitem", { name: "Logic" }).click());
+	expect(await getSelectedBlockIds(page)).toEqual(["block1", "block2"]);
 	await act(page.mouse.move(...(await getFlyoutBlock(page, "controls_if"))));
 	await act(page.mouse.down());
 	await act(page.mouse.move(...(await getEmptySpace(page))));
