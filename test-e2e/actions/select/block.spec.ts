@@ -269,16 +269,16 @@ test("edit block mutator", async ({ page, act }) => {
 		page.mouse.click(...(await getBlock(page, { id: "block1" })).centerTop),
 	);
 
-	await act(page.locator(`g[data-id="block1"] .blockly-icon-mutator`).click());
+	await act(page.locator(`g[data-id="block1"] .blocklyMutatorIcon`).click());
 	expect(await getHighlightedBlockIds(page)).toEqual(["block1"]);
 	expect(await getSelectedId(page)).toBe("block1");
-	await act(page.locator(".blocklyCheckbox").click());
+	await act(page.locator(".blocklyCheckboxField").click());
 	// TODO: Blockly bug — should be:
 	// expect(await getHighlightedBlockIds(page)).toEqual(["block1"]);
 	// expect(await getSelectedId(page)).toBe("block1");
 	expect(await getHighlightedBlockIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).not.toBe("block1");
-	await act(page.locator(`g[data-id="block1"] .blockly-icon-mutator`).click());
+	await act(page.locator(`g[data-id="block1"] .blocklyMutatorIcon`).click());
 
 	expect(await getHighlightedBlockIds(page)).toEqual(["block1"]);
 	expect(await getSelectedId(page)).toBe("block1");

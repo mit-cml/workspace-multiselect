@@ -142,7 +142,7 @@ test("pressing shift while mutator is open enables multiselect", async ({
 	await act(
 		page.mouse.click(...(await getBlock(page, { id: "block1" })).centerTop),
 	);
-	await act(page.locator(`g[data-id="block1"] .blockly-icon-mutator`).click());
+	await act(page.locator(`g[data-id="block1"] .blocklyMutatorIcon`).click());
 
 	await act(page.keyboard.down("Shift"));
 
@@ -157,7 +157,7 @@ test("releasing shift while mutator is open disables multiselect", async ({
 	await act(
 		page.mouse.click(...(await getBlock(page, { id: "block1" })).centerTop),
 	);
-	await act(page.locator(`g[data-id="block1"] .blockly-icon-mutator`).click());
+	await act(page.locator(`g[data-id="block1"] .blocklyMutatorIcon`).click());
 	await act(page.keyboard.down("Shift"));
 
 	await act(page.keyboard.up("Shift"));
