@@ -420,3 +420,56 @@ test("enable blocks", async ({ page, act }) => {
 		"block6",
 	]);
 });
+
+test("edit block comment", async ({ page, act }) => {
+	await act(
+		loadBlocks(page, [
+			{
+				type: "math_number",
+				id: "block1",
+				icons: { comment: { text: "" } },
+			},
+			{
+				type: "math_number",
+				id: "block2",
+				icons: { comment: { text: "" } },
+			},
+			{ type: "math_number", id: "block3" },
+		]),
+	);
+	await act(page.keyboard.down("Shift"));
+	await act(page.mouse.click(...(await getBlock(page, "block1"))));
+	await act(page.mouse.click(...(await getBlock(page, "block2"))));
+	await act(page.keyboard.up("Shift"));
+
+	await act(page.locator(`g[data-id="block1"] .blocklyIconGroup`).click());
+	expect(await getSelectedBlockIds(page)).toEqual(["block1", "block2"]);
+	await act(page.locator(".blocklyTextarea").click());
+	expect(await getSelectedBlockIds(page)).toEqual([]);
+	await act(page.keyboard.type("hello"));
+	await act(page.locator(`g[data-id="block1"] .blocklyIconGroup`).click());
+
+	expect(await getSelectedBlockIds(page)).toEqual(["block1"]);
+});
+
+test("edit block mutator", async ({ page, act }) => {
+	await act(
+		loadBlocks(page, [
+			{ type: "procedures_defreturn", id: "block1" },
+			{ type: "procedures_defreturn", id: "block2" },
+			{ type: "math_number", id: "block3" },
+		]),
+	);
+	await act(page.keyboard.down("Shift"));
+	await act(page.mouse.click(...(await getBlock(page, "block1"))));
+	await act(page.mouse.click(...(await getBlock(page, "block2"))));
+	await act(page.keyboard.up("Shift"));
+
+	await act(page.locator(`g[data-id="block1"] .blockly-icon-mutator`).click());
+	expect(await getSelectedBlockIds(page)).toEqual(["block1", "block2"]);
+	await act(page.locator(".blocklyCheckbox").click());
+	expect(await getSelectedBlockIds(page)).toEqual(["block1", "block2"]);
+	await act(page.locator(`g[data-id="block1"] .blockly-icon-mutator`).click());
+
+	expect(await getSelectedBlockIds(page)).toEqual(["block1", "block2"]);
+});
