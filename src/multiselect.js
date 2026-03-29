@@ -292,7 +292,7 @@ export class Multiselect {
               block.setCollapsed(blockState);
             }
           };
-          if (ws.doubleClickPid_) {
+          if (ws.doubleClickPid_ && !e.target.closest('.blocklyIconGroup')) {
             clearTimeout(ws.doubleClickPid_);
             ws.doubleClickPid_ = undefined;
             // Case where selected is a
