@@ -322,19 +322,6 @@ export const isMultiselectEnabled = (page: Page) =>
 		);
 	});
 
-export const getMultiselectIcon = (page: Page) =>
-	page.evaluate(() => {
-		const icon = document.querySelector(
-			".blocklyMultiselect image",
-		) as SVGImageElement | null;
-		if (!icon) throw new Error("Multiselect icon not found");
-		const iconBounds = icon.getBoundingClientRect();
-		return [
-			(iconBounds.left + iconBounds.right) / 2,
-			(iconBounds.top + iconBounds.bottom) / 2,
-		] as const;
-	});
-
 export const getFlyoutBlock = (page: Page, type: string) =>
 	page.evaluate((type) => {
 		const workspace = Blockly.getMainWorkspace() as WorkspaceSvg;

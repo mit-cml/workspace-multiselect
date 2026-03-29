@@ -2,7 +2,6 @@ import { expect } from "@playwright/test";
 import {
 	getBlock,
 	getBlockField,
-	getMultiselectIcon,
 	isMultiselectEnabled,
 	loadBlocks,
 	test,
@@ -175,7 +174,7 @@ test("multiselect enabled by icon is disabled when releasing shift", async ({
 	page,
 	act,
 }) => {
-	await act(page.mouse.click(...(await getMultiselectIcon(page))));
+	await act(page.locator(".blocklyMultiselect image").click());
 	await act(page.keyboard.down("Shift"));
 
 	await act(page.keyboard.up("Shift"));
