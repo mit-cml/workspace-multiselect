@@ -1,5 +1,6 @@
 import { expect } from "@playwright/test";
 import {
+	getBlock,
 	getBlockField,
 	getMultiselectIcon,
 	isMultiselectEnabled,
@@ -70,6 +71,99 @@ test("releasing shift while editing field text disables multiselect", async ({
 }) => {
 	await act(loadBlocks(page, [{ type: "math_number", id: "block1" }]));
 	await act(page.mouse.click(...(await getBlockField(page, "block1", "NUM"))));
+	await act(page.keyboard.down("Shift"));
+
+	await act(page.keyboard.up("Shift"));
+
+	expect(await isMultiselectEnabled(page)).toBe(false);
+});
+
+test("pressing shift while comment is open enables multiselect", async ({
+	page,
+	act,
+}) => {
+	await act(
+		loadBlocks(page, [
+			{
+				type: "math_number",
+				id: "block1",
+				icons: { comment: { text: "" } },
+			},
+		]),
+	);
+	await act(page.mouse.click(...(await getBlock(page, "block1"))));
+	await act(page.locator(`g[data-id="block1"] .blocklyIconGroup`).click());
+
+	await act(page.keyboard.down("Shift"));
+
+	expect(await isMultiselectEnabled(page)).toBe(true);
+});
+
+test("releasing shift while comment is open disables multiselect", async ({
+	page,
+	act,
+}) => {
+	await act(
+		loadBlocks(page, [
+			{
+				type: "math_number",
+				id: "block1",
+				icons: { comment: { text: "" } },
+			},
+		]),
+	);
+	await act(page.mouse.click(...(await getBlock(page, "block1"))));
+	await act(page.locator(`g[data-id="block1"] .blocklyIconGroup`).click());
+	await act(page.keyboard.down("Shift"));
+
+	await act(page.keyboard.up("Shift"));
+
+	expect(await isMultiselectEnabled(page)).toBe(false);
+});
+
+test("pressing shift while mutator is open enables multiselect", async ({
+	page,
+	act,
+}) => {
+	await act(loadBlocks(page, [{ type: "procedures_defreturn", id: "block1" }]));
+	await act(page.mouse.click(...(await getBlock(page, "block1"))));
+	await act(page.locator(`g[data-id="block1"] .blockly-icon-mutator`).click());
+
+	await act(page.keyboard.down("Shift"));
+
+	expect(await isMultiselectEnabled(page)).toBe(true);
+});
+
+test("releasing shift while mutator is open disables multiselect", async ({
+	page,
+	act,
+}) => {
+	await act(loadBlocks(page, [{ type: "procedures_defreturn", id: "block1" }]));
+	await act(page.mouse.click(...(await getBlock(page, "block1"))));
+	await act(page.locator(`g[data-id="block1"] .blockly-icon-mutator`).click());
+	await act(page.keyboard.down("Shift"));
+
+	await act(page.keyboard.up("Shift"));
+
+	expect(await isMultiselectEnabled(page)).toBe(false);
+});
+
+test("pressing shift while toolbox is open enables multiselect", async ({
+	page,
+	act,
+}) => {
+	await act(page.getByRole("treeitem", { name: "Logic" }).click());
+
+	await act(page.keyboard.down("Shift"));
+
+	expect(await isMultiselectEnabled(page)).toBe(true);
+});
+
+test("releasing shift while toolbox is open disables multiselect", async ({
+	page,
+	act,
+}) => {
+	await act(page.getByRole("treeitem", { name: "Logic" }).click());
 	await act(page.keyboard.down("Shift"));
 
 	await act(page.keyboard.up("Shift"));
