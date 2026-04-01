@@ -82,12 +82,10 @@ export class Multiselect {
         {childList: true});
     injectionDiv.addEventListener('mouseenter', () => {
       if (options.workspaceAutoFocus === false ||
-          document.activeElement === this.workspace_.getSvgGroup().parentElement ||
-          document.activeElement.nodeName.toLowerCase() === 'input' ||
-          document.activeElement.nodeName.toLowerCase() === 'textarea') {
+          Blockly.getFocusManager().getFocusedTree() === this.workspace_) {
         return;
       }
-      this.workspace_.getSvgGroup().parentElement.focus();
+      Blockly.getFocusManager().focusTree(this.workspace_);
     });
     this.eventListenerWrapper_ = this.eventListener_.bind(this);
     this.workspace_.addChangeListener(this.eventListenerWrapper_);
