@@ -55,32 +55,31 @@ export class Multiselect {
       });
     }
     const injectionDiv = this.workspace_.getInjectionDiv();
-    const dropdownDiv = Blockly.DropDownDiv.getContentDiv();
+    this.injectionDivWrappers_ = this.bindListeners_(injectionDiv);
     const widgetDiv = Blockly.WidgetDiv.getDiv();
-    this.onKeyDownWrapper_ = Blockly.browserEvents.conditionalBind(
-        injectionDiv, 'keydown', this, this.onKeyDown_);
-    this.onKeyDownDropdownDivWrapper_ = Blockly.browserEvents.conditionalBind(
-        dropdownDiv, 'keydown', this, this.onKeyDown_);
     if (widgetDiv) {
-      this.onKeyDownWidgetDivWrapper_ = Blockly.browserEvents.conditionalBind(
-          widgetDiv, 'keydown', this, this.onKeyDown_);
+      this.widgetDivWrappers_ = this.bindListeners_(widgetDiv);
     }
-    this.onKeyUpWrapper_ = Blockly.browserEvents.conditionalBind(
-        injectionDiv, 'keyup', this, this.onKeyUp_);
-    this.onKeyUpDropdownDivWrapper_ = Blockly.browserEvents.conditionalBind(
-        dropdownDiv, 'keyup', this, this.onKeyUp_);
-    if (widgetDiv) {
-      this.onKeyUpWidgetDivWrapper_ = Blockly.browserEvents.conditionalBind(
-          widgetDiv, 'keyup', this, this.onKeyUp_);
-    }
-    this.onFocusOutWrapper_ = Blockly.browserEvents.conditionalBind(
-        injectionDiv, 'focusout', this, this.onBlur_);
-    this.onFocusOutDropdownDivWrapper_ = Blockly.browserEvents.conditionalBind(
-        dropdownDiv, 'focusout', this, this.onBlur_);
-    if (widgetDiv) {
-      this.onFocusOutWidgetDivWrapper_ = Blockly.browserEvents.conditionalBind(
-          widgetDiv, 'focusout', this, this.onBlur_);
-    }
+    this.dropdownDivWrappers_ = this.bindListeners_(
+        Blockly.DropDownDiv.getContentDiv());
+    this.dropdownDivObserver_ = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        for (const node of mutation.removedNodes) {
+          if (node.classList?.contains('blocklyDropDownDiv')) {
+            this.unbindListeners_(this.dropdownDivWrappers_);
+          }
+        }
+        for (const node of mutation.addedNodes) {
+          if (node.classList?.contains('blocklyDropDownDiv')) {
+            this.dropdownDivWrappers_ = this.bindListeners_(
+                Blockly.DropDownDiv.getContentDiv());
+          }
+        }
+      }
+    });
+    this.dropdownDivObserver_.observe(
+        document.querySelector('.blocklyDropDownDiv').parentNode,
+        {childList: true});
     injectionDiv.addEventListener('mouseenter', () => {
       if (options.workspaceAutoFocus === false ||
           document.activeElement === this.workspace_.getSvgGroup().parentElement ||
@@ -174,42 +173,16 @@ export class Multiselect {
    * @param {boolean} keepRegistry Keep the context menu and shortcut registry.
    */
   dispose(keepRegistry = false) {
-    if (this.onKeyDownWrapper_) {
-      Blockly.browserEvents.unbind(this.onKeyDownWrapper_);
-      this.onKeyDownWrapper_ = null;
+    this.unbindListeners_(this.injectionDivWrappers_);
+    this.injectionDivWrappers_ = null;
+    if (this.widgetDivWrappers_) {
+      this.unbindListeners_(this.widgetDivWrappers_);
+      this.widgetDivWrappers_ = null;
     }
-    if (this.onKeyDownDropdownDivWrapper_) {
-      Blockly.browserEvents.unbind(this.onKeyDownDropdownDivWrapper_);
-      this.onKeyDownDropdownDivWrapper_ = null;
-    }
-    if (this.onKeyDownWidgetDivWrapper_) {
-      Blockly.browserEvents.unbind(this.onKeyDownWidgetDivWrapper_);
-      this.onKeyDownWidgetDivWrapper_ = null;
-    }
-    if (this.onKeyUpWrapper_) {
-      Blockly.browserEvents.unbind(this.onKeyUpWrapper_);
-      this.onKeyUpWrapper_ = null;
-    }
-    if (this.onKeyUpDropdownDivWrapper_) {
-      Blockly.browserEvents.unbind(this.onKeyUpDropdownDivWrapper_);
-      this.onKeyUpDropdownDivWrapper_ = null;
-    }
-    if (this.onKeyUpWidgetDivWrapper_) {
-      Blockly.browserEvents.unbind(this.onKeyUpWidgetDivWrapper_);
-      this.onKeyUpWidgetDivWrapper_ = null;
-    }
-    if (this.onFocusOutWrapper_) {
-      Blockly.browserEvents.unbind(this.onFocusOutWrapper_);
-      this.onFocusOutWrapper_ = null;
-    }
-    if (this.onFocusOutDropdownDivWrapper_) {
-      Blockly.browserEvents.unbind(this.onFocusOutDropdownDivWrapper_);
-      this.onFocusOutDropdownDivWrapper_ = null;
-    }
-    if (this.onFocusOutWidgetDivWrapper_) {
-      Blockly.browserEvents.unbind(this.onFocusOutWidgetDivWrapper_);
-      this.onFocusOutWidgetDivWrapper_ = null;
-    }
+    this.unbindListeners_(this.dropdownDivWrappers_);
+    this.dropdownDivWrappers_ = null;
+    this.dropdownDivObserver_.disconnect();
+    this.dropdownDivObserver_ = null;
     if (this.eventListenerWrapper_) {
       this.workspace_.removeChangeListener(this.eventListenerWrapper_);
       this.eventListenerWrapper_ = null;
@@ -246,6 +219,23 @@ export class Multiselect {
 
     if (this.origBumpNeighbours) {
       Blockly.BlockSvg.prototype.bumpNeighbours = this.origBumpNeighbours;
+    }
+  }
+
+  bindListeners_(div) {
+    return [
+      Blockly.browserEvents.conditionalBind(
+          div, 'keydown', this, this.onKeyDown_),
+      Blockly.browserEvents.conditionalBind(
+          div, 'keyup', this, this.onKeyUp_),
+      Blockly.browserEvents.conditionalBind(
+          div, 'focusout', this, this.onBlur_),
+    ];
+  }
+
+  unbindListeners_(wrappers) {
+    for (const wrapper of wrappers) {
+      Blockly.browserEvents.unbind(wrapper);
     }
   }
 
