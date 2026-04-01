@@ -95,7 +95,7 @@ test("multiselect is disabled when leaving workspace", async ({
 }) => {
 	await act(page.keyboard.down("Shift"));
 
-	await page.getByText("Blockly Playground").click();
+	await act(page.getByText("Blockly Playground").click());
 
 	expect(await isMultiselectEnabled(page)).toBe(false);
 });
