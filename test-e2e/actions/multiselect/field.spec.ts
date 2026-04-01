@@ -30,7 +30,6 @@ test("editing boolean field updates selected boolean blocks", async ({
 	await act(page.mouse.click(...(await getBlock(page, "block1"))));
 	await act(page.mouse.click(...(await getBlock(page, "block2"))));
 	await act(page.mouse.click(...(await getBlock(page, "block3"))));
-	await act(page.keyboard.up("Shift"));
 
 	await act(page.mouse.click(...(await getBlockField(page, "block1", "BOOL"))));
 	expect(await getSelectedBlockIds(page)).toEqual([
@@ -90,7 +89,6 @@ test("editing number field updates selected number blocks", async ({
 	await act(page.mouse.click(...(await getBlock(page, "block1"))));
 	await act(page.mouse.click(...(await getBlock(page, "block2"))));
 	await act(page.mouse.click(...(await getBlock(page, "block3"))));
-	await act(page.keyboard.up("Shift"));
 
 	await act(page.mouse.click(...(await getBlockField(page, "block1", "NUM"))));
 	expect(await getSelectedBlockIds(page)).toEqual([
@@ -154,7 +152,6 @@ test("dependent field recalculated during multi-edit", async ({
 	await act(page.mouse.click(...(await getBlock(page, "block1"))));
 	await act(page.mouse.click(...(await getBlock(page, "block2"))));
 	await act(page.mouse.click(...(await getBlock(page, "block3"))));
-	await act(page.keyboard.up("Shift"));
 
 	await act(
 		page.mouse.click(...(await getBlockField(page, "block1", "RADIX"))),
@@ -215,7 +212,6 @@ test("validator runs once per selected block during multi-edit", async ({
 	await act(page.keyboard.down("Shift"));
 	await act(page.mouse.click(...(await getBlock(page, "block1"))));
 	await act(page.mouse.click(...(await getBlock(page, "block2"))));
-	await act(page.keyboard.up("Shift"));
 
 	await act(
 		page.mouse.click(...(await getBlockField(page, "block1", "VALUE"))),
