@@ -155,7 +155,7 @@ export const getAllBlockIds = (page: Page) =>
 			.sort(),
 	);
 
-export const getSelectedBlockIds = (page: Page) =>
+export const getHighlightedBlockIds = (page: Page) =>
 	page.evaluate(() =>
 		(Blockly.getMainWorkspace() as WorkspaceSvg)
 			.getAllBlocks()
@@ -287,7 +287,7 @@ export const getAllCommentIds = (page: Page) =>
 			.sort(),
 	);
 
-export const getSelectedCommentIds = (page: Page) =>
+export const getHighlightedCommentIds = (page: Page) =>
 	page.evaluate(() =>
 		(Blockly.getMainWorkspace() as WorkspaceSvg)
 			.getTopComments()

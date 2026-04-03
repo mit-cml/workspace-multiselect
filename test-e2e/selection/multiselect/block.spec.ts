@@ -4,7 +4,7 @@ import {
 	getBlockBounds,
 	getEmptySpace,
 	getGridSpacing,
-	getSelectedBlockIds,
+	getHighlightedBlockIds,
 	loadBlocks,
 	test,
 } from "../../test";
@@ -21,7 +21,7 @@ test("shift click selects block", async ({ page, act }) => {
 	await act(page.mouse.click(...(await getBlock(page, "block1"))));
 	await act(page.mouse.click(...(await getBlock(page, "block2"))));
 
-	expect(await getSelectedBlockIds(page)).toEqual(["block1", "block2"]);
+	expect(await getHighlightedBlockIds(page)).toEqual(["block1", "block2"]);
 });
 
 test("shift click adds block to selection", async ({ page, act }) => {
@@ -36,7 +36,7 @@ test("shift click adds block to selection", async ({ page, act }) => {
 	await act(page.keyboard.down("Shift"));
 	await act(page.mouse.click(...(await getBlock(page, "block2"))));
 
-	expect(await getSelectedBlockIds(page)).toEqual(["block1", "block2"]);
+	expect(await getHighlightedBlockIds(page)).toEqual(["block1", "block2"]);
 });
 
 test("shift click removes block from selection", async ({ page, act }) => {
@@ -52,7 +52,7 @@ test("shift click removes block from selection", async ({ page, act }) => {
 
 	await act(page.mouse.click(...(await getBlock(page, "block1"))));
 
-	expect(await getSelectedBlockIds(page)).toEqual(["block2"]);
+	expect(await getHighlightedBlockIds(page)).toEqual(["block2"]);
 });
 
 test("shift click on empty space keeps selection", async ({ page, act }) => {
@@ -68,7 +68,7 @@ test("shift click on empty space keeps selection", async ({ page, act }) => {
 
 	await act(page.mouse.click(...(await getEmptySpace(page))));
 
-	expect(await getSelectedBlockIds(page)).toEqual(["block1", "block2"]);
+	expect(await getHighlightedBlockIds(page)).toEqual(["block1", "block2"]);
 });
 
 test("releasing shift keeps selection", async ({ page, act }) => {
@@ -84,7 +84,7 @@ test("releasing shift keeps selection", async ({ page, act }) => {
 
 	await act(page.keyboard.up("Shift"));
 
-	expect(await getSelectedBlockIds(page)).toEqual(["block1", "block2"]);
+	expect(await getHighlightedBlockIds(page)).toEqual(["block1", "block2"]);
 });
 
 test("clicking selected block keeps selection", async ({ page, act }) => {
@@ -101,7 +101,7 @@ test("clicking selected block keeps selection", async ({ page, act }) => {
 
 	await act(page.mouse.click(...(await getBlock(page, "block1"))));
 
-	expect(await getSelectedBlockIds(page)).toEqual(["block1", "block2"]);
+	expect(await getHighlightedBlockIds(page)).toEqual(["block1", "block2"]);
 });
 
 test("clicking selected child block keeps selection", async ({ page, act }) => {
@@ -125,7 +125,11 @@ test("clicking selected child block keeps selection", async ({ page, act }) => {
 
 	await act(page.mouse.click(...(await getBlock(page, "child"))));
 
-	expect(await getSelectedBlockIds(page)).toEqual(["child", "other", "parent"]);
+	expect(await getHighlightedBlockIds(page)).toEqual([
+		"child",
+		"other",
+		"parent",
+	]);
 });
 
 test("clicking unselected block clears selection", async ({ page, act }) => {
@@ -143,7 +147,7 @@ test("clicking unselected block clears selection", async ({ page, act }) => {
 
 	await act(page.mouse.click(...(await getBlock(page, "block3"))));
 
-	expect(await getSelectedBlockIds(page)).toEqual(["block3"]);
+	expect(await getHighlightedBlockIds(page)).toEqual(["block3"]);
 });
 
 test("clicking unselected child block clears selection", async ({
@@ -169,7 +173,7 @@ test("clicking unselected child block clears selection", async ({
 
 	await act(page.mouse.click(...(await getBlock(page, "child"))));
 
-	expect(await getSelectedBlockIds(page)).toEqual(["child"]);
+	expect(await getHighlightedBlockIds(page)).toEqual(["child"]);
 });
 
 test("clicking empty space clears selection", async ({ page, act }) => {
@@ -186,7 +190,7 @@ test("clicking empty space clears selection", async ({ page, act }) => {
 
 	await act(page.mouse.click(...(await getEmptySpace(page))));
 
-	expect(await getSelectedBlockIds(page)).toEqual([]);
+	expect(await getHighlightedBlockIds(page)).toEqual([]);
 });
 
 test("shift dragging rectangle selects blocks", async ({ page, act }) => {
@@ -220,7 +224,7 @@ test("shift dragging rectangle selects blocks", async ({ page, act }) => {
 	await act(page.mouse.up());
 	await act(page.keyboard.up("Shift"));
 
-	expect(await getSelectedBlockIds(page)).toEqual(["block1", "block2"]);
+	expect(await getHighlightedBlockIds(page)).toEqual(["block1", "block2"]);
 });
 
 test("shift dragging rectangle deselects blocks", async ({ page, act }) => {
@@ -259,7 +263,7 @@ test("shift dragging rectangle deselects blocks", async ({ page, act }) => {
 	await act(page.mouse.up());
 	await act(page.keyboard.up("Shift"));
 
-	expect(await getSelectedBlockIds(page)).toEqual([]);
+	expect(await getHighlightedBlockIds(page)).toEqual([]);
 });
 
 test("select all blocks via keyboard", async ({ page, act }) => {
@@ -272,7 +276,7 @@ test("select all blocks via keyboard", async ({ page, act }) => {
 
 	await act(page.keyboard.press("Control+A"));
 
-	expect(await getSelectedBlockIds(page)).toEqual(["block1", "block2"]);
+	expect(await getHighlightedBlockIds(page)).toEqual(["block1", "block2"]);
 });
 
 test("select all blocks via context menu", async ({ page, act }) => {
@@ -294,5 +298,5 @@ test("select all blocks via context menu", async ({ page, act }) => {
 			.click(),
 	);
 
-	expect(await getSelectedBlockIds(page)).toEqual(["block1", "block2"]);
+	expect(await getHighlightedBlockIds(page)).toEqual(["block1", "block2"]);
 });
