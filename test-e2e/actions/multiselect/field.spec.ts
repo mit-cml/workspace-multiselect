@@ -9,7 +9,7 @@ import {
 	getBlock,
 	getBlockField,
 	getBlockFieldValue,
-	getSelectedBlockIds,
+	getHighlightedBlockIds,
 	loadBlocks,
 	test,
 } from "../../test";
@@ -32,7 +32,7 @@ test("editing boolean field updates selected boolean blocks", async ({
 	await act(page.mouse.click(...(await getBlock(page, "block3"))));
 
 	await act(page.mouse.click(...(await getBlockField(page, "block1", "BOOL"))));
-	expect(await getSelectedBlockIds(page)).toEqual([
+	expect(await getHighlightedBlockIds(page)).toEqual([
 		"block1",
 		"block2",
 		"block3",
@@ -43,7 +43,7 @@ test("editing boolean field updates selected boolean blocks", async ({
 	expect(await getBlockFieldValue(page, "block2", "BOOL")).toBe("FALSE");
 	expect(await getBlockFieldValue(page, "block3", "NUM")).toBe(0);
 	expect(await getBlockFieldValue(page, "block4", "BOOL")).toBe("TRUE");
-	expect(await getSelectedBlockIds(page)).toEqual([
+	expect(await getHighlightedBlockIds(page)).toEqual([
 		"block1",
 		"block2",
 		"block3",
@@ -62,7 +62,7 @@ test("undo boolean field multi-edit", async ({ page, act }) => {
 	await act(page.mouse.click(...(await getBlock(page, "block2"))));
 	await act(page.keyboard.up("Shift"));
 	await act(page.mouse.click(...(await getBlockField(page, "block1", "BOOL"))));
-	expect(await getSelectedBlockIds(page)).toEqual(["block1", "block2"]);
+	expect(await getHighlightedBlockIds(page)).toEqual(["block1", "block2"]);
 	await act(page.getByRole("option", { name: "false", exact: true }).click());
 	expect(await getBlockFieldValue(page, "block1", "BOOL")).toBe("FALSE");
 	expect(await getBlockFieldValue(page, "block2", "BOOL")).toBe("FALSE");
@@ -91,7 +91,7 @@ test("editing number field updates selected number blocks", async ({
 	await act(page.mouse.click(...(await getBlock(page, "block3"))));
 
 	await act(page.mouse.click(...(await getBlockField(page, "block1", "NUM"))));
-	expect(await getSelectedBlockIds(page)).toEqual([
+	expect(await getHighlightedBlockIds(page)).toEqual([
 		"block1",
 		"block2",
 		"block3",
@@ -106,7 +106,7 @@ test("editing number field updates selected number blocks", async ({
 	expect(await getBlockFieldValue(page, "block2", "NUM")).toBe(42);
 	expect(await getBlockFieldValue(page, "block3", "BOOL")).toBe("TRUE");
 	expect(await getBlockFieldValue(page, "block4", "NUM")).toBe(0);
-	expect(await getSelectedBlockIds(page)).toEqual([
+	expect(await getHighlightedBlockIds(page)).toEqual([
 		"block1",
 		"block2",
 		"block3",
@@ -156,7 +156,7 @@ test("dependent field recalculated during multi-edit", async ({
 	await act(
 		page.mouse.click(...(await getBlockField(page, "block1", "RADIX"))),
 	);
-	expect(await getSelectedBlockIds(page)).toEqual([
+	expect(await getHighlightedBlockIds(page)).toEqual([
 		"block1",
 		"block2",
 		"block3",
@@ -167,7 +167,7 @@ test("dependent field recalculated during multi-edit", async ({
 	expect(await getBlockFieldValue(page, "block2", "NUM")).toBe("101010");
 	expect(await getBlockFieldValue(page, "block3", "NUM")).toBe(0);
 	expect(await getBlockFieldValue(page, "block4", "NUM")).toBe("0");
-	expect(await getSelectedBlockIds(page)).toEqual([
+	expect(await getHighlightedBlockIds(page)).toEqual([
 		"block1",
 		"block2",
 		"block3",
@@ -188,7 +188,7 @@ test("undo multi-edit recalculates dependent field", async ({ page, act }) => {
 	await act(
 		page.mouse.click(...(await getBlockField(page, "block1", "RADIX"))),
 	);
-	expect(await getSelectedBlockIds(page)).toEqual(["block1", "block2"]);
+	expect(await getHighlightedBlockIds(page)).toEqual(["block1", "block2"]);
 	await act(page.getByRole("option", { name: "binary", exact: true }).click());
 	expect(await getBlockFieldValue(page, "block1", "NUM")).toBe("111");
 	expect(await getBlockFieldValue(page, "block2", "NUM")).toBe("101010");
@@ -216,7 +216,7 @@ test("validator runs once per selected block during multi-edit", async ({
 	await act(
 		page.mouse.click(...(await getBlockField(page, "block1", "VALUE"))),
 	);
-	expect(await getSelectedBlockIds(page)).toEqual(["block1", "block2"]);
+	expect(await getHighlightedBlockIds(page)).toEqual(["block1", "block2"]);
 	await act(page.getByRole("option", { name: "b", exact: true }).click());
 	expect(await getBlockFieldValue(page, "block1", "VALUE")).toBe("B");
 	expect(await getBlockFieldValue(page, "block2", "VALUE")).toBe("B");

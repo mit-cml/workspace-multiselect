@@ -6,8 +6,8 @@ import {
 	getEmptySpace,
 	getFlyoutBlock,
 	getGridSpacing,
-	getSelectedBlockIds,
-	getSelectedCommentIds,
+	getHighlightedBlockIds,
+	getHighlightedCommentIds,
 	loadComments,
 	test,
 } from "../../test";
@@ -32,7 +32,10 @@ test("duplicate comments via context menu", async ({ page, act }) => {
 			button: "right",
 		}),
 	);
-	expect(await getSelectedCommentIds(page)).toEqual(["comment1", "comment2"]);
+	expect(await getHighlightedCommentIds(page)).toEqual([
+		"comment1",
+		"comment2",
+	]);
 	await act(
 		page
 			.getByRole("menuitem", {
@@ -43,11 +46,11 @@ test("duplicate comments via context menu", async ({ page, act }) => {
 	);
 
 	expect(await getAllCommentIds(page)).toHaveLength(5);
-	const selectedCommentIds = await getSelectedCommentIds(page);
-	expect(selectedCommentIds).toHaveLength(2);
-	expect(selectedCommentIds).not.toContain("comment1");
-	expect(selectedCommentIds).not.toContain("comment2");
-	expect(selectedCommentIds).not.toContain("comment3");
+	const highlightedCommentIds = await getHighlightedCommentIds(page);
+	expect(highlightedCommentIds).toHaveLength(2);
+	expect(highlightedCommentIds).not.toContain("comment1");
+	expect(highlightedCommentIds).not.toContain("comment2");
+	expect(highlightedCommentIds).not.toContain("comment3");
 });
 
 test("copy and paste comments via keyboard", async ({ page, act }) => {
@@ -57,15 +60,18 @@ test("copy and paste comments via keyboard", async ({ page, act }) => {
 		"comment2",
 		"comment3",
 	]);
-	expect(await getSelectedCommentIds(page)).toEqual(["comment1", "comment2"]);
+	expect(await getHighlightedCommentIds(page)).toEqual([
+		"comment1",
+		"comment2",
+	]);
 
 	await act(page.keyboard.press("Control+V"));
 	expect(await getAllCommentIds(page)).toHaveLength(5);
-	const selectedCommentIds = await getSelectedCommentIds(page);
-	expect(selectedCommentIds).toHaveLength(2);
-	expect(selectedCommentIds).not.toContain("comment1");
-	expect(selectedCommentIds).not.toContain("comment2");
-	expect(selectedCommentIds).not.toContain("comment3");
+	const highlightedCommentIds = await getHighlightedCommentIds(page);
+	expect(highlightedCommentIds).toHaveLength(2);
+	expect(highlightedCommentIds).not.toContain("comment1");
+	expect(highlightedCommentIds).not.toContain("comment2");
+	expect(highlightedCommentIds).not.toContain("comment3");
 });
 
 test("copy and paste comments via context menu", async ({ page, act }) => {
@@ -74,7 +80,10 @@ test("copy and paste comments via context menu", async ({ page, act }) => {
 			button: "right",
 		}),
 	);
-	expect(await getSelectedCommentIds(page)).toEqual(["comment1", "comment2"]);
+	expect(await getHighlightedCommentIds(page)).toEqual([
+		"comment1",
+		"comment2",
+	]);
 	await act(
 		page.getByRole("menuitem", { exact: true, name: "Copy (2)" }).click(),
 	);
@@ -83,7 +92,10 @@ test("copy and paste comments via context menu", async ({ page, act }) => {
 		"comment2",
 		"comment3",
 	]);
-	expect(await getSelectedCommentIds(page)).toEqual(["comment1", "comment2"]);
+	expect(await getHighlightedCommentIds(page)).toEqual([
+		"comment1",
+		"comment2",
+	]);
 
 	await act(
 		page.mouse.click(...(await getEmptySpace(page)), {
@@ -94,11 +106,11 @@ test("copy and paste comments via context menu", async ({ page, act }) => {
 		page.getByRole("menuitem", { exact: true, name: "Paste (2)" }).click(),
 	);
 	expect(await getAllCommentIds(page)).toHaveLength(5);
-	const selectedCommentIds = await getSelectedCommentIds(page);
-	expect(selectedCommentIds).toHaveLength(2);
-	expect(selectedCommentIds).not.toContain("comment1");
-	expect(selectedCommentIds).not.toContain("comment2");
-	expect(selectedCommentIds).not.toContain("comment3");
+	const highlightedCommentIds = await getHighlightedCommentIds(page);
+	expect(highlightedCommentIds).toHaveLength(2);
+	expect(highlightedCommentIds).not.toContain("comment1");
+	expect(highlightedCommentIds).not.toContain("comment2");
+	expect(highlightedCommentIds).not.toContain("comment3");
 });
 
 test("cut and paste comments via keyboard", async ({ page, act }) => {
@@ -111,14 +123,17 @@ test("cut and paste comments via keyboard", async ({ page, act }) => {
 		"comment2",
 		"comment3",
 	]);
-	expect(await getSelectedCommentIds(page)).toEqual(["comment1", "comment2"]);
+	expect(await getHighlightedCommentIds(page)).toEqual([
+		"comment1",
+		"comment2",
+	]);
 });
 
 test("delete comments via keyboard", async ({ page, act }) => {
 	await act(page.keyboard.press("Delete"));
 
 	expect(await getAllCommentIds(page)).toEqual(["comment3"]);
-	expect(await getSelectedCommentIds(page)).toEqual([]);
+	expect(await getHighlightedCommentIds(page)).toEqual([]);
 });
 
 test("delete comments via context menu", async ({ page, act }) => {
@@ -127,7 +142,10 @@ test("delete comments via context menu", async ({ page, act }) => {
 			button: "right",
 		}),
 	);
-	expect(await getSelectedCommentIds(page)).toEqual(["comment1", "comment2"]);
+	expect(await getHighlightedCommentIds(page)).toEqual([
+		"comment1",
+		"comment2",
+	]);
 	await act(
 		page
 			.getByRole("menuitem", {
@@ -138,7 +156,7 @@ test("delete comments via context menu", async ({ page, act }) => {
 	);
 
 	expect(await getAllCommentIds(page)).toEqual(["comment3"]);
-	expect(await getSelectedCommentIds(page)).toEqual([]);
+	expect(await getHighlightedCommentIds(page)).toEqual([]);
 });
 
 test("undo via keyboard", async ({ page, act }) => {
@@ -208,17 +226,23 @@ test("drag comments", async ({ page, act }) => {
 	);
 	expect(comment3BoundsEnd.left).toBeCloseTo(comment3BoundsStart.left);
 	expect(comment3BoundsEnd.top).toBeCloseTo(comment3BoundsStart.top);
-	expect(await getSelectedCommentIds(page)).toEqual(["comment1", "comment2"]);
+	expect(await getHighlightedCommentIds(page)).toEqual([
+		"comment1",
+		"comment2",
+	]);
 });
 
 test("dragging block from toolbox selects new block", async ({ page, act }) => {
 	await act(page.getByRole("treeitem", { name: "Logic" }).click());
-	expect(await getSelectedCommentIds(page)).toEqual(["comment1", "comment2"]);
+	expect(await getHighlightedCommentIds(page)).toEqual([
+		"comment1",
+		"comment2",
+	]);
 	await act(page.mouse.move(...(await getFlyoutBlock(page, "controls_if"))));
 	await act(page.mouse.down());
 	await act(page.mouse.move(...(await getEmptySpace(page))));
 	await act(page.mouse.up());
 
-	expect(await getSelectedCommentIds(page)).toEqual([]);
-	expect(await getSelectedBlockIds(page)).toHaveLength(1);
+	expect(await getHighlightedCommentIds(page)).toEqual([]);
+	expect(await getHighlightedBlockIds(page)).toHaveLength(1);
 });

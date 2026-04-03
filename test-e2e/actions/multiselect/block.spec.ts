@@ -1,7 +1,7 @@
 import { expect } from "@playwright/test";
 import {
 	getBlock,
-	getSelectedBlockIds,
+	getHighlightedBlockIds,
 	hasBlockComment,
 	hasInlineInputs,
 	isBlockCollapsed,
@@ -31,7 +31,7 @@ test("double click collapses blocks", async ({ page, act }) => {
 	expect(await isBlockCollapsed(page, "block2")).toBe(true);
 	expect(await isBlockCollapsed(page, "block3")).toBe(true);
 	expect(await isBlockCollapsed(page, "block4")).toBe(false);
-	expect(await getSelectedBlockIds(page)).toEqual([
+	expect(await getHighlightedBlockIds(page)).toEqual([
 		"block1",
 		"block2",
 		"block3",
@@ -62,7 +62,7 @@ test("double click expands blocks when all collapsed", async ({
 	expect(await isBlockCollapsed(page, "block2")).toBe(false);
 	expect(await isBlockCollapsed(page, "block3")).toBe(false);
 	expect(await isBlockCollapsed(page, "block4")).toBe(true);
-	expect(await getSelectedBlockIds(page)).toEqual([
+	expect(await getHighlightedBlockIds(page)).toEqual([
 		"block1",
 		"block2",
 		"block3",
@@ -106,7 +106,7 @@ test("add comment to blocks", async ({ page, act }) => {
 			button: "right",
 		}),
 	);
-	expect(await getSelectedBlockIds(page)).toEqual([
+	expect(await getHighlightedBlockIds(page)).toEqual([
 		"block2",
 		"block3",
 		"block4",
@@ -126,7 +126,7 @@ test("add comment to blocks", async ({ page, act }) => {
 	expect(await hasBlockComment(page, "block5")).toBe(true);
 	expect(await hasBlockComment(page, "block6")).toBe(true);
 	expect(await hasBlockComment(page, "block7")).toBe(false);
-	expect(await getSelectedBlockIds(page)).toEqual([
+	expect(await getHighlightedBlockIds(page)).toEqual([
 		"block2",
 		"block3",
 		"block4",
@@ -176,7 +176,7 @@ test("remove comment from blocks", async ({ page, act }) => {
 			button: "right",
 		}),
 	);
-	expect(await getSelectedBlockIds(page)).toEqual([
+	expect(await getHighlightedBlockIds(page)).toEqual([
 		"block2",
 		"block3",
 		"block4",
@@ -196,7 +196,7 @@ test("remove comment from blocks", async ({ page, act }) => {
 	expect(await hasBlockComment(page, "block5")).toBe(false);
 	expect(await hasBlockComment(page, "block6")).toBe(false);
 	expect(await hasBlockComment(page, "block7")).toBe(true);
-	expect(await getSelectedBlockIds(page)).toEqual([
+	expect(await getHighlightedBlockIds(page)).toEqual([
 		"block2",
 		"block3",
 		"block4",
@@ -230,7 +230,7 @@ test("switch blocks to external inputs", async ({ page, act }) => {
 			button: "right",
 		}),
 	);
-	expect(await getSelectedBlockIds(page)).toEqual([
+	expect(await getHighlightedBlockIds(page)).toEqual([
 		"block2",
 		"block3",
 		"block4",
@@ -250,7 +250,7 @@ test("switch blocks to external inputs", async ({ page, act }) => {
 	expect(await hasInlineInputs(page, "block5")).toBe(false);
 	expect(await hasInlineInputs(page, "block6")).toBe(false);
 	expect(await hasInlineInputs(page, "block7")).toBe(true);
-	expect(await getSelectedBlockIds(page)).toEqual([
+	expect(await getHighlightedBlockIds(page)).toEqual([
 		"block2",
 		"block3",
 		"block4",
@@ -284,7 +284,7 @@ test("switch blocks to inline inputs", async ({ page, act }) => {
 			button: "right",
 		}),
 	);
-	expect(await getSelectedBlockIds(page)).toEqual([
+	expect(await getHighlightedBlockIds(page)).toEqual([
 		"block2",
 		"block3",
 		"block4",
@@ -304,7 +304,7 @@ test("switch blocks to inline inputs", async ({ page, act }) => {
 	expect(await hasInlineInputs(page, "block5")).toBe(true);
 	expect(await hasInlineInputs(page, "block6")).toBe(true);
 	expect(await hasInlineInputs(page, "block7")).toBe(true);
-	expect(await getSelectedBlockIds(page)).toEqual([
+	expect(await getHighlightedBlockIds(page)).toEqual([
 		"block2",
 		"block3",
 		"block4",
@@ -338,7 +338,7 @@ test("disable blocks", async ({ page, act }) => {
 			button: "right",
 		}),
 	);
-	expect(await getSelectedBlockIds(page)).toEqual([
+	expect(await getHighlightedBlockIds(page)).toEqual([
 		"block2",
 		"block3",
 		"block4",
@@ -358,7 +358,7 @@ test("disable blocks", async ({ page, act }) => {
 	expect(await isBlockEnabled(page, "block5")).toBe(false);
 	expect(await isBlockEnabled(page, "block6")).toBe(false);
 	expect(await isBlockEnabled(page, "block7")).toBe(true);
-	expect(await getSelectedBlockIds(page)).toEqual([
+	expect(await getHighlightedBlockIds(page)).toEqual([
 		"block2",
 		"block3",
 		"block4",
@@ -392,7 +392,7 @@ test("enable blocks", async ({ page, act }) => {
 			button: "right",
 		}),
 	);
-	expect(await getSelectedBlockIds(page)).toEqual([
+	expect(await getHighlightedBlockIds(page)).toEqual([
 		"block2",
 		"block3",
 		"block4",
@@ -412,7 +412,7 @@ test("enable blocks", async ({ page, act }) => {
 	expect(await isBlockEnabled(page, "block5")).toBe(true);
 	expect(await isBlockEnabled(page, "block6")).toBe(true);
 	expect(await isBlockEnabled(page, "block7")).toBe(true);
-	expect(await getSelectedBlockIds(page)).toEqual([
+	expect(await getHighlightedBlockIds(page)).toEqual([
 		"block2",
 		"block3",
 		"block4",
@@ -443,13 +443,13 @@ test("edit block comment", async ({ page, act }) => {
 	await act(page.keyboard.up("Shift"));
 
 	await act(page.locator(`g[data-id="block1"] .blocklyIconGroup`).click());
-	expect(await getSelectedBlockIds(page)).toEqual(["block1", "block2"]);
+	expect(await getHighlightedBlockIds(page)).toEqual(["block1", "block2"]);
 	await act(page.locator(".blocklyTextarea").click());
-	expect(await getSelectedBlockIds(page)).toEqual([]);
+	expect(await getHighlightedBlockIds(page)).toEqual([]);
 	await act(page.keyboard.type("hello"));
 	await act(page.locator(`g[data-id="block1"] .blocklyIconGroup`).click());
 
-	expect(await getSelectedBlockIds(page)).toEqual(["block1"]);
+	expect(await getHighlightedBlockIds(page)).toEqual(["block1"]);
 });
 
 test("edit block mutator", async ({ page, act }) => {
@@ -466,10 +466,10 @@ test("edit block mutator", async ({ page, act }) => {
 	await act(page.keyboard.up("Shift"));
 
 	await act(page.locator(`g[data-id="block1"] .blockly-icon-mutator`).click());
-	expect(await getSelectedBlockIds(page)).toEqual(["block1", "block2"]);
+	expect(await getHighlightedBlockIds(page)).toEqual(["block1", "block2"]);
 	await act(page.locator(".blocklyCheckbox").click());
-	expect(await getSelectedBlockIds(page)).toEqual(["block1", "block2"]);
+	expect(await getHighlightedBlockIds(page)).toEqual(["block1", "block2"]);
 	await act(page.locator(`g[data-id="block1"] .blockly-icon-mutator`).click());
 
-	expect(await getSelectedBlockIds(page)).toEqual(["block1", "block2"]);
+	expect(await getHighlightedBlockIds(page)).toEqual(["block1", "block2"]);
 });

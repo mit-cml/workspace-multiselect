@@ -2,7 +2,7 @@ import { expect } from "@playwright/test";
 import {
 	getBlock,
 	getEmptySpace,
-	getSelectedBlockIds,
+	getHighlightedBlockIds,
 	loadBlocks,
 	test,
 } from "../../test";
@@ -17,7 +17,7 @@ test("clicking block selects it", async ({ page, act }) => {
 
 	await act(page.mouse.click(...(await getBlock(page, "block1"))));
 
-	expect(await getSelectedBlockIds(page)).toEqual(["block1"]);
+	expect(await getHighlightedBlockIds(page)).toEqual(["block1"]);
 });
 
 test("clicking selected block keeps selection", async ({ page, act }) => {
@@ -31,7 +31,7 @@ test("clicking selected block keeps selection", async ({ page, act }) => {
 
 	await act(page.mouse.click(...(await getBlock(page, "block1"))));
 
-	expect(await getSelectedBlockIds(page)).toEqual(["block1"]);
+	expect(await getHighlightedBlockIds(page)).toEqual(["block1"]);
 });
 
 test("clicking child of selected block selects child", async ({
@@ -53,7 +53,7 @@ test("clicking child of selected block selects child", async ({
 
 	await act(page.mouse.click(...(await getBlock(page, "child"))));
 
-	expect(await getSelectedBlockIds(page)).toEqual(["child"]);
+	expect(await getHighlightedBlockIds(page)).toEqual(["child"]);
 });
 
 test("clicking unselected block selects it", async ({ page, act }) => {
@@ -67,7 +67,7 @@ test("clicking unselected block selects it", async ({ page, act }) => {
 
 	await act(page.mouse.click(...(await getBlock(page, "block2"))));
 
-	expect(await getSelectedBlockIds(page)).toEqual(["block2"]);
+	expect(await getHighlightedBlockIds(page)).toEqual(["block2"]);
 });
 
 test("clicking empty space clears selection", async ({ page, act }) => {
@@ -76,5 +76,5 @@ test("clicking empty space clears selection", async ({ page, act }) => {
 
 	await act(page.mouse.click(...(await getEmptySpace(page))));
 
-	expect(await getSelectedBlockIds(page)).toEqual([]);
+	expect(await getHighlightedBlockIds(page)).toEqual([]);
 });
