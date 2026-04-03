@@ -32,11 +32,12 @@ test("duplicate block via context menu", async ({ page, act }) => {
 		page.getByRole("menuitem", { exact: true, name: "Duplicate" }).click(),
 	);
 
-	expect(await getAllBlockIds(page)).toHaveLength(3);
-	const highlightedBlockIds = await getHighlightedBlockIds(page);
-	expect(highlightedBlockIds).toHaveLength(1);
-	expect(highlightedBlockIds).not.toContain("block1");
-	expect(highlightedBlockIds).not.toContain("block2");
+	const allBlockIds = await getAllBlockIds(page);
+	expect(allBlockIds).toHaveLength(3);
+	const [newBlockId] = allBlockIds.filter(
+		(id) => !["block1", "block2"].includes(id),
+	);
+	expect(await getHighlightedBlockIds(page)).toEqual([newBlockId]);
 });
 
 test("copy and paste block via keyboard", async ({ page, act }) => {
@@ -45,11 +46,12 @@ test("copy and paste block via keyboard", async ({ page, act }) => {
 	expect(await getHighlightedBlockIds(page)).toEqual(["block1"]);
 
 	await act(page.keyboard.press("Control+V"));
-	expect(await getAllBlockIds(page)).toHaveLength(3);
-	const highlightedBlockIds = await getHighlightedBlockIds(page);
-	expect(highlightedBlockIds).toHaveLength(1);
-	expect(highlightedBlockIds).not.toContain("block1");
-	expect(highlightedBlockIds).not.toContain("block2");
+	const allBlockIds = await getAllBlockIds(page);
+	expect(allBlockIds).toHaveLength(3);
+	const [newBlockId] = allBlockIds.filter(
+		(id) => !["block1", "block2"].includes(id),
+	);
+	expect(await getHighlightedBlockIds(page)).toEqual([newBlockId]);
 });
 
 test("copy and paste block via context menu", async ({ page, act }) => {
@@ -69,11 +71,12 @@ test("copy and paste block via context menu", async ({ page, act }) => {
 		}),
 	);
 	await act(page.getByRole("menuitem", { exact: true, name: "Paste" }).click());
-	expect(await getAllBlockIds(page)).toHaveLength(3);
-	const highlightedBlockIds = await getHighlightedBlockIds(page);
-	expect(highlightedBlockIds).toHaveLength(1);
-	expect(highlightedBlockIds).not.toContain("block1");
-	expect(highlightedBlockIds).not.toContain("block2");
+	const allBlockIds = await getAllBlockIds(page);
+	expect(allBlockIds).toHaveLength(3);
+	const [newBlockId] = allBlockIds.filter(
+		(id) => !["block1", "block2"].includes(id),
+	);
+	expect(await getHighlightedBlockIds(page)).toEqual([newBlockId]);
 });
 
 test("cut and paste block via keyboard", async ({ page, act }) => {
@@ -167,7 +170,10 @@ test("dragging block from toolbox selects new block", async ({ page, act }) => {
 	await act(page.mouse.move(...(await getEmptySpace(page))));
 	await act(page.mouse.up());
 
-	const selectedIds = await getHighlightedBlockIds(page);
-	expect(selectedIds).toHaveLength(1);
-	expect(selectedIds).not.toContain("block1");
+	const allBlockIds = await getAllBlockIds(page);
+	expect(allBlockIds).toHaveLength(3);
+	const [newBlockId] = allBlockIds.filter(
+		(id) => !["block1", "block2"].includes(id),
+	);
+	expect(await getHighlightedBlockIds(page)).toEqual([newBlockId]);
 });

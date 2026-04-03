@@ -1,5 +1,6 @@
 import { expect } from "@playwright/test";
 import {
+	getAllBlockIds,
 	getAllCommentIds,
 	getComment,
 	getCommentBounds,
@@ -30,11 +31,12 @@ test("duplicate comment via context menu", async ({ page, act }) => {
 			.click(),
 	);
 
-	expect(await getAllCommentIds(page)).toHaveLength(3);
-	const highlightedCommentIds = await getHighlightedCommentIds(page);
-	expect(highlightedCommentIds).toHaveLength(1);
-	expect(highlightedCommentIds).not.toContain("comment1");
-	expect(highlightedCommentIds).not.toContain("comment2");
+	const allCommentIds = await getAllCommentIds(page);
+	expect(allCommentIds).toHaveLength(3);
+	const [newCommentId] = allCommentIds.filter(
+		(id) => !["comment1", "comment2"].includes(id),
+	);
+	expect(await getHighlightedCommentIds(page)).toEqual([newCommentId]);
 });
 
 test("copy and paste comment via keyboard", async ({ page, act }) => {
@@ -43,11 +45,12 @@ test("copy and paste comment via keyboard", async ({ page, act }) => {
 	expect(await getHighlightedCommentIds(page)).toEqual(["comment1"]);
 
 	await act(page.keyboard.press("Control+V"));
-	expect(await getAllCommentIds(page)).toHaveLength(3);
-	const highlightedCommentIds = await getHighlightedCommentIds(page);
-	expect(highlightedCommentIds).toHaveLength(1);
-	expect(highlightedCommentIds).not.toContain("comment1");
-	expect(highlightedCommentIds).not.toContain("comment2");
+	const allCommentIds = await getAllCommentIds(page);
+	expect(allCommentIds).toHaveLength(3);
+	const [newCommentId] = allCommentIds.filter(
+		(id) => !["comment1", "comment2"].includes(id),
+	);
+	expect(await getHighlightedCommentIds(page)).toEqual([newCommentId]);
 });
 
 test("copy and paste comment via context menu", async ({ page, act }) => {
@@ -67,11 +70,12 @@ test("copy and paste comment via context menu", async ({ page, act }) => {
 		}),
 	);
 	await act(page.getByRole("menuitem", { exact: true, name: "Paste" }).click());
-	expect(await getAllCommentIds(page)).toHaveLength(3);
-	const highlightedCommentIds = await getHighlightedCommentIds(page);
-	expect(highlightedCommentIds).toHaveLength(1);
-	expect(highlightedCommentIds).not.toContain("comment1");
-	expect(highlightedCommentIds).not.toContain("comment2");
+	const allCommentIds = await getAllCommentIds(page);
+	expect(allCommentIds).toHaveLength(3);
+	const [newCommentId] = allCommentIds.filter(
+		(id) => !["comment1", "comment2"].includes(id),
+	);
+	expect(await getHighlightedCommentIds(page)).toEqual([newCommentId]);
 });
 
 test("cut and paste comment via keyboard", async ({ page, act }) => {
@@ -168,5 +172,7 @@ test("dragging block from toolbox selects new block", async ({ page, act }) => {
 	await act(page.mouse.up());
 
 	expect(await getHighlightedCommentIds(page)).toEqual([]);
-	expect(await getHighlightedBlockIds(page)).toHaveLength(1);
+	const allBlockIds = await getAllBlockIds(page);
+	expect(allBlockIds).toHaveLength(1);
+	expect(await getHighlightedBlockIds(page)).toEqual(allBlockIds);
 });
