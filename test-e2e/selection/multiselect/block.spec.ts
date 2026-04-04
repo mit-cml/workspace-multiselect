@@ -9,7 +9,7 @@ import {
 	test,
 } from "../../test";
 
-test("shift click selects block", async ({ page, act }) => {
+test("shift click selects blocks", async ({ page, act }) => {
 	await act(
 		loadBlocks(page, [
 			{ type: "math_number", id: "block1" },
@@ -132,7 +132,10 @@ test("clicking selected child block keeps selection", async ({ page, act }) => {
 	]);
 });
 
-test("clicking unselected block clears selection", async ({ page, act }) => {
+test("clicking unselected block clears selection and selects it", async ({
+	page,
+	act,
+}) => {
 	await act(
 		loadBlocks(page, [
 			{ type: "math_number", id: "block1" },
@@ -150,7 +153,7 @@ test("clicking unselected block clears selection", async ({ page, act }) => {
 	expect(await getHighlightedBlockIds(page)).toEqual(["block3"]);
 });
 
-test("clicking unselected child block clears selection", async ({
+test("clicking unselected child block clears selection and selects it", async ({
 	page,
 	act,
 }) => {
