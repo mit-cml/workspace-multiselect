@@ -10,6 +10,8 @@ import {
 	getBlockField,
 	getBlockFieldValue,
 	getHighlightedBlockIds,
+	getMultiselectDraggableId,
+	getSelectedId,
 	loadBlocks,
 	test,
 } from "../../test";
@@ -37,6 +39,7 @@ test("editing boolean field updates selected boolean blocks", async ({
 		"block2",
 		"block3",
 	]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 	await act(page.getByRole("option", { name: "false", exact: true }).click());
 
 	expect(await getBlockFieldValue(page, "block1", "BOOL")).toBe("FALSE");
@@ -48,6 +51,7 @@ test("editing boolean field updates selected boolean blocks", async ({
 		"block2",
 		"block3",
 	]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 });
 
 test("undo boolean field multi-edit", async ({ page, act }) => {
@@ -95,6 +99,7 @@ test("editing number field updates selected number blocks", async ({
 		"block2",
 		"block3",
 	]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 	await act(page.keyboard.type("4"));
 	expect(await getBlockFieldValue(page, "block1", "NUM")).toBe(4);
 	expect(await getBlockFieldValue(page, "block2", "NUM")).toBe(4);
@@ -110,6 +115,7 @@ test("editing number field updates selected number blocks", async ({
 		"block2",
 		"block3",
 	]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 });
 
 test("undo number field multi-edit", async ({ page, act }) => {
@@ -160,6 +166,7 @@ test("dependent field recalculated during multi-edit", async ({
 		"block2",
 		"block3",
 	]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 	await act(page.getByRole("option", { name: "binary", exact: true }).click());
 
 	expect(await getBlockFieldValue(page, "block1", "NUM")).toBe("111");
@@ -171,6 +178,7 @@ test("dependent field recalculated during multi-edit", async ({
 		"block2",
 		"block3",
 	]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 });
 
 test("undo multi-edit recalculates dependent field", async ({ page, act }) => {

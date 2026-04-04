@@ -5,6 +5,8 @@ import {
 	getEmptySpace,
 	getGridSpacing,
 	getHighlightedBlockIds,
+	getMultiselectDraggableId,
+	getSelectedId,
 	loadBlocks,
 	test,
 } from "../../test";
@@ -22,6 +24,7 @@ test("shift click selects blocks", async ({ page, act }) => {
 	await act(page.mouse.click(...(await getBlock(page, "block2"))));
 
 	expect(await getHighlightedBlockIds(page)).toEqual(["block1", "block2"]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 });
 
 test("shift click adds block to selection", async ({ page, act }) => {
@@ -37,6 +40,7 @@ test("shift click adds block to selection", async ({ page, act }) => {
 	await act(page.mouse.click(...(await getBlock(page, "block2"))));
 
 	expect(await getHighlightedBlockIds(page)).toEqual(["block1", "block2"]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 });
 
 test("shift click removes block from selection", async ({ page, act }) => {
@@ -53,6 +57,9 @@ test("shift click removes block from selection", async ({ page, act }) => {
 	await act(page.mouse.click(...(await getBlock(page, "block1"))));
 
 	expect(await getHighlightedBlockIds(page)).toEqual(["block2"]);
+	// TODO: plugin bug — should be:
+	// expect(await getSelectedId(page)).toBe("block2");
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 });
 
 test("shift click on empty space keeps selection", async ({ page, act }) => {
@@ -69,6 +76,7 @@ test("shift click on empty space keeps selection", async ({ page, act }) => {
 	await act(page.mouse.click(...(await getEmptySpace(page))));
 
 	expect(await getHighlightedBlockIds(page)).toEqual(["block1", "block2"]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 });
 
 test("releasing shift keeps selection", async ({ page, act }) => {
@@ -85,6 +93,7 @@ test("releasing shift keeps selection", async ({ page, act }) => {
 	await act(page.keyboard.up("Shift"));
 
 	expect(await getHighlightedBlockIds(page)).toEqual(["block1", "block2"]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 });
 
 test("clicking selected block keeps selection", async ({ page, act }) => {
@@ -102,6 +111,7 @@ test("clicking selected block keeps selection", async ({ page, act }) => {
 	await act(page.mouse.click(...(await getBlock(page, "block1"))));
 
 	expect(await getHighlightedBlockIds(page)).toEqual(["block1", "block2"]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 });
 
 test("clicking selected child block keeps selection", async ({ page, act }) => {
@@ -130,6 +140,7 @@ test("clicking selected child block keeps selection", async ({ page, act }) => {
 		"other",
 		"parent",
 	]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 });
 
 test("clicking unselected block clears selection and selects it", async ({
@@ -151,6 +162,7 @@ test("clicking unselected block clears selection and selects it", async ({
 	await act(page.mouse.click(...(await getBlock(page, "block3"))));
 
 	expect(await getHighlightedBlockIds(page)).toEqual(["block3"]);
+	expect(await getSelectedId(page)).toBe("block3");
 });
 
 test("clicking unselected child block clears selection and selects it", async ({
@@ -177,6 +189,7 @@ test("clicking unselected child block clears selection and selects it", async ({
 	await act(page.mouse.click(...(await getBlock(page, "child"))));
 
 	expect(await getHighlightedBlockIds(page)).toEqual(["child"]);
+	expect(await getSelectedId(page)).toBe("child");
 });
 
 test("clicking empty space clears selection", async ({ page, act }) => {
@@ -194,6 +207,7 @@ test("clicking empty space clears selection", async ({ page, act }) => {
 	await act(page.mouse.click(...(await getEmptySpace(page))));
 
 	expect(await getHighlightedBlockIds(page)).toEqual([]);
+	expect(await getSelectedId(page)).toBeNull();
 });
 
 test("shift dragging rectangle selects blocks", async ({ page, act }) => {
@@ -228,6 +242,7 @@ test("shift dragging rectangle selects blocks", async ({ page, act }) => {
 	await act(page.keyboard.up("Shift"));
 
 	expect(await getHighlightedBlockIds(page)).toEqual(["block1", "block2"]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 });
 
 test("shift dragging rectangle deselects blocks", async ({ page, act }) => {
@@ -267,6 +282,9 @@ test("shift dragging rectangle deselects blocks", async ({ page, act }) => {
 	await act(page.keyboard.up("Shift"));
 
 	expect(await getHighlightedBlockIds(page)).toEqual([]);
+	// TODO: plugin bug — should be:
+	// expect(await getSelectedId(page)).toBeNull();
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 });
 
 test("select all blocks via keyboard", async ({ page, act }) => {
@@ -280,6 +298,7 @@ test("select all blocks via keyboard", async ({ page, act }) => {
 	await act(page.keyboard.press("Control+A"));
 
 	expect(await getHighlightedBlockIds(page)).toEqual(["block1", "block2"]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 });
 
 test("select all blocks via context menu", async ({ page, act }) => {
@@ -302,4 +321,5 @@ test("select all blocks via context menu", async ({ page, act }) => {
 	);
 
 	expect(await getHighlightedBlockIds(page)).toEqual(["block1", "block2"]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 });

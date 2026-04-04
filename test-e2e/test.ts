@@ -10,6 +10,12 @@ type RenderedWorkspaceComment = comments.RenderedWorkspaceComment;
 
 declare const Blockly: typeof import("blockly");
 
+declare global {
+	interface Window {
+		multiDraggableWeakMap: WeakMap<object, { id: string }>;
+	}
+}
+
 export const test = base.extend<{
 	act: (action: Promise<void>) => Promise<void>;
 }>({
@@ -299,6 +305,19 @@ export const getHighlightedCommentIds = (page: Page) =>
 			.map((comment) => comment.id)
 			.sort(),
 	);
+
+export const getSelectedId = (page: Page) =>
+	page.evaluate(() => Blockly.getSelected()?.id ?? null);
+
+export const getMultiselectDraggableId = (page: Page) =>
+	page.evaluate(() => {
+		const multiselectDraggable = window.multiDraggableWeakMap.get(
+			Blockly.getMainWorkspace() as WorkspaceSvg,
+		);
+		if (!multiselectDraggable)
+			throw new Error("MultiselectDraggable not found");
+		return multiselectDraggable.id;
+	});
 
 export const isMultiselectEnabled = (page: Page) =>
 	page.evaluate(() => {
