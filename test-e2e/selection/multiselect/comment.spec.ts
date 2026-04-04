@@ -9,7 +9,7 @@ import {
 	test,
 } from "../../test";
 
-test("shift click selects comment", async ({ page, act }) => {
+test("shift click selects comments", async ({ page, act }) => {
 	await act(loadComments(page, [{ id: "comment1" }, { id: "comment2" }]));
 
 	await act(page.keyboard.down("Shift"));
@@ -89,7 +89,10 @@ test("clicking selected comment keeps selection", async ({ page, act }) => {
 	]);
 });
 
-test("clicking unselected comment clears selection", async ({ page, act }) => {
+test("clicking unselected comment clears selection and selects it", async ({
+	page,
+	act,
+}) => {
 	await act(
 		loadComments(page, [
 			{ id: "comment1" },

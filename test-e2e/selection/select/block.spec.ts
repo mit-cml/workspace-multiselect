@@ -34,10 +34,7 @@ test("clicking selected block keeps selection", async ({ page, act }) => {
 	expect(await getHighlightedBlockIds(page)).toEqual(["block1"]);
 });
 
-test("clicking child of selected block selects child", async ({
-	page,
-	act,
-}) => {
+test("clicking child of selected block selects it", async ({ page, act }) => {
 	await act(
 		loadBlocks(page, [
 			{
