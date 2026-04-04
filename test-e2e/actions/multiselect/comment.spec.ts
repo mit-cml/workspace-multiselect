@@ -9,6 +9,8 @@ import {
 	getGridSpacing,
 	getHighlightedBlockIds,
 	getHighlightedCommentIds,
+	getMultiselectDraggableId,
+	getSelectedId,
 	loadComments,
 	test,
 } from "../../test";
@@ -37,6 +39,7 @@ test("duplicate comments via context menu", async ({ page, act }) => {
 		"comment1",
 		"comment2",
 	]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 	await act(
 		page
 			.getByRole("menuitem", {
@@ -52,6 +55,7 @@ test("duplicate comments via context menu", async ({ page, act }) => {
 		(id) => !["comment1", "comment2", "comment3"].includes(id),
 	);
 	expect(await getHighlightedCommentIds(page)).toEqual(newCommentIds);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 });
 
 test("copy and paste comments via keyboard", async ({ page, act }) => {
@@ -65,6 +69,7 @@ test("copy and paste comments via keyboard", async ({ page, act }) => {
 		"comment1",
 		"comment2",
 	]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 
 	await act(page.keyboard.press("Control+V"));
 	const allCommentIds = await getAllCommentIds(page);
@@ -73,6 +78,7 @@ test("copy and paste comments via keyboard", async ({ page, act }) => {
 		(id) => !["comment1", "comment2", "comment3"].includes(id),
 	);
 	expect(await getHighlightedCommentIds(page)).toEqual(newCommentIds);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 });
 
 test("copy and paste comments via context menu", async ({ page, act }) => {
@@ -85,6 +91,7 @@ test("copy and paste comments via context menu", async ({ page, act }) => {
 		"comment1",
 		"comment2",
 	]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 	await act(
 		page.getByRole("menuitem", { exact: true, name: "Copy (2)" }).click(),
 	);
@@ -97,6 +104,7 @@ test("copy and paste comments via context menu", async ({ page, act }) => {
 		"comment1",
 		"comment2",
 	]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 
 	await act(
 		page.mouse.click(...(await getEmptySpace(page)), {
@@ -112,6 +120,7 @@ test("copy and paste comments via context menu", async ({ page, act }) => {
 		(id) => !["comment1", "comment2", "comment3"].includes(id),
 	);
 	expect(await getHighlightedCommentIds(page)).toEqual(newCommentIds);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 });
 
 test("cut and paste comments via keyboard", async ({ page, act }) => {
@@ -128,6 +137,7 @@ test("cut and paste comments via keyboard", async ({ page, act }) => {
 		"comment1",
 		"comment2",
 	]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 });
 
 test("delete comments via keyboard", async ({ page, act }) => {
@@ -135,6 +145,9 @@ test("delete comments via keyboard", async ({ page, act }) => {
 
 	expect(await getAllCommentIds(page)).toEqual(["comment3"]);
 	expect(await getHighlightedCommentIds(page)).toEqual([]);
+	// TODO: plugin bug — should be:
+	// expect(await getSelectedId(page)).toBeNull();
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 });
 
 test("delete comments via context menu", async ({ page, act }) => {
@@ -147,6 +160,7 @@ test("delete comments via context menu", async ({ page, act }) => {
 		"comment1",
 		"comment2",
 	]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 	await act(
 		page
 			.getByRole("menuitem", {
@@ -158,6 +172,9 @@ test("delete comments via context menu", async ({ page, act }) => {
 
 	expect(await getAllCommentIds(page)).toEqual(["comment3"]);
 	expect(await getHighlightedCommentIds(page)).toEqual([]);
+	// TODO: plugin bug — should be:
+	// expect(await getSelectedId(page)).toBeNull();
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 });
 
 test("undo via keyboard", async ({ page, act }) => {
@@ -231,6 +248,7 @@ test("drag comments", async ({ page, act }) => {
 		"comment1",
 		"comment2",
 	]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 });
 
 test("dragging block from toolbox selects new block", async ({ page, act }) => {
@@ -239,6 +257,7 @@ test("dragging block from toolbox selects new block", async ({ page, act }) => {
 		"comment1",
 		"comment2",
 	]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 	await act(page.mouse.move(...(await getFlyoutBlock(page, "controls_if"))));
 	await act(page.mouse.down());
 	await act(page.mouse.move(...(await getEmptySpace(page))));
@@ -248,4 +267,5 @@ test("dragging block from toolbox selects new block", async ({ page, act }) => {
 	const allBlockIds = await getAllBlockIds(page);
 	expect(allBlockIds).toHaveLength(1);
 	expect(await getHighlightedBlockIds(page)).toEqual(allBlockIds);
+	expect(await getSelectedId(page)).toBe(allBlockIds[0]);
 });

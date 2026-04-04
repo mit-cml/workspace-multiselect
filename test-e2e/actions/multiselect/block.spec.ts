@@ -2,6 +2,8 @@ import { expect } from "@playwright/test";
 import {
 	getBlock,
 	getHighlightedBlockIds,
+	getMultiselectDraggableId,
+	getSelectedId,
 	hasBlockComment,
 	hasInlineInputs,
 	isBlockCollapsed,
@@ -36,6 +38,7 @@ test("double click collapses blocks", async ({ page, act }) => {
 		"block2",
 		"block3",
 	]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 });
 
 test("double click expands blocks when all collapsed", async ({
@@ -67,6 +70,7 @@ test("double click expands blocks when all collapsed", async ({
 		"block2",
 		"block3",
 	]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 });
 
 test("add comment to blocks", async ({ page, act }) => {
@@ -113,6 +117,7 @@ test("add comment to blocks", async ({ page, act }) => {
 		"block5",
 		"block6",
 	]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 	await act(
 		page
 			.getByRole("menuitem", { exact: true, name: "Add Comment (2)" })
@@ -133,6 +138,7 @@ test("add comment to blocks", async ({ page, act }) => {
 		"block5",
 		"block6",
 	]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 });
 
 test("remove comment from blocks", async ({ page, act }) => {
@@ -183,6 +189,7 @@ test("remove comment from blocks", async ({ page, act }) => {
 		"block5",
 		"block6",
 	]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 	await act(
 		page
 			.getByRole("menuitem", { exact: true, name: "Remove Comment (3)" })
@@ -203,6 +210,7 @@ test("remove comment from blocks", async ({ page, act }) => {
 		"block5",
 		"block6",
 	]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 });
 
 test("switch blocks to external inputs", async ({ page, act }) => {
@@ -237,6 +245,7 @@ test("switch blocks to external inputs", async ({ page, act }) => {
 		"block5",
 		"block6",
 	]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 	await act(
 		page
 			.getByRole("menuitem", { exact: true, name: "External Inputs (2)" })
@@ -257,6 +266,7 @@ test("switch blocks to external inputs", async ({ page, act }) => {
 		"block5",
 		"block6",
 	]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 });
 
 test("switch blocks to inline inputs", async ({ page, act }) => {
@@ -291,6 +301,7 @@ test("switch blocks to inline inputs", async ({ page, act }) => {
 		"block5",
 		"block6",
 	]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 	await act(
 		page
 			.getByRole("menuitem", { exact: true, name: "Inline Inputs (3)" })
@@ -311,6 +322,7 @@ test("switch blocks to inline inputs", async ({ page, act }) => {
 		"block5",
 		"block6",
 	]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 });
 
 test("disable blocks", async ({ page, act }) => {
@@ -345,6 +357,7 @@ test("disable blocks", async ({ page, act }) => {
 		"block5",
 		"block6",
 	]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 	await act(
 		page
 			.getByRole("menuitem", { exact: true, name: "Disable Block (2)" })
@@ -365,6 +378,7 @@ test("disable blocks", async ({ page, act }) => {
 		"block5",
 		"block6",
 	]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 });
 
 test("enable blocks", async ({ page, act }) => {
@@ -399,6 +413,7 @@ test("enable blocks", async ({ page, act }) => {
 		"block5",
 		"block6",
 	]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 	await act(
 		page
 			.getByRole("menuitem", { exact: true, name: "Enable Block (3)" })
@@ -419,6 +434,7 @@ test("enable blocks", async ({ page, act }) => {
 		"block5",
 		"block6",
 	]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 });
 
 test("edit block comment", async ({ page, act }) => {
@@ -444,12 +460,21 @@ test("edit block comment", async ({ page, act }) => {
 
 	await act(page.locator(`g[data-id="block1"] .blocklyIconGroup`).click());
 	expect(await getHighlightedBlockIds(page)).toEqual(["block1", "block2"]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 	await act(page.locator(".blocklyTextarea").click());
+	// TODO: Blockly bug — should be:
+	// expect(await getHighlightedBlockIds(page)).toEqual(["block1", "block2"]);
+	// expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 	expect(await getHighlightedBlockIds(page)).toEqual([]);
+	expect(await getSelectedId(page)).toBeNull();
 	await act(page.keyboard.type("hello"));
 	await act(page.locator(`g[data-id="block1"] .blocklyIconGroup`).click());
 
+	// TODO: Blockly bug — should be:
+	// expect(await getHighlightedBlockIds(page)).toEqual(["block1", "block2"]);
+	// expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 	expect(await getHighlightedBlockIds(page)).toEqual(["block1"]);
+	expect(await getSelectedId(page)).toBe("block1");
 });
 
 test("edit block mutator", async ({ page, act }) => {
@@ -467,9 +492,16 @@ test("edit block mutator", async ({ page, act }) => {
 
 	await act(page.locator(`g[data-id="block1"] .blockly-icon-mutator`).click());
 	expect(await getHighlightedBlockIds(page)).toEqual(["block1", "block2"]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 	await act(page.locator(".blocklyCheckbox").click());
 	expect(await getHighlightedBlockIds(page)).toEqual(["block1", "block2"]);
+	// TODO: Blockly bug — should be:
+	// expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
+	expect(await getSelectedId(page)).not.toBe(
+		await getMultiselectDraggableId(page),
+	);
 	await act(page.locator(`g[data-id="block1"] .blockly-icon-mutator`).click());
 
 	expect(await getHighlightedBlockIds(page)).toEqual(["block1", "block2"]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 });

@@ -7,6 +7,8 @@ import {
 	getFlyoutBlock,
 	getGridSpacing,
 	getHighlightedBlockIds,
+	getMultiselectDraggableId,
+	getSelectedId,
 	loadBlocks,
 	test,
 } from "../../test";
@@ -28,6 +30,7 @@ test("duplicate block via context menu", async ({ page, act }) => {
 		}),
 	);
 	expect(await getHighlightedBlockIds(page)).toEqual(["block1"]);
+	expect(await getSelectedId(page)).toBe("block1");
 	await act(
 		page.getByRole("menuitem", { exact: true, name: "Duplicate" }).click(),
 	);
@@ -38,12 +41,16 @@ test("duplicate block via context menu", async ({ page, act }) => {
 		(id) => !["block1", "block2"].includes(id),
 	);
 	expect(await getHighlightedBlockIds(page)).toEqual([newBlockId]);
+	// TODO: plugin bug — should be:
+	// expect(await getSelectedId(page)).toBe(newBlockId);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 });
 
 test("copy and paste block via keyboard", async ({ page, act }) => {
 	await act(page.keyboard.press("Control+C"));
 	expect(await getAllBlockIds(page)).toEqual(["block1", "block2"]);
 	expect(await getHighlightedBlockIds(page)).toEqual(["block1"]);
+	expect(await getSelectedId(page)).toBe("block1");
 
 	await act(page.keyboard.press("Control+V"));
 	const allBlockIds = await getAllBlockIds(page);
@@ -52,6 +59,9 @@ test("copy and paste block via keyboard", async ({ page, act }) => {
 		(id) => !["block1", "block2"].includes(id),
 	);
 	expect(await getHighlightedBlockIds(page)).toEqual([newBlockId]);
+	// TODO: plugin bug — should be:
+	// expect(await getSelectedId(page)).toBe(newBlockId);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 });
 
 test("copy and paste block via context menu", async ({ page, act }) => {
@@ -61,9 +71,11 @@ test("copy and paste block via context menu", async ({ page, act }) => {
 		}),
 	);
 	expect(await getHighlightedBlockIds(page)).toEqual(["block1"]);
+	expect(await getSelectedId(page)).toBe("block1");
 	await act(page.getByRole("menuitem", { exact: true, name: "Copy" }).click());
 	expect(await getAllBlockIds(page)).toEqual(["block1", "block2"]);
 	expect(await getHighlightedBlockIds(page)).toEqual(["block1"]);
+	expect(await getSelectedId(page)).toBe("block1");
 
 	await act(
 		page.mouse.click(...(await getEmptySpace(page)), {
@@ -77,6 +89,9 @@ test("copy and paste block via context menu", async ({ page, act }) => {
 		(id) => !["block1", "block2"].includes(id),
 	);
 	expect(await getHighlightedBlockIds(page)).toEqual([newBlockId]);
+	// TODO: plugin bug — should be:
+	// expect(await getSelectedId(page)).toBe(newBlockId);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 });
 
 test("cut and paste block via keyboard", async ({ page, act }) => {
@@ -86,6 +101,9 @@ test("cut and paste block via keyboard", async ({ page, act }) => {
 	await act(page.keyboard.press("Control+V"));
 	expect(await getAllBlockIds(page)).toEqual(["block1", "block2"]);
 	expect(await getHighlightedBlockIds(page)).toEqual(["block1"]);
+	// TODO: plugin bug — should be:
+	// expect(await getSelectedId(page)).toBe("block1");
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 });
 
 test("delete block via keyboard", async ({ page, act }) => {
@@ -93,6 +111,9 @@ test("delete block via keyboard", async ({ page, act }) => {
 
 	expect(await getAllBlockIds(page)).toEqual(["block2"]);
 	expect(await getHighlightedBlockIds(page)).toEqual([]);
+	// TODO: plugin bug — should be:
+	// expect(await getSelectedId(page)).toBeNull();
+	expect(await getSelectedId(page)).toBe("block1");
 });
 
 test("delete block via context menu", async ({ page, act }) => {
@@ -102,12 +123,16 @@ test("delete block via context menu", async ({ page, act }) => {
 		}),
 	);
 	expect(await getHighlightedBlockIds(page)).toEqual(["block1"]);
+	expect(await getSelectedId(page)).toBe("block1");
 	await act(
 		page.getByRole("menuitem", { exact: true, name: "Delete Block" }).click(),
 	);
 
 	expect(await getAllBlockIds(page)).toEqual(["block2"]);
 	expect(await getHighlightedBlockIds(page)).toEqual([]);
+	// TODO: plugin bug — should be:
+	// expect(await getSelectedId(page)).toBeNull();
+	expect(await getSelectedId(page)).toBe("block1");
 });
 
 test("undo via keyboard", async ({ page, act }) => {
@@ -160,11 +185,13 @@ test("drag block", async ({ page, act }) => {
 	expect(block2BoundsEnd.left).toBeCloseTo(block2BoundsStart.left);
 	expect(block2BoundsEnd.top).toBeCloseTo(block2BoundsStart.top);
 	expect(await getHighlightedBlockIds(page)).toEqual(["block1"]);
+	expect(await getSelectedId(page)).toBe("block1");
 });
 
 test("dragging block from toolbox selects new block", async ({ page, act }) => {
 	await act(page.getByRole("treeitem", { name: "Logic" }).click());
 	expect(await getHighlightedBlockIds(page)).toEqual(["block1"]);
+	expect(await getSelectedId(page)).toBe("block1");
 	await act(page.mouse.move(...(await getFlyoutBlock(page, "controls_if"))));
 	await act(page.mouse.down());
 	await act(page.mouse.move(...(await getEmptySpace(page))));
@@ -176,4 +203,5 @@ test("dragging block from toolbox selects new block", async ({ page, act }) => {
 		(id) => !["block1", "block2"].includes(id),
 	);
 	expect(await getHighlightedBlockIds(page)).toEqual([newBlockId]);
+	expect(await getSelectedId(page)).toBe(newBlockId);
 });

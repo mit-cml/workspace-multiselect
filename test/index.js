@@ -11,6 +11,8 @@
 import * as Blockly from 'blockly';
 import {toolboxCategories, createPlayground} from '@blockly/dev-tools';
 import {Multiselect} from '../src/index';
+import {multiDraggableWeakMap} from '../src/global';
+window.multiDraggableWeakMap = multiDraggableWeakMap;
 import {Backpack} from '@blockly/workspace-backpack';
 import {NavigationController} from '@blockly/keyboard-navigation';
 
