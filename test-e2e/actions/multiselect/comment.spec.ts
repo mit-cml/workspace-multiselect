@@ -145,9 +145,7 @@ test("delete comments via keyboard", async ({ page, act }) => {
 
 	expect(await getAllCommentIds(page)).toEqual(["comment3"]);
 	expect(await getHighlightedCommentIds(page)).toEqual([]);
-	// TODO: plugin bug — should be:
-	// expect(await getSelectedId(page)).toBeNull();
-	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
+	expect(await getSelectedId(page)).toBeNull();
 });
 
 test("delete comments via context menu", async ({ page, act }) => {
@@ -172,9 +170,7 @@ test("delete comments via context menu", async ({ page, act }) => {
 
 	expect(await getAllCommentIds(page)).toEqual(["comment3"]);
 	expect(await getHighlightedCommentIds(page)).toEqual([]);
-	// TODO: plugin bug — should be:
-	// expect(await getSelectedId(page)).toBeNull();
-	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
+	expect(await getSelectedId(page)).toBeNull();
 });
 
 test("undo via keyboard", async ({ page, act }) => {

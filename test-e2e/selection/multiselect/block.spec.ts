@@ -57,9 +57,7 @@ test("shift click removes block from selection", async ({ page, act }) => {
 	await act(page.mouse.click(...(await getBlock(page, "block1"))));
 
 	expect(await getHighlightedBlockIds(page)).toEqual(["block2"]);
-	// TODO: plugin bug — should be:
-	// expect(await getSelectedId(page)).toBe("block2");
-	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
+	expect(await getSelectedId(page)).toBe("block2");
 });
 
 test("shift click on empty space keeps selection", async ({ page, act }) => {
@@ -282,9 +280,7 @@ test("shift dragging rectangle deselects blocks", async ({ page, act }) => {
 	await act(page.keyboard.up("Shift"));
 
 	expect(await getHighlightedBlockIds(page)).toEqual([]);
-	// TODO: plugin bug — should be:
-	// expect(await getSelectedId(page)).toBeNull();
-	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
+	expect(await getSelectedId(page)).toBeNull();
 });
 
 test("select all blocks via keyboard", async ({ page, act }) => {

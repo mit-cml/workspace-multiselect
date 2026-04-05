@@ -48,9 +48,7 @@ test("shift click removes comment from selection", async ({ page, act }) => {
 	await act(page.mouse.click(...(await getComment(page, "comment1"))));
 
 	expect(await getHighlightedCommentIds(page)).toEqual(["comment2"]);
-	// TODO: plugin bug — should be:
-	// expect(await getSelectedId(page)).toBe("comment2");
-	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
+	expect(await getSelectedId(page)).toBe("comment2");
 });
 
 test("shift click on empty space keeps selection", async ({ page, act }) => {
@@ -209,7 +207,5 @@ test("shift dragging rectangle deselects comments", async ({ page, act }) => {
 	await act(page.keyboard.up("Shift"));
 
 	expect(await getHighlightedCommentIds(page)).toEqual([]);
-	// TODO: plugin bug — should be:
-	// expect(await getSelectedId(page)).toBeNull();
-	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
+	expect(await getSelectedId(page)).toBeNull();
 });

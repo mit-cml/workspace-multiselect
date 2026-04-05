@@ -389,7 +389,8 @@ export class MultiselectControls {
         this.dragSelection.clear();
         Blockly.common.setSelected(null);
       } else if (Blockly.getSelected() &&
-          !(Blockly.getSelected() instanceof MultiselectDraggable)) {
+          !(Blockly.getSelected() instanceof MultiselectDraggable) &&
+          !this.dragSelection.has(Blockly.getSelected().id)) {
         // Blockly.getSelected() is not a multiselectDraggable
         // and selected block is not in dragSelection
         for (const draggable of this.multiDraggable.subDraggables) {
@@ -402,15 +403,30 @@ export class MultiselectControls {
       }
     } else {
       // In multiselect mode
-      // Set selected to multiDraggable if dragSelection not empty
-      if (this.dragSelection.size && !(Blockly.getSelected() instanceof
-          MultiselectDraggable)) {
+      if (this.dragSelection.size > 1 &&
+          Blockly.getSelected() !== this.multiDraggable) {
         Blockly.common.setSelected(this.multiDraggable);
+      } else if (this.dragSelection.size === 1 &&
+          Blockly.getSelected() !== getByID(this.workspace_, this.dragSelection.values().next().value)) {
+        Blockly.common.setSelected(getByID(this.workspace_, this.dragSelection.values().next().value));
+      } else if (this.dragSelection.size === 0 &&
+          Blockly.getSelected() !== null) {
+        Blockly.common.setSelected(null);
       } else if (this.lastSelectedElement_ &&
           !inPasteShortcut.get(this.workspace_)) {
         this.updateDraggables_(this.lastSelectedElement_);
         this.lastSelectedElement_ = null;
         inPasteShortcut.set(this.workspace_, false);
+        if (this.dragSelection.size > 1 &&
+            Blockly.getSelected() !== this.multiDraggable) {
+          Blockly.common.setSelected(this.multiDraggable);
+        } else if (this.dragSelection.size === 1 &&
+            Blockly.getSelected() !== getByID(this.workspace_, this.dragSelection.values().next().value)) {
+          Blockly.common.setSelected(getByID(this.workspace_, this.dragSelection.values().next().value));
+        } else if (this.dragSelection.size === 0 &&
+            Blockly.getSelected() !== null) {
+          Blockly.common.setSelected(null);
+        }
       } else if (!this.dragSelection.size && !(Blockly.getSelected() instanceof
           MultiselectDraggable)) {
         if (Blockly.getSelected() instanceof Blockly.BlockSvg &&
@@ -525,10 +541,15 @@ export class MultiselectControls {
       this.dragSelect_.stop();
       this.dragSelect_ = null;
     }
-    // Ensure that Blockly selects multidraggable if
-    // our set is not empty.
-    if (this.dragSelection.size && !Blockly.getSelected()) {
+    if (this.dragSelection.size > 1 &&
+        Blockly.getSelected() !== this.multiDraggable) {
       Blockly.common.setSelected(this.multiDraggable);
+    } else if (this.dragSelection.size === 1 &&
+        Blockly.getSelected() !== getByID(this.workspace_, this.dragSelection.values().next().value)) {
+      Blockly.common.setSelected(getByID(this.workspace_, this.dragSelection.values().next().value));
+    } else if (this.dragSelection.size === 0 &&
+        Blockly.getSelected() !== null) {
+      Blockly.common.setSelected(null);
     }
     if (this.hasDisableWorkspaceDrag_) {
       this.workspace_.options.moveOptions.drag = true;

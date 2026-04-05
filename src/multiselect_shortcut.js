@@ -97,6 +97,7 @@ const registerShortcutDelete = function() {
         apply(selected);
       }
 
+      Blockly.common.setSelected(null);
       Blockly.Events.setGroup(false);
       return true;
     },
@@ -432,7 +433,11 @@ const registerPaste = function(useCopyPasteCrossTab) {
             blockList[connectionDB[1]].previousConnection);
       });
 
-      Blockly.common.setSelected(multiDraggable);
+      if (dragSelection.size === 1) {
+        Blockly.common.setSelected(getByID(workspace, dragSelection.values().next().value));
+      } else {
+        Blockly.common.setSelected(multiDraggable);
+      }
       Blockly.Events.setGroup(false);
       return true;
     },
