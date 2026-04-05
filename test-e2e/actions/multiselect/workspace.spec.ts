@@ -116,9 +116,7 @@ test("delete blocks via keyboard", async ({ page, act }) => {
 
 	expect(await getAllBlockIds(page)).toEqual(["block3"]);
 	expect(await getHighlightedBlockIds(page)).toEqual([]);
-	// TODO: plugin bug — should be:
-	// expect(await getSelectedId(page)).toBeNull();
-	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
+	expect(await getSelectedId(page)).toBeNull();
 });
 
 test("delete blocks via context menu", async ({ page, act }) => {
@@ -137,9 +135,7 @@ test("delete blocks via context menu", async ({ page, act }) => {
 
 	expect(await getAllBlockIds(page)).toEqual(["block3"]);
 	expect(await getHighlightedBlockIds(page)).toEqual([]);
-	// TODO: plugin bug — should be:
-	// expect(await getSelectedId(page)).toBeNull();
-	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
+	expect(await getSelectedId(page)).toBeNull();
 });
 
 test("undo via keyboard", async ({ page, act }) => {

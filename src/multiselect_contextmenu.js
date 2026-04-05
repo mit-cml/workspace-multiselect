@@ -234,7 +234,11 @@ const registerDuplicate = function() {
       connectionDBList.forEach(function(connectionDB) {
         connectionDB[0].connect(connectionDB[1]);
       });
-      Blockly.common.setSelected(multiDraggable);
+      if (dragSelection.size === 1) {
+        Blockly.common.setSelected(getByID(workspace, dragSelection.values().next().value));
+      } else {
+        Blockly.common.setSelected(multiDraggable);
+      }
       Blockly.Events.setGroup(false);
     },
     scopeType: Blockly.ContextMenuRegistry.ScopeType.BLOCK,
@@ -695,6 +699,7 @@ const registerDelete = function() {
         apply(selected);
       }
 
+      Blockly.common.setSelected(null);
       Blockly.Events.setGroup(false);
     },
     scopeType: Blockly.ContextMenuRegistry.ScopeType.BLOCK,
@@ -801,7 +806,11 @@ const registerPaste = function(useCopyPasteCrossTab) {
             blockList[connectionDB[1]].previousConnection);
       });
       Blockly.Events.setGroup(false);
-      Blockly.common.setSelected(multiDraggable);
+      if (dragSelection.size === 1) {
+        Blockly.common.setSelected(getByID(workspace, dragSelection.values().next().value));
+      } else {
+        Blockly.common.setSelected(multiDraggable);
+      }
       return true;
     },
     scopeType: Blockly.ContextMenuRegistry.ScopeType.WORKSPACE,
@@ -1053,6 +1062,7 @@ const registerCommentDelete = function() {
         apply(scope.comment);
       }
 
+      Blockly.common.setSelected(null);
       Blockly.Events.setGroup(false);
     },
     scopeType: Blockly.ContextMenuRegistry.ScopeType.COMMENT,
@@ -1147,7 +1157,11 @@ const registerCommentDuplicate = function() {
           comment.select();
         }
       }
-      Blockly.common.setSelected(multiDraggable);
+      if (dragSelection.size === 1) {
+        Blockly.common.setSelected(getByID(workspace, dragSelection.values().next().value));
+      } else {
+        Blockly.common.setSelected(multiDraggable);
+      }
       Blockly.Events.setGroup(false);
     },
     scopeType: Blockly.ContextMenuRegistry.ScopeType.COMMENT,

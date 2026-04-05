@@ -9,7 +9,6 @@ import {
 	getGridSpacing,
 	getHighlightedBlockIds,
 	getHighlightedCommentIds,
-	getMultiselectDraggableId,
 	getSelectedId,
 	loadComments,
 	test,
@@ -40,9 +39,7 @@ test("duplicate comment via context menu", async ({ page, act }) => {
 		(id) => !["comment1", "comment2"].includes(id),
 	);
 	expect(await getHighlightedCommentIds(page)).toEqual([newCommentId]);
-	// TODO: plugin bug — should be:
-	// expect(await getSelectedId(page)).toBe(newCommentId);
-	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
+	expect(await getSelectedId(page)).toBe(newCommentId);
 });
 
 test("copy and paste comment via keyboard", async ({ page, act }) => {
@@ -58,9 +55,7 @@ test("copy and paste comment via keyboard", async ({ page, act }) => {
 		(id) => !["comment1", "comment2"].includes(id),
 	);
 	expect(await getHighlightedCommentIds(page)).toEqual([newCommentId]);
-	// TODO: plugin bug — should be:
-	// expect(await getSelectedId(page)).toBe(newCommentId);
-	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
+	expect(await getSelectedId(page)).toBe(newCommentId);
 });
 
 test("copy and paste comment via context menu", async ({ page, act }) => {
@@ -88,9 +83,7 @@ test("copy and paste comment via context menu", async ({ page, act }) => {
 		(id) => !["comment1", "comment2"].includes(id),
 	);
 	expect(await getHighlightedCommentIds(page)).toEqual([newCommentId]);
-	// TODO: plugin bug — should be:
-	// expect(await getSelectedId(page)).toBe(newCommentId);
-	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
+	expect(await getSelectedId(page)).toBe(newCommentId);
 });
 
 test("cut and paste comment via keyboard", async ({ page, act }) => {
@@ -100,9 +93,7 @@ test("cut and paste comment via keyboard", async ({ page, act }) => {
 	await act(page.keyboard.press("Control+V"));
 	expect(await getAllCommentIds(page)).toEqual(["comment1", "comment2"]);
 	expect(await getHighlightedCommentIds(page)).toEqual(["comment1"]);
-	// TODO: plugin bug — should be:
-	// expect(await getSelectedId(page)).toBe("comment1");
-	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
+	expect(await getSelectedId(page)).toBe("comment1");
 });
 
 test("delete comment via keyboard", async ({ page, act }) => {
@@ -110,9 +101,7 @@ test("delete comment via keyboard", async ({ page, act }) => {
 
 	expect(await getAllCommentIds(page)).toEqual(["comment2"]);
 	expect(await getHighlightedCommentIds(page)).toEqual([]);
-	// TODO: plugin bug — should be:
-	// expect(await getSelectedId(page)).toBeNull();
-	expect(await getSelectedId(page)).toBe("comment1");
+	expect(await getSelectedId(page)).toBeNull();
 });
 
 test("delete comment via context menu", async ({ page, act }) => {
@@ -129,9 +118,7 @@ test("delete comment via context menu", async ({ page, act }) => {
 
 	expect(await getAllCommentIds(page)).toEqual(["comment2"]);
 	expect(await getHighlightedCommentIds(page)).toEqual([]);
-	// TODO: plugin bug — should be:
-	// expect(await getSelectedId(page)).toBeNull();
-	expect(await getSelectedId(page)).toBe("comment1");
+	expect(await getSelectedId(page)).toBeNull();
 });
 
 test("undo via keyboard", async ({ page, act }) => {
