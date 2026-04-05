@@ -54,6 +54,11 @@ test("copy and paste blocks via keyboard", async ({ page, act }) => {
 	expect(await getHighlightedBlockIds(page)).toEqual(["block1", "block2"]);
 	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 
+	await act(page.mouse.click(...(await getBlock(page, "block3"))));
+	expect(await getHighlightedBlockIds(page)).toEqual(["block3"]);
+	expect(await getSelectedId(page)).toBe("block3");
+	await act(page.locator(".blocklyMultiselect image").click());
+
 	await act(page.keyboard.press("Control+V"));
 	const allBlockIds = await getAllBlockIds(page);
 	expect(allBlockIds).toHaveLength(5);
