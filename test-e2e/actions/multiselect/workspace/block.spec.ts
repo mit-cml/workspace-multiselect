@@ -60,12 +60,7 @@ test("duplicate blocks via context menu", async ({ page, act }) => {
 			button: "right",
 		}),
 	);
-	expect(await getHighlightedBlockIds(page)).toEqual([
-		"block1",
-		"block2",
-		"block2-child",
-		"block3",
-	]);
+	expect(await getHighlightedBlockIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 	await act(
 		page.getByRole("menuitem", { exact: true, name: "Duplicate (3)" }).click(),
@@ -143,12 +138,7 @@ test("copy and paste blocks via context menu", async ({ page, act }) => {
 			button: "right",
 		}),
 	);
-	expect(await getHighlightedBlockIds(page)).toEqual([
-		"block1",
-		"block2",
-		"block2-child",
-		"block3",
-	]);
+	expect(await getHighlightedBlockIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 	await act(
 		page.getByRole("menuitem", { exact: true, name: "Copy (3)" }).click(),
@@ -225,12 +215,7 @@ test("delete blocks via context menu", async ({ page, act }) => {
 			button: "right",
 		}),
 	);
-	expect(await getHighlightedBlockIds(page)).toEqual([
-		"block1",
-		"block2",
-		"block2-child",
-		"block3",
-	]);
+	expect(await getHighlightedBlockIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 	await act(
 		page

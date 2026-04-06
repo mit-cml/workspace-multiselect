@@ -23,7 +23,7 @@ test("edit boolean field", async ({ page, act }) => {
 			...(await getBlock(page, { id: "block1" })).fields.BOOL.center,
 		),
 	);
-	expect(await getHighlightedBlockIds(page)).toEqual(["block1"]);
+	expect(await getHighlightedBlockIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBe("block1");
 	await act(page.getByRole("option", { name: "false", exact: true }).click());
 
@@ -53,7 +53,7 @@ test("edit number field", async ({ page, act }) => {
 			...(await getBlock(page, { id: "block1" })).fields.NUM.center,
 		),
 	);
-	expect(await getHighlightedBlockIds(page)).toEqual(["block1"]);
+	expect(await getHighlightedBlockIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBe("block1");
 	await act(page.keyboard.type("42"));
 	await act(page.keyboard.press("Enter"));

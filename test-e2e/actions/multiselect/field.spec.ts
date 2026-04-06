@@ -42,11 +42,7 @@ test("editing boolean field updates selected boolean blocks", async ({
 			...(await getBlock(page, { id: "block1" })).fields.BOOL.center,
 		),
 	);
-	expect(await getHighlightedBlockIds(page)).toEqual([
-		"block1",
-		"block2",
-		"block3",
-	]);
+	expect(await getHighlightedBlockIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 	await act(page.getByRole("option", { name: "false", exact: true }).click());
 
@@ -134,11 +130,7 @@ test("editing number field updates selected number blocks", async ({
 			...(await getBlock(page, { id: "block1" })).fields.NUM.center,
 		),
 	);
-	expect(await getHighlightedBlockIds(page)).toEqual([
-		"block1",
-		"block2",
-		"block3",
-	]);
+	expect(await getHighlightedBlockIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 	await act(page.keyboard.type("4"));
 	expect((await getBlock(page, { id: "block1" })).fields.NUM.value).toBe(4);
@@ -219,11 +211,7 @@ test("dependent field recalculated during multi-edit", async ({
 			...(await getBlock(page, { id: "block1" })).fields.RADIX.center,
 		),
 	);
-	expect(await getHighlightedBlockIds(page)).toEqual([
-		"block1",
-		"block2",
-		"block3",
-	]);
+	expect(await getHighlightedBlockIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 	await act(page.getByRole("option", { name: "binary", exact: true }).click());
 

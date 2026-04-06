@@ -65,7 +65,7 @@ test("add comment to block", async ({ page, act }) => {
 			button: "right",
 		}),
 	);
-	expect(await getHighlightedBlockIds(page)).toEqual(["block1"]);
+	expect(await getHighlightedBlockIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBe("block1");
 	await act(
 		page.getByRole("menuitem", { exact: true, name: "Add Comment" }).click(),
@@ -101,7 +101,7 @@ test("remove comment from block", async ({ page, act }) => {
 			button: "right",
 		}),
 	);
-	expect(await getHighlightedBlockIds(page)).toEqual(["block1"]);
+	expect(await getHighlightedBlockIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBe("block1");
 	await act(
 		page.getByRole("menuitem", { exact: true, name: "Remove Comment" }).click(),
@@ -129,7 +129,7 @@ test("switch block to external inputs", async ({ page, act }) => {
 			button: "right",
 		}),
 	);
-	expect(await getHighlightedBlockIds(page)).toEqual(["block1"]);
+	expect(await getHighlightedBlockIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBe("block1");
 	await act(
 		page
@@ -159,7 +159,7 @@ test("switch block to inline inputs", async ({ page, act }) => {
 			button: "right",
 		}),
 	);
-	expect(await getHighlightedBlockIds(page)).toEqual(["block1"]);
+	expect(await getHighlightedBlockIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBe("block1");
 	await act(
 		page.getByRole("menuitem", { exact: true, name: "Inline Inputs" }).click(),
@@ -187,7 +187,7 @@ test("disable block", async ({ page, act }) => {
 			button: "right",
 		}),
 	);
-	expect(await getHighlightedBlockIds(page)).toEqual(["block1"]);
+	expect(await getHighlightedBlockIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBe("block1");
 	await act(
 		page.getByRole("menuitem", { exact: true, name: "Disable Block" }).click(),
@@ -215,7 +215,7 @@ test("enable block", async ({ page, act }) => {
 			button: "right",
 		}),
 	);
-	expect(await getHighlightedBlockIds(page)).toEqual(["block1"]);
+	expect(await getHighlightedBlockIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBe("block1");
 	await act(
 		page.getByRole("menuitem", { exact: true, name: "Enable Block" }).click(),

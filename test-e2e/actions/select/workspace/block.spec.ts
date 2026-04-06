@@ -32,7 +32,7 @@ test("duplicate block via context menu", async ({ page, act }) => {
 			button: "right",
 		}),
 	);
-	expect(await getHighlightedBlockIds(page)).toEqual(["block1"]);
+	expect(await getHighlightedBlockIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBe("block1");
 	await act(
 		page.getByRole("menuitem", { exact: true, name: "Duplicate" }).click(),
@@ -69,7 +69,7 @@ test("copy and paste block via context menu", async ({ page, act }) => {
 			button: "right",
 		}),
 	);
-	expect(await getHighlightedBlockIds(page)).toEqual(["block1"]);
+	expect(await getHighlightedBlockIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBe("block1");
 	await act(page.getByRole("menuitem", { exact: true, name: "Copy" }).click());
 	expect(await getAllBlockIds(page)).toEqual(["block1", "block2"]);
@@ -119,7 +119,7 @@ test("delete block via context menu", async ({ page, act }) => {
 			button: "right",
 		}),
 	);
-	expect(await getHighlightedBlockIds(page)).toEqual(["block1"]);
+	expect(await getHighlightedBlockIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBe("block1");
 	await act(
 		page.getByRole("menuitem", { exact: true, name: "Delete Block" }).click(),

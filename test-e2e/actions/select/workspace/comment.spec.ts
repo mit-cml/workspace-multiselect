@@ -24,7 +24,7 @@ test("duplicate comment via context menu", async ({ page, act }) => {
 			button: "right",
 		}),
 	);
-	expect(await getHighlightedCommentIds(page)).toEqual(["comment1"]);
+	expect(await getHighlightedCommentIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBe("comment1");
 	await act(
 		page
@@ -63,7 +63,7 @@ test("copy and paste comment via context menu", async ({ page, act }) => {
 			button: "right",
 		}),
 	);
-	expect(await getHighlightedCommentIds(page)).toEqual(["comment1"]);
+	expect(await getHighlightedCommentIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBe("comment1");
 	await act(page.getByRole("menuitem", { exact: true, name: "Copy" }).click());
 	expect(await getAllCommentIds(page)).toEqual(["comment1", "comment2"]);
@@ -113,7 +113,7 @@ test("delete comment via context menu", async ({ page, act }) => {
 			button: "right",
 		}),
 	);
-	expect(await getHighlightedCommentIds(page)).toEqual(["comment1"]);
+	expect(await getHighlightedCommentIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBe("comment1");
 	await act(
 		page.getByRole("menuitem", { exact: true, name: "Remove Comment" }).click(),

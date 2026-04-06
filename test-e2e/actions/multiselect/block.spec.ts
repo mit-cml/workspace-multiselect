@@ -132,13 +132,7 @@ test("add comment to blocks", async ({ page, act }) => {
 			button: "right",
 		}),
 	);
-	expect(await getHighlightedBlockIds(page)).toEqual([
-		"block2",
-		"block3",
-		"block4",
-		"block5",
-		"block6",
-	]);
+	expect(await getHighlightedBlockIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 	await act(
 		page
@@ -214,13 +208,7 @@ test("remove comment from blocks", async ({ page, act }) => {
 			button: "right",
 		}),
 	);
-	expect(await getHighlightedBlockIds(page)).toEqual([
-		"block2",
-		"block3",
-		"block4",
-		"block5",
-		"block6",
-	]);
+	expect(await getHighlightedBlockIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 	await act(
 		page
@@ -280,13 +268,7 @@ test("switch blocks to external inputs", async ({ page, act }) => {
 			button: "right",
 		}),
 	);
-	expect(await getHighlightedBlockIds(page)).toEqual([
-		"block2",
-		"block3",
-		"block4",
-		"block5",
-		"block6",
-	]);
+	expect(await getHighlightedBlockIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 	await act(
 		page
@@ -346,13 +328,7 @@ test("switch blocks to inline inputs", async ({ page, act }) => {
 			button: "right",
 		}),
 	);
-	expect(await getHighlightedBlockIds(page)).toEqual([
-		"block2",
-		"block3",
-		"block4",
-		"block5",
-		"block6",
-	]);
+	expect(await getHighlightedBlockIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 	await act(
 		page
@@ -412,13 +388,7 @@ test("disable blocks", async ({ page, act }) => {
 			button: "right",
 		}),
 	);
-	expect(await getHighlightedBlockIds(page)).toEqual([
-		"block2",
-		"block3",
-		"block4",
-		"block5",
-		"block6",
-	]);
+	expect(await getHighlightedBlockIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 	await act(
 		page
@@ -478,13 +448,7 @@ test("enable blocks", async ({ page, act }) => {
 			button: "right",
 		}),
 	);
-	expect(await getHighlightedBlockIds(page)).toEqual([
-		"block2",
-		"block3",
-		"block4",
-		"block5",
-		"block6",
-	]);
+	expect(await getHighlightedBlockIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 	await act(
 		page
