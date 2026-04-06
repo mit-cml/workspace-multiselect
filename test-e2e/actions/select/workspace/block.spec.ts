@@ -278,8 +278,8 @@ test("drag block", async ({ page, act }) => {
 
 test("dragging block from toolbox selects new block", async ({ page, act }) => {
 	await act(page.getByRole("treeitem", { name: "Logic" }).click());
-	expect(await getHighlightedBlockIds(page)).toEqual(["block1"]);
-	expect(await getSelectedId(page)).toBe("block1");
+	expect(await getHighlightedBlockIds(page)).toEqual([]);
+	expect(await getSelectedId(page)).toBeNull();
 	await act(
 		page.mouse.move(
 			...(await getBlock(page, { type: "controls_if", workspace: "toolbox" }))
