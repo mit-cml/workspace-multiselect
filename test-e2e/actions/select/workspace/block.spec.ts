@@ -8,6 +8,7 @@ import {
 	getHighlightedBlockIds,
 	getSelectedId,
 	getTrash,
+	isEphemeralFocusTaken,
 	loadBlocks,
 	openBackpack,
 	openTrash,
@@ -34,6 +35,7 @@ test("duplicate block via context menu", async ({ page, act }) => {
 	);
 	expect(await getHighlightedBlockIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBe("block1");
+	expect(await isEphemeralFocusTaken(page)).toBe(true);
 	await act(
 		page.getByRole("menuitem", { exact: true, name: "Duplicate" }).click(),
 	);
@@ -45,6 +47,7 @@ test("duplicate block via context menu", async ({ page, act }) => {
 	);
 	expect(await getHighlightedBlockIds(page)).toEqual([newBlockId]);
 	expect(await getSelectedId(page)).toBe(newBlockId);
+	expect(await isEphemeralFocusTaken(page)).toBe(false);
 });
 
 test("copy and paste block via keyboard", async ({ page, act }) => {
@@ -71,6 +74,7 @@ test("copy and paste block via context menu", async ({ page, act }) => {
 	);
 	expect(await getHighlightedBlockIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBe("block1");
+	expect(await isEphemeralFocusTaken(page)).toBe(true);
 	await act(page.getByRole("menuitem", { exact: true, name: "Copy" }).click());
 	expect(await getAllBlockIds(page)).toEqual(["block1", "block2"]);
 	expect(await getHighlightedBlockIds(page)).toEqual(["block1"]);
@@ -89,6 +93,7 @@ test("copy and paste block via context menu", async ({ page, act }) => {
 	);
 	expect(await getHighlightedBlockIds(page)).toEqual([newBlockId]);
 	expect(await getSelectedId(page)).toBe(newBlockId);
+	expect(await isEphemeralFocusTaken(page)).toBe(false);
 });
 
 test("cut and paste block via keyboard", async ({ page, act }) => {
@@ -121,6 +126,7 @@ test("delete block via context menu", async ({ page, act }) => {
 	);
 	expect(await getHighlightedBlockIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBe("block1");
+	expect(await isEphemeralFocusTaken(page)).toBe(true);
 	await act(
 		page.getByRole("menuitem", { exact: true, name: "Delete Block" }).click(),
 	);
@@ -128,6 +134,7 @@ test("delete block via context menu", async ({ page, act }) => {
 	expect(await getAllBlockIds(page)).toEqual(["block2"]);
 	expect(await getHighlightedBlockIds(page)).toEqual(["block2"]);
 	expect(await getSelectedId(page)).toBe("block2");
+	expect(await isEphemeralFocusTaken(page)).toBe(false);
 });
 
 test("drag block to trash", async ({ page, act }) => {
@@ -280,6 +287,7 @@ test("dragging block from toolbox selects new block", async ({ page, act }) => {
 	await act(page.getByRole("treeitem", { name: "Logic" }).click());
 	expect(await getHighlightedBlockIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBeNull();
+	expect(await isEphemeralFocusTaken(page)).toBe(false);
 	await act(
 		page.mouse.move(
 			...(await getBlock(page, { type: "controls_if", workspace: "toolbox" }))
@@ -297,4 +305,5 @@ test("dragging block from toolbox selects new block", async ({ page, act }) => {
 	);
 	expect(await getHighlightedBlockIds(page)).toEqual([newBlockId]);
 	expect(await getSelectedId(page)).toBe(newBlockId);
+	expect(await isEphemeralFocusTaken(page)).toBe(false);
 });

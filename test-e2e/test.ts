@@ -278,6 +278,9 @@ export const getHighlightedCommentIds = (page: Page): Promise<string[]> =>
 export const getSelectedId = (page: Page): Promise<string | null> =>
 	page.evaluate(() => Blockly.getSelected()?.id ?? null);
 
+export const isEphemeralFocusTaken = (page: Page): Promise<boolean> =>
+	page.evaluate(() => Blockly.getFocusManager().ephemeralFocusTaken());
+
 export const getMultiselectDraggableId = (page: Page): Promise<string> =>
 	page.evaluate(() => {
 		const multiselectDraggable = window.multiDraggableWeakMap.get(

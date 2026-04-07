@@ -4,6 +4,7 @@ import {
 	getHighlightedBlockIds,
 	getMultiselectDraggableId,
 	getSelectedId,
+	isEphemeralFocusTaken,
 	loadBlocks,
 	test,
 } from "../../test";
@@ -134,6 +135,7 @@ test("add comment to blocks", async ({ page, act }) => {
 	);
 	expect(await getHighlightedBlockIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
+	expect(await isEphemeralFocusTaken(page)).toBe(true);
 	await act(
 		page
 			.getByRole("menuitem", { exact: true, name: "Add Comment (2)" })
@@ -155,6 +157,7 @@ test("add comment to blocks", async ({ page, act }) => {
 		"block6",
 	]);
 	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
+	expect(await isEphemeralFocusTaken(page)).toBe(false);
 });
 
 test("remove comment from blocks", async ({ page, act }) => {
@@ -210,6 +213,7 @@ test("remove comment from blocks", async ({ page, act }) => {
 	);
 	expect(await getHighlightedBlockIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
+	expect(await isEphemeralFocusTaken(page)).toBe(true);
 	await act(
 		page
 			.getByRole("menuitem", { exact: true, name: "Remove Comment (3)" })
@@ -231,6 +235,7 @@ test("remove comment from blocks", async ({ page, act }) => {
 		"block6",
 	]);
 	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
+	expect(await isEphemeralFocusTaken(page)).toBe(false);
 });
 
 test("switch blocks to external inputs", async ({ page, act }) => {
@@ -270,6 +275,7 @@ test("switch blocks to external inputs", async ({ page, act }) => {
 	);
 	expect(await getHighlightedBlockIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
+	expect(await isEphemeralFocusTaken(page)).toBe(true);
 	await act(
 		page
 			.getByRole("menuitem", { exact: true, name: "External Inputs (2)" })
@@ -291,6 +297,7 @@ test("switch blocks to external inputs", async ({ page, act }) => {
 		"block6",
 	]);
 	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
+	expect(await isEphemeralFocusTaken(page)).toBe(false);
 });
 
 test("switch blocks to inline inputs", async ({ page, act }) => {
@@ -330,6 +337,7 @@ test("switch blocks to inline inputs", async ({ page, act }) => {
 	);
 	expect(await getHighlightedBlockIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
+	expect(await isEphemeralFocusTaken(page)).toBe(true);
 	await act(
 		page
 			.getByRole("menuitem", { exact: true, name: "Inline Inputs (3)" })
@@ -351,6 +359,7 @@ test("switch blocks to inline inputs", async ({ page, act }) => {
 		"block6",
 	]);
 	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
+	expect(await isEphemeralFocusTaken(page)).toBe(false);
 });
 
 test("disable blocks", async ({ page, act }) => {
@@ -390,6 +399,7 @@ test("disable blocks", async ({ page, act }) => {
 	);
 	expect(await getHighlightedBlockIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
+	expect(await isEphemeralFocusTaken(page)).toBe(true);
 	await act(
 		page
 			.getByRole("menuitem", { exact: true, name: "Disable Block (2)" })
@@ -411,6 +421,7 @@ test("disable blocks", async ({ page, act }) => {
 		"block6",
 	]);
 	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
+	expect(await isEphemeralFocusTaken(page)).toBe(false);
 });
 
 test("enable blocks", async ({ page, act }) => {
@@ -450,6 +461,7 @@ test("enable blocks", async ({ page, act }) => {
 	);
 	expect(await getHighlightedBlockIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
+	expect(await isEphemeralFocusTaken(page)).toBe(true);
 	await act(
 		page
 			.getByRole("menuitem", { exact: true, name: "Enable Block (3)" })
@@ -471,6 +483,7 @@ test("enable blocks", async ({ page, act }) => {
 		"block6",
 	]);
 	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
+	expect(await isEphemeralFocusTaken(page)).toBe(false);
 });
 
 test("edit block comment", async ({ page, act }) => {
@@ -501,14 +514,17 @@ test("edit block comment", async ({ page, act }) => {
 	await act(page.locator(`g[data-id="block1"] .blocklyIconGroup`).click());
 	expect(await getHighlightedBlockIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBeNull();
+	expect(await isEphemeralFocusTaken(page)).toBe(false);
 	await act(page.locator(".blocklyTextarea").click());
 	expect(await getHighlightedBlockIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBeNull();
+	expect(await isEphemeralFocusTaken(page)).toBe(false);
 	await act(page.keyboard.type("hello"));
 	await act(page.locator(`g[data-id="block1"] .blocklyIconGroup`).click());
 
 	expect(await getHighlightedBlockIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBeNull();
+	expect(await isEphemeralFocusTaken(page)).toBe(false);
 });
 
 test("edit block mutator", async ({ page, act }) => {
@@ -531,11 +547,14 @@ test("edit block mutator", async ({ page, act }) => {
 	await act(page.locator(`g[data-id="block1"] .blocklyMutatorIcon`).click());
 	expect(await getHighlightedBlockIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBeNull();
+	expect(await isEphemeralFocusTaken(page)).toBe(false);
 	await act(page.locator(".blocklyCheckboxField").click());
 	expect(await getHighlightedBlockIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).not.toBeNull();
+	expect(await isEphemeralFocusTaken(page)).toBe(false);
 	await act(page.locator(`g[data-id="block1"] .blocklyMutatorIcon`).click());
 
 	expect(await getHighlightedBlockIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBeNull();
+	expect(await isEphemeralFocusTaken(page)).toBe(false);
 });

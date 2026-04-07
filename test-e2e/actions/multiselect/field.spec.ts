@@ -10,6 +10,7 @@ import {
 	getHighlightedBlockIds,
 	getMultiselectDraggableId,
 	getSelectedId,
+	isEphemeralFocusTaken,
 	loadBlocks,
 	test,
 } from "../../test";
@@ -44,6 +45,7 @@ test("editing boolean field updates selected boolean blocks", async ({
 	);
 	expect(await getHighlightedBlockIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
+	expect(await isEphemeralFocusTaken(page)).toBe(true);
 	await act(page.getByRole("option", { name: "false", exact: true }).click());
 
 	expect((await getBlock(page, { id: "block1" })).fields.BOOL.value).toBe(
@@ -62,6 +64,7 @@ test("editing boolean field updates selected boolean blocks", async ({
 		"block3",
 	]);
 	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
+	expect(await isEphemeralFocusTaken(page)).toBe(false);
 });
 
 test("undo boolean field multi-edit", async ({ page, act }) => {
@@ -132,6 +135,7 @@ test("editing number field updates selected number blocks", async ({
 	);
 	expect(await getHighlightedBlockIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
+	expect(await isEphemeralFocusTaken(page)).toBe(true);
 	await act(page.keyboard.type("4"));
 	expect((await getBlock(page, { id: "block1" })).fields.NUM.value).toBe(4);
 	expect((await getBlock(page, { id: "block2" })).fields.NUM.value).toBe(4);
@@ -150,6 +154,7 @@ test("editing number field updates selected number blocks", async ({
 		"block3",
 	]);
 	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
+	expect(await isEphemeralFocusTaken(page)).toBe(false);
 });
 
 test("undo number field multi-edit", async ({ page, act }) => {
@@ -213,6 +218,7 @@ test("dependent field recalculated during multi-edit", async ({
 	);
 	expect(await getHighlightedBlockIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
+	expect(await isEphemeralFocusTaken(page)).toBe(true);
 	await act(page.getByRole("option", { name: "binary", exact: true }).click());
 
 	expect((await getBlock(page, { id: "block1" })).fields.NUM.value).toBe("111");
@@ -227,6 +233,7 @@ test("dependent field recalculated during multi-edit", async ({
 		"block3",
 	]);
 	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
+	expect(await isEphemeralFocusTaken(page)).toBe(false);
 });
 
 test("undo multi-edit recalculates dependent field", async ({ page, act }) => {

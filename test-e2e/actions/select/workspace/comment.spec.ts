@@ -7,6 +7,7 @@ import {
 	getHighlightedCommentIds,
 	getSelectedId,
 	getTrash,
+	isEphemeralFocusTaken,
 	loadComments,
 	test,
 } from "../../../test";
@@ -26,6 +27,7 @@ test("duplicate comment via context menu", async ({ page, act }) => {
 	);
 	expect(await getHighlightedCommentIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBe("comment1");
+	expect(await isEphemeralFocusTaken(page)).toBe(true);
 	await act(
 		page
 			.getByRole("menuitem", { exact: true, name: "Duplicate Comment" })
@@ -39,6 +41,7 @@ test("duplicate comment via context menu", async ({ page, act }) => {
 	);
 	expect(await getHighlightedCommentIds(page)).toEqual([newCommentId]);
 	expect(await getSelectedId(page)).toBe(newCommentId);
+	expect(await isEphemeralFocusTaken(page)).toBe(false);
 });
 
 test("copy and paste comment via keyboard", async ({ page, act }) => {
@@ -65,6 +68,7 @@ test("copy and paste comment via context menu", async ({ page, act }) => {
 	);
 	expect(await getHighlightedCommentIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBe("comment1");
+	expect(await isEphemeralFocusTaken(page)).toBe(true);
 	await act(page.getByRole("menuitem", { exact: true, name: "Copy" }).click());
 	expect(await getAllCommentIds(page)).toEqual(["comment1", "comment2"]);
 	expect(await getHighlightedCommentIds(page)).toEqual(["comment1"]);
@@ -83,6 +87,7 @@ test("copy and paste comment via context menu", async ({ page, act }) => {
 	);
 	expect(await getHighlightedCommentIds(page)).toEqual([newCommentId]);
 	expect(await getSelectedId(page)).toBe(newCommentId);
+	expect(await isEphemeralFocusTaken(page)).toBe(false);
 });
 
 test("cut and paste comment via keyboard", async ({ page, act }) => {
@@ -115,6 +120,7 @@ test("delete comment via context menu", async ({ page, act }) => {
 	);
 	expect(await getHighlightedCommentIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBe("comment1");
+	expect(await isEphemeralFocusTaken(page)).toBe(true);
 	await act(
 		page.getByRole("menuitem", { exact: true, name: "Remove Comment" }).click(),
 	);
@@ -122,6 +128,7 @@ test("delete comment via context menu", async ({ page, act }) => {
 	expect(await getAllCommentIds(page)).toEqual(["comment2"]);
 	expect(await getHighlightedCommentIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBeNull();
+	expect(await isEphemeralFocusTaken(page)).toBe(false);
 });
 
 test("drag comment to trash", async ({ page, act }) => {
