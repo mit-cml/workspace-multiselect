@@ -363,6 +363,13 @@ export class MultiselectDraggable {
     return this.focusableElement !== null;
   }
 
+  // IContextMenu methods
+  showContextMenu(e) {
+    const targetId = e.target.closest('[data-id]').getAttribute('data-id');
+    const target = this.workspace.getBlockById(targetId) || this.workspace.getCommentById(targetId);
+    target.showContextMenu(e);
+  }
+
   // IDeletable methods
   /**
    * A function that is required for the
