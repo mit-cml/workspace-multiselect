@@ -433,12 +433,14 @@ const registerPaste = function(useCopyPasteCrossTab) {
             blockList[connectionDB[1]].previousConnection);
       });
 
-      if (dragSelection.size === 1) {
-        Blockly.common.setSelected(getByID(workspace, dragSelection.values().next().value));
-      } else {
-        Blockly.common.setSelected(multiDraggable);
-      }
       Blockly.Events.setGroup(false);
+      Blockly.renderManagement.finishQueuedRenders().then(() => {
+        if (dragSelection.size === 1) {
+          Blockly.common.setSelected(getByID(workspace, dragSelection.values().next().value));
+        } else {
+          Blockly.common.setSelected(multiDraggable);
+        }
+      });
       return true;
     },
   };

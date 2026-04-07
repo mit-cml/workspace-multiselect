@@ -234,12 +234,14 @@ const registerDuplicate = function() {
       connectionDBList.forEach(function(connectionDB) {
         connectionDB[0].connect(connectionDB[1]);
       });
-      if (dragSelection.size === 1) {
-        Blockly.common.setSelected(getByID(workspace, dragSelection.values().next().value));
-      } else {
-        Blockly.common.setSelected(multiDraggable);
-      }
       Blockly.Events.setGroup(false);
+      Blockly.renderManagement.finishQueuedRenders().then(() => {
+        if (dragSelection.size === 1) {
+          Blockly.common.setSelected(getByID(workspace, dragSelection.values().next().value));
+        } else {
+          Blockly.common.setSelected(multiDraggable);
+        }
+      });
     },
     scopeType: Blockly.ContextMenuRegistry.ScopeType.BLOCK,
     id,
@@ -810,11 +812,13 @@ const registerPaste = function(useCopyPasteCrossTab) {
             blockList[connectionDB[1]].previousConnection);
       });
       Blockly.Events.setGroup(false);
-      if (dragSelection.size === 1) {
-        Blockly.common.setSelected(getByID(workspace, dragSelection.values().next().value));
-      } else {
-        Blockly.common.setSelected(multiDraggable);
-      }
+      Blockly.renderManagement.finishQueuedRenders().then(() => {
+        if (dragSelection.size === 1) {
+          Blockly.common.setSelected(getByID(workspace, dragSelection.values().next().value));
+        } else {
+          Blockly.common.setSelected(multiDraggable);
+        }
+      });
       return true;
     },
     scopeType: Blockly.ContextMenuRegistry.ScopeType.WORKSPACE,
@@ -1161,12 +1165,14 @@ const registerCommentDuplicate = function() {
           comment.select();
         }
       }
-      if (dragSelection.size === 1) {
-        Blockly.common.setSelected(getByID(workspace, dragSelection.values().next().value));
-      } else {
-        Blockly.common.setSelected(multiDraggable);
-      }
       Blockly.Events.setGroup(false);
+      Blockly.renderManagement.finishQueuedRenders().then(() => {
+        if (dragSelection.size === 1) {
+          Blockly.common.setSelected(getByID(workspace, dragSelection.values().next().value));
+        } else {
+          Blockly.common.setSelected(multiDraggable);
+        }
+      });
     },
     scopeType: Blockly.ContextMenuRegistry.ScopeType.COMMENT,
     id,
