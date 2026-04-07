@@ -30,6 +30,19 @@ export class MultiselectDraggable {
     this.loc = new Blockly.utils.Coordinate(0, 0);
     this.connectionDBList = [];
     this.dragSelection = dragSelectionWeakMap.get(workspace);
+    this.focusableElement = null;
+
+    const origLookUpFocusableNode = workspace.lookUpFocusableNode.bind(workspace);
+    workspace.lookUpFocusableNode = (id) => {
+      if (id === this.id) {
+        if (this.canBeFocused()) {
+          return this;
+        } else {
+          return null;
+        }
+      }
+      return origLookUpFocusableNode(id);
+    };
   }
 
   /**
@@ -54,6 +67,10 @@ export class MultiselectDraggable {
       this.addPointerDownEventListener_(subDraggable);
     }
     this.subDraggables.set(subDraggable, subDraggable.getRelativeToSurfaceXY());
+    if (this.subDraggables.size === 1) {
+      this.focusableElement = Blockly.utils.dom.createSvgElement(
+          Blockly.utils.Svg.G, {id: this.id}, this.workspace.getSvgGroup());
+    }
   }
 
   /**
@@ -67,6 +84,10 @@ export class MultiselectDraggable {
       this.removePointerDownEventListener_(subDraggable);
     }
     this.subDraggables.delete(subDraggable);
+    if (this.subDraggables.size === 0) {
+      this.focusableElement.remove();
+      this.focusableElement = null;
+    }
   }
 
   // This is the feature where we added pointer down event listeners.
@@ -315,19 +336,32 @@ export class MultiselectDraggable {
     }
   }
 
-  /**
-   * A function that turns off the highlight selection
-   * of the subdraggables. Currently not used as it
-   * causes a bug when selecting a block by clicking
-   * while in multiselect mode.
-   */
   unselect() {
-    // TODO: Look into this after gestures have been updated
-    // for (const draggable of this.subDraggables) {
-    //   draggable[0].unselect();
-    // }
+    for (const subDraggable of this.subDraggables.keys()) {
+      Blockly.utils.dom.removeClass(subDraggable.getSvgRoot(), 'blocklySelected');
+    }
   }
 
+  // IFocusableNode methods
+  getFocusableElement() {
+    return this.focusableElement;
+  }
+
+  getFocusableTree() {
+    return this.workspace;
+  }
+
+  onNodeFocus() {
+    this.select();
+  }
+
+  onNodeBlur() {
+    this.unselect();
+  }
+
+  canBeFocused() {
+    return this.focusableElement !== null;
+  }
 
   // IDeletable methods
   /**
