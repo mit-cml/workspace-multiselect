@@ -410,7 +410,7 @@ export class MultiselectControls {
         Blockly.common.setSelected(getByID(this.workspace_, this.dragSelection.values().next().value));
       } else if (this.dragSelection.size === 0 &&
           Blockly.getSelected() !== null) {
-        Blockly.common.setSelected(null);
+        Blockly.getFocusManager().focusTree(this.workspace_);
       } else if (this.lastSelectedElement_ &&
           !inPasteShortcut.get(this.workspace_)) {
         this.updateDraggables_(this.lastSelectedElement_);
@@ -424,7 +424,7 @@ export class MultiselectControls {
           Blockly.common.setSelected(getByID(this.workspace_, this.dragSelection.values().next().value));
         } else if (this.dragSelection.size === 0 &&
             Blockly.getSelected() !== null) {
-          Blockly.common.setSelected(null);
+          Blockly.getFocusManager().focusTree(this.workspace_);
         }
       } else if (!this.dragSelection.size && !(Blockly.getSelected() instanceof
           MultiselectDraggable)) {
@@ -548,7 +548,7 @@ export class MultiselectControls {
       Blockly.common.setSelected(getByID(this.workspace_, this.dragSelection.values().next().value));
     } else if (this.dragSelection.size === 0 &&
         Blockly.getSelected() !== null) {
-      Blockly.common.setSelected(null);
+      Blockly.getFocusManager().focusTree(this.workspace_);
     }
     if (this.hasDisableWorkspaceDrag_) {
       this.workspace_.options.moveOptions.drag = true;
