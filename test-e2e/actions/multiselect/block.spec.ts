@@ -512,8 +512,8 @@ test("edit block comment", async ({ page, act }) => {
 	await act(page.keyboard.up("Shift"));
 
 	await act(page.locator(`g[data-id="block1"] .blocklyIconGroup`).click());
-	expect(await getHighlightedBlockIds(page)).toEqual([]);
-	expect(await getSelectedId(page)).toBeNull();
+	expect(await getHighlightedBlockIds(page)).toEqual(["block1", "block2"]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 	expect(await isEphemeralFocusTaken(page)).toBe(false);
 	await act(page.locator(".blocklyTextarea").click());
 	expect(await getHighlightedBlockIds(page)).toEqual([]);
@@ -522,8 +522,8 @@ test("edit block comment", async ({ page, act }) => {
 	await act(page.keyboard.type("hello"));
 	await act(page.locator(`g[data-id="block1"] .blocklyIconGroup`).click());
 
-	expect(await getHighlightedBlockIds(page)).toEqual([]);
-	expect(await getSelectedId(page)).toBeNull();
+	expect(await getHighlightedBlockIds(page)).toEqual(["block1", "block2"]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 	expect(await isEphemeralFocusTaken(page)).toBe(false);
 });
 
@@ -545,8 +545,8 @@ test("edit block mutator", async ({ page, act }) => {
 	await act(page.keyboard.up("Shift"));
 
 	await act(page.locator(`g[data-id="block1"] .blocklyMutatorIcon`).click());
-	expect(await getHighlightedBlockIds(page)).toEqual([]);
-	expect(await getSelectedId(page)).toBeNull();
+	expect(await getHighlightedBlockIds(page)).toEqual(["block1", "block2"]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 	expect(await isEphemeralFocusTaken(page)).toBe(false);
 	await act(page.locator(".blocklyCheckboxField").click());
 	expect(await getHighlightedBlockIds(page)).toEqual([]);
@@ -554,7 +554,7 @@ test("edit block mutator", async ({ page, act }) => {
 	expect(await isEphemeralFocusTaken(page)).toBe(false);
 	await act(page.locator(`g[data-id="block1"] .blocklyMutatorIcon`).click());
 
-	expect(await getHighlightedBlockIds(page)).toEqual([]);
-	expect(await getSelectedId(page)).toBeNull();
+	expect(await getHighlightedBlockIds(page)).toEqual(["block1", "block2"]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 	expect(await isEphemeralFocusTaken(page)).toBe(false);
 });
