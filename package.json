@@ -47,10 +47,10 @@
     "@blockly/dev-tools": "^9.0.8",
     "@blockly/workspace-backpack": "^7.0.9",
     "@playwright/test": "^1.58.2",
-    "blockly": "^12.4.1"
+    "blockly": "^12.5.1"
   },
   "peerDependencies": {
-    "blockly": "^12.4.1"
+    "blockly": "^12.5.1"
   },
   "publishConfig": {},
   "eslintConfig": {
