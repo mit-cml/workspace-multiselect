@@ -201,19 +201,10 @@ const registerCopy = function(useCopyPasteCrossTab) {
   Blockly.ShortcutRegistry.registry.register(copyShortcut);
 
   const ctrlC = Blockly.ShortcutRegistry.registry.createSerializedKey(
-      Blockly.utils.KeyCodes.C, [Blockly.utils.KeyCodes.CTRL]);
+      Blockly.utils.KeyCodes.C, [Blockly.utils.KeyCodes.CTRL_CMD]);
   Blockly.ShortcutRegistry.registry.addKeyMapping(
       ctrlC, copyShortcut.name, true);
 
-  const altC = Blockly.ShortcutRegistry.registry.createSerializedKey(
-      Blockly.utils.KeyCodes.C, [Blockly.utils.KeyCodes.ALT]);
-  Blockly.ShortcutRegistry.registry.addKeyMapping(
-      altC, copyShortcut.name, true);
-
-  const metaC = Blockly.ShortcutRegistry.registry.createSerializedKey(
-      Blockly.utils.KeyCodes.C, [Blockly.utils.KeyCodes.META]);
-  Blockly.ShortcutRegistry.registry.addKeyMapping(
-      metaC, copyShortcut.name, true);
 };
 
 
@@ -326,19 +317,10 @@ const registerCut = function(useCopyPasteCrossTab) {
   Blockly.ShortcutRegistry.registry.register(cutShortcut);
 
   const ctrlX = Blockly.ShortcutRegistry.registry.createSerializedKey(
-      Blockly.utils.KeyCodes.X, [Blockly.utils.KeyCodes.CTRL]);
+      Blockly.utils.KeyCodes.X, [Blockly.utils.KeyCodes.CTRL_CMD]);
   Blockly.ShortcutRegistry.registry.addKeyMapping(
       ctrlX, cutShortcut.name, true);
 
-  const altX = Blockly.ShortcutRegistry.registry.createSerializedKey(
-      Blockly.utils.KeyCodes.X, [Blockly.utils.KeyCodes.ALT]);
-  Blockly.ShortcutRegistry.registry.addKeyMapping(
-      altX, cutShortcut.name, true);
-
-  const metaX = Blockly.ShortcutRegistry.registry.createSerializedKey(
-      Blockly.utils.KeyCodes.X, [Blockly.utils.KeyCodes.META]);
-  Blockly.ShortcutRegistry.registry.addKeyMapping(
-      metaX, cutShortcut.name, true);
 };
 
 // TODO: Look into undo stack and adding/removing blocks from multidraggable
@@ -451,19 +433,10 @@ const registerPaste = function(useCopyPasteCrossTab) {
   Blockly.ShortcutRegistry.registry.register(pasteShortcut);
 
   const ctrlV = Blockly.ShortcutRegistry.registry.createSerializedKey(
-      Blockly.utils.KeyCodes.V, [Blockly.utils.KeyCodes.CTRL]);
+      Blockly.utils.KeyCodes.V, [Blockly.utils.KeyCodes.CTRL_CMD]);
   Blockly.ShortcutRegistry.registry.addKeyMapping(
       ctrlV, pasteShortcut.name, true);
 
-  const altV = Blockly.ShortcutRegistry.registry.createSerializedKey(
-      Blockly.utils.KeyCodes.V, [Blockly.utils.KeyCodes.ALT]);
-  Blockly.ShortcutRegistry.registry.addKeyMapping(
-      altV, pasteShortcut.name, true);
-
-  const metaV = Blockly.ShortcutRegistry.registry.createSerializedKey(
-      Blockly.utils.KeyCodes.V, [Blockly.utils.KeyCodes.META]);
-  Blockly.ShortcutRegistry.registry.addKeyMapping(
-      metaV, pasteShortcut.name, true);
 };
 
 /**
@@ -532,20 +505,10 @@ const registerSelectAll = function() {
   Blockly.ShortcutRegistry.registry.register(selectAllShortcut);
 
   const ctrlA = Blockly.ShortcutRegistry.registry.createSerializedKey(
-      Blockly.utils.KeyCodes.A, [Blockly.utils.KeyCodes.CTRL]);
+      Blockly.utils.KeyCodes.A, [Blockly.utils.KeyCodes.CTRL_CMD]);
   Blockly.ShortcutRegistry.registry.addKeyMapping(
       ctrlA, selectAllShortcut.name);
 
-  const altA =
-  Blockly.ShortcutRegistry.registry.createSerializedKey(
-      Blockly.utils.KeyCodes.A, [Blockly.utils.KeyCodes.ALT]);
-  Blockly.ShortcutRegistry.registry.addKeyMapping(
-      altA, selectAllShortcut.name);
-
-  const metaA = Blockly.ShortcutRegistry.registry.createSerializedKey(
-      Blockly.utils.KeyCodes.A, [Blockly.utils.KeyCodes.META]);
-  Blockly.ShortcutRegistry.registry.addKeyMapping(
-      metaA, selectAllShortcut.name);
 };
 
 /**

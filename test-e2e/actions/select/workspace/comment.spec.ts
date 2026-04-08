@@ -1,5 +1,6 @@
 import { expect } from "@playwright/test";
 import {
+	cmdOrCtrl,
 	getAllCommentIds,
 	getComment,
 	getEmptySpace,
@@ -45,12 +46,12 @@ test("duplicate comment via context menu", async ({ page, act }) => {
 });
 
 test("copy and paste comment via keyboard", async ({ page, act }) => {
-	await act(page.keyboard.press("Control+C"));
+	await act(page.keyboard.press(cmdOrCtrl("C")));
 	expect(await getAllCommentIds(page)).toEqual(["comment1", "comment2"]);
 	expect(await getHighlightedCommentIds(page)).toEqual(["comment1"]);
 	expect(await getSelectedId(page)).toBe("comment1");
 
-	await act(page.keyboard.press("Control+V"));
+	await act(page.keyboard.press(cmdOrCtrl("V")));
 	const allCommentIds = await getAllCommentIds(page);
 	expect(allCommentIds).toHaveLength(3);
 	const [newCommentId] = allCommentIds.filter(
@@ -91,12 +92,12 @@ test("copy and paste comment via context menu", async ({ page, act }) => {
 });
 
 test("cut and paste comment via keyboard", async ({ page, act }) => {
-	await act(page.keyboard.press("Control+X"));
+	await act(page.keyboard.press(cmdOrCtrl("X")));
 	expect(await getAllCommentIds(page)).toEqual(["comment2"]);
 	expect(await getHighlightedCommentIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBeNull();
 
-	await act(page.keyboard.press("Control+V"));
+	await act(page.keyboard.press(cmdOrCtrl("V")));
 	expect(await getAllCommentIds(page)).toHaveLength(2);
 	const highlightedCommentIds = await getHighlightedCommentIds(page);
 	expect(highlightedCommentIds).toHaveLength(1);
@@ -146,7 +147,7 @@ test("undo via keyboard", async ({ page, act }) => {
 	await act(page.keyboard.press("Delete"));
 	expect(await getAllCommentIds(page)).toEqual(["comment2"]);
 
-	await act(page.keyboard.press("Control+Z"));
+	await act(page.keyboard.press(cmdOrCtrl("Z")));
 
 	expect(await getAllCommentIds(page)).toEqual(["comment1", "comment2"]);
 });

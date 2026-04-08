@@ -6,6 +6,7 @@ declare global {
 
 import { expect } from "@playwright/test";
 import {
+	cmdOrCtrl,
 	getBlock,
 	getHighlightedBlockIds,
 	getMultiselectDraggableId,
@@ -95,7 +96,7 @@ test("undo boolean field multi-edit", async ({ page, act }) => {
 		"FALSE",
 	);
 
-	await act(page.keyboard.press("Control+Z"));
+	await act(page.keyboard.press(cmdOrCtrl("Z")));
 
 	expect((await getBlock(page, { id: "block1" })).fields.BOOL.value).toBe(
 		"TRUE",
@@ -182,7 +183,7 @@ test("undo number field multi-edit", async ({ page, act }) => {
 	expect((await getBlock(page, { id: "block1" })).fields.NUM.value).toBe(42);
 	expect((await getBlock(page, { id: "block2" })).fields.NUM.value).toBe(42);
 
-	await act(page.keyboard.press("Control+Z"));
+	await act(page.keyboard.press(cmdOrCtrl("Z")));
 
 	expect((await getBlock(page, { id: "block1" })).fields.NUM.value).toBe(0);
 	expect((await getBlock(page, { id: "block2" })).fields.NUM.value).toBe(0);
@@ -262,7 +263,7 @@ test("undo multi-edit recalculates dependent field", async ({ page, act }) => {
 		"101010",
 	);
 
-	await act(page.keyboard.press("Control+Z"));
+	await act(page.keyboard.press(cmdOrCtrl("Z")));
 
 	expect((await getBlock(page, { id: "block1" })).fields.NUM.value).toBe("7");
 	expect((await getBlock(page, { id: "block2" })).fields.NUM.value).toBe("42");

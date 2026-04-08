@@ -1,5 +1,6 @@
 import { expect } from "@playwright/test";
 import {
+	cmdOrCtrl,
 	getAllBlockIds,
 	getBackpack,
 	getBlock,
@@ -90,7 +91,7 @@ test("duplicate blocks via context menu", async ({ page, act }) => {
 });
 
 test("copy and paste blocks via keyboard", async ({ page, act }) => {
-	await act(page.keyboard.press("Control+C"));
+	await act(page.keyboard.press(cmdOrCtrl("C")));
 	expect(await getAllBlockIds(page)).toEqual([
 		"block1",
 		"block2",
@@ -114,7 +115,7 @@ test("copy and paste blocks via keyboard", async ({ page, act }) => {
 	expect(await getSelectedId(page)).toBe("block4");
 	await act(page.locator(".blocklyMultiselect image").click());
 
-	await act(page.keyboard.press("Control+V"));
+	await act(page.keyboard.press(cmdOrCtrl("V")));
 	const allBlockIds = await getAllBlockIds(page);
 	expect(allBlockIds).toHaveLength(11);
 	const newBlockIds = allBlockIds.filter(
@@ -193,12 +194,12 @@ test("copy and paste blocks via context menu", async ({ page, act }) => {
 });
 
 test("cut and paste blocks via keyboard", async ({ page, act }) => {
-	await act(page.keyboard.press("Control+X"));
+	await act(page.keyboard.press(cmdOrCtrl("X")));
 	expect(await getAllBlockIds(page)).toEqual(["block4"]);
 	expect(await getHighlightedBlockIds(page)).toEqual(["block4"]);
 	expect(await getSelectedId(page)).toBe("block4");
 
-	await act(page.keyboard.press("Control+V"));
+	await act(page.keyboard.press(cmdOrCtrl("V")));
 	expect(await getAllBlockIds(page)).toHaveLength(6);
 	const highlightedBlockIds = await getHighlightedBlockIds(page);
 	expect(highlightedBlockIds).toHaveLength(3);
@@ -302,7 +303,7 @@ test("undo via keyboard", async ({ page, act }) => {
 	await act(page.keyboard.press("Delete"));
 	expect(await getAllBlockIds(page)).toEqual(["block4"]);
 
-	await act(page.keyboard.press("Control+Z"));
+	await act(page.keyboard.press(cmdOrCtrl("Z")));
 
 	expect(await getAllBlockIds(page)).toEqual([
 		"block1",
