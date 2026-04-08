@@ -438,28 +438,16 @@ export class Multiselect {
    * @private
    */
   onBlur_(e) {
-    if (inMultipleSelectionModeWeakMap.get(this.workspace_)) {
-      // Revert last unselected block if the related target
-      // is a field related element, for accomodating field update
-      // directly while the multi-selection mode is on.
-      if (e.relatedTarget && (e.relatedTarget.tagName === 'INPUT' ||
-          e.relatedTarget.tagName === 'TEXTAREA' ||
-          e.relatedTarget.tagName === 'DIV' &&
-          e.relatedTarget.classList.value.indexOf(
-              'blocklyDropdownMenu') > -1)) {
-        this.controls_.revertLastUnselectedBlock();
+    setTimeout(() => {
+      if (inMultipleSelectionModeWeakMap.get(this.workspace_)) {
+        if (Blockly.getFocusManager().getFocusedTree() === this.workspace_) {
+          if (Blockly.getFocusManager().ephemeralFocusTaken()) {
+            this.controls_.revertLastUnselectedBlock();
+          }
+        } else {
+          this.controls_.disableMultiselect();
+        }
       }
-
-      const injectionDiv = this.workspace_.getInjectionDiv();
-      const dropdownDiv = Blockly.DropDownDiv.getContentDiv();
-      const widgetDiv = Blockly.WidgetDiv.getDiv();
-      if (e.relatedTarget && (
-          injectionDiv.contains(e.relatedTarget) ||
-          dropdownDiv.contains(e.relatedTarget) ||
-          widgetDiv?.contains(e.relatedTarget))) {
-        return;
-      }
-      this.controls_.disableMultiselect();
-    }
+    }, 0);
   }
 }
