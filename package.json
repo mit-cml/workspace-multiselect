@@ -45,7 +45,7 @@
   "devDependencies": {
     "@blockly/dev-scripts": "^4.0.11",
     "@blockly/dev-tools": "^9.0.8",
-    "@blockly/workspace-backpack": "^7.0.9",
+    "@blockly/workspace-backpack": "^7.0.10",
     "@playwright/test": "^1.58.2",
     "@types/node": "^24.12.2",
     "blockly": "^12.5.1"
