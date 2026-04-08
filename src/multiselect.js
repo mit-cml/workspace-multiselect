@@ -255,6 +255,19 @@ export class Multiselect {
 
       const wrappedFunc = function(e, ws) {
         func.call(this, e, ws);
+        const dragSelection = dragSelectionWeakMap.get(ws);
+        const multiDraggable = multiDraggableWeakMap.get(ws);
+        if (dragSelection) {
+          const isEmptySpaceClick = !e.target.closest('g[data-id]');
+          if (isEmptySpaceClick && dragSelection.size) {
+            if (inMultipleSelectionModeWeakMap.get(ws)) {
+              Blockly.common.setSelected(multiDraggable);
+            } else {
+              multiDraggable.clearAll_();
+              dragSelection.clear();
+            }
+          }
+        }
         if (this.targetBlock && e.buttons === 1 &&
             !inMultipleSelectionModeWeakMap.get(ws)) {
           const preCondition = function(block) {
@@ -287,7 +300,6 @@ export class Multiselect {
               }
             } else if (selected && selected instanceof MultiselectDraggable) {
               // Case where the selected is a multidraggable instance
-              const dragSelection = dragSelectionWeakMap.get(ws);
               if (dragSelection.size) {
                 // Checking whether any of the blocks in
                 // the dragSelection is not collapsed.
