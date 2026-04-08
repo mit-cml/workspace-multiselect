@@ -387,7 +387,6 @@ export class MultiselectControls {
         }
         this.multiDraggable.clearAll_();
         this.dragSelection.clear();
-        Blockly.common.setSelected(null);
       } else if (Blockly.getSelected() &&
           !(Blockly.getSelected() instanceof MultiselectDraggable) &&
           !this.dragSelection.has(Blockly.getSelected().id)) {
