@@ -10,7 +10,7 @@ import {
 	getSelectedId,
 	loadBlocks,
 	test,
-} from "../../test";
+} from "../../../test";
 
 test.beforeEach(async ({ page, act }) => {
 	await act(
