@@ -12,7 +12,7 @@ import {
 	getSelectedId,
 	loadComments,
 	test,
-} from "../../test";
+} from "../../../test";
 
 test.beforeEach(async ({ page, act }) => {
 	await act(loadComments(page, [{ id: "comment1" }, { id: "comment2" }]));
