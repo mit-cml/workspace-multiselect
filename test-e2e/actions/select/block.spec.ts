@@ -3,10 +3,6 @@ import {
 	getBlock,
 	getHighlightedBlockIds,
 	getSelectedId,
-	hasBlockComment,
-	hasInlineInputs,
-	isBlockCollapsed,
-	isBlockEnabled,
 	loadBlocks,
 	test,
 } from "../../test";
@@ -18,12 +14,16 @@ test("double click collapses block", async ({ page, act }) => {
 			{ type: "math_number", id: "block2" },
 		]),
 	);
-	await act(page.mouse.click(...(await getBlock(page, "block1"))));
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "block1" })).centerTop),
+	);
 
-	await act(page.mouse.dblclick(...(await getBlock(page, "block1"))));
+	await act(
+		page.mouse.dblclick(...(await getBlock(page, { id: "block1" })).centerTop),
+	);
 
-	expect(await isBlockCollapsed(page, "block1")).toBe(true);
-	expect(await isBlockCollapsed(page, "block2")).toBe(false);
+	expect((await getBlock(page, { id: "block1" })).isCollapsed).toBe(true);
+	expect((await getBlock(page, { id: "block2" })).isCollapsed).toBe(false);
 	expect(await getHighlightedBlockIds(page)).toEqual(["block1"]);
 	expect(await getSelectedId(page)).toBe("block1");
 });
@@ -35,12 +35,16 @@ test("double click expands block", async ({ page, act }) => {
 			{ type: "math_number", id: "block2", collapsed: true },
 		]),
 	);
-	await act(page.mouse.click(...(await getBlock(page, "block1"))));
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "block1" })).centerTop),
+	);
 
-	await act(page.mouse.dblclick(...(await getBlock(page, "block1"))));
+	await act(
+		page.mouse.dblclick(...(await getBlock(page, { id: "block1" })).centerTop),
+	);
 
-	expect(await isBlockCollapsed(page, "block1")).toBe(false);
-	expect(await isBlockCollapsed(page, "block2")).toBe(true);
+	expect((await getBlock(page, { id: "block1" })).isCollapsed).toBe(false);
+	expect((await getBlock(page, { id: "block2" })).isCollapsed).toBe(true);
 	expect(await getHighlightedBlockIds(page)).toEqual(["block1"]);
 	expect(await getSelectedId(page)).toBe("block1");
 });
@@ -52,10 +56,12 @@ test("add comment to block", async ({ page, act }) => {
 			{ type: "math_number", id: "block2" },
 		]),
 	);
-	await act(page.mouse.click(...(await getBlock(page, "block1"))));
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "block1" })).centerTop),
+	);
 
 	await act(
-		page.mouse.click(...(await getBlock(page, "block1")), {
+		page.mouse.click(...(await getBlock(page, { id: "block1" })).centerTop, {
 			button: "right",
 		}),
 	);
@@ -65,8 +71,8 @@ test("add comment to block", async ({ page, act }) => {
 		page.getByRole("menuitem", { exact: true, name: "Add Comment" }).click(),
 	);
 
-	expect(await hasBlockComment(page, "block1")).toBe(true);
-	expect(await hasBlockComment(page, "block2")).toBe(false);
+	expect((await getBlock(page, { id: "block1" })).hasComment).toBe(true);
+	expect((await getBlock(page, { id: "block2" })).hasComment).toBe(false);
 	expect(await getHighlightedBlockIds(page)).toEqual(["block1"]);
 	expect(await getSelectedId(page)).toBe("block1");
 });
@@ -86,10 +92,12 @@ test("remove comment from block", async ({ page, act }) => {
 			},
 		]),
 	);
-	await act(page.mouse.click(...(await getBlock(page, "block1"))));
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "block1" })).centerTop),
+	);
 
 	await act(
-		page.mouse.click(...(await getBlock(page, "block1")), {
+		page.mouse.click(...(await getBlock(page, { id: "block1" })).centerTop, {
 			button: "right",
 		}),
 	);
@@ -99,8 +107,8 @@ test("remove comment from block", async ({ page, act }) => {
 		page.getByRole("menuitem", { exact: true, name: "Remove Comment" }).click(),
 	);
 
-	expect(await hasBlockComment(page, "block1")).toBe(false);
-	expect(await hasBlockComment(page, "block2")).toBe(true);
+	expect((await getBlock(page, { id: "block1" })).hasComment).toBe(false);
+	expect((await getBlock(page, { id: "block2" })).hasComment).toBe(true);
 	expect(await getHighlightedBlockIds(page)).toEqual(["block1"]);
 	expect(await getSelectedId(page)).toBe("block1");
 });
@@ -112,10 +120,12 @@ test("switch block to external inputs", async ({ page, act }) => {
 			{ type: "math_arithmetic", id: "block2" },
 		]),
 	);
-	await act(page.mouse.click(...(await getBlock(page, "block1"))));
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "block1" })).centerTop),
+	);
 
 	await act(
-		page.mouse.click(...(await getBlock(page, "block1")), {
+		page.mouse.click(...(await getBlock(page, { id: "block1" })).centerTop, {
 			button: "right",
 		}),
 	);
@@ -127,8 +137,8 @@ test("switch block to external inputs", async ({ page, act }) => {
 			.click(),
 	);
 
-	expect(await hasInlineInputs(page, "block1")).toBe(false);
-	expect(await hasInlineInputs(page, "block2")).toBe(true);
+	expect((await getBlock(page, { id: "block1" })).hasInlineInputs).toBe(false);
+	expect((await getBlock(page, { id: "block2" })).hasInlineInputs).toBe(true);
 	expect(await getHighlightedBlockIds(page)).toEqual(["block1"]);
 	expect(await getSelectedId(page)).toBe("block1");
 });
@@ -140,10 +150,12 @@ test("switch block to inline inputs", async ({ page, act }) => {
 			{ type: "math_arithmetic", id: "block2", inline: false },
 		]),
 	);
-	await act(page.mouse.click(...(await getBlock(page, "block1"))));
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "block1" })).centerTop),
+	);
 
 	await act(
-		page.mouse.click(...(await getBlock(page, "block1")), {
+		page.mouse.click(...(await getBlock(page, { id: "block1" })).centerTop, {
 			button: "right",
 		}),
 	);
@@ -153,8 +165,8 @@ test("switch block to inline inputs", async ({ page, act }) => {
 		page.getByRole("menuitem", { exact: true, name: "Inline Inputs" }).click(),
 	);
 
-	expect(await hasInlineInputs(page, "block1")).toBe(true);
-	expect(await hasInlineInputs(page, "block2")).toBe(false);
+	expect((await getBlock(page, { id: "block1" })).hasInlineInputs).toBe(true);
+	expect((await getBlock(page, { id: "block2" })).hasInlineInputs).toBe(false);
 	expect(await getHighlightedBlockIds(page)).toEqual(["block1"]);
 	expect(await getSelectedId(page)).toBe("block1");
 });
@@ -166,10 +178,12 @@ test("disable block", async ({ page, act }) => {
 			{ type: "math_number", id: "block2" },
 		]),
 	);
-	await act(page.mouse.click(...(await getBlock(page, "block1"))));
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "block1" })).centerTop),
+	);
 
 	await act(
-		page.mouse.click(...(await getBlock(page, "block1")), {
+		page.mouse.click(...(await getBlock(page, { id: "block1" })).centerTop, {
 			button: "right",
 		}),
 	);
@@ -179,8 +193,8 @@ test("disable block", async ({ page, act }) => {
 		page.getByRole("menuitem", { exact: true, name: "Disable Block" }).click(),
 	);
 
-	expect(await isBlockEnabled(page, "block1")).toBe(false);
-	expect(await isBlockEnabled(page, "block2")).toBe(true);
+	expect((await getBlock(page, { id: "block1" })).isEnabled).toBe(false);
+	expect((await getBlock(page, { id: "block2" })).isEnabled).toBe(true);
 	expect(await getHighlightedBlockIds(page)).toEqual(["block1"]);
 	expect(await getSelectedId(page)).toBe("block1");
 });
@@ -192,10 +206,12 @@ test("enable block", async ({ page, act }) => {
 			{ type: "math_number", id: "block2", enabled: false },
 		]),
 	);
-	await act(page.mouse.click(...(await getBlock(page, "block1"))));
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "block1" })).centerTop),
+	);
 
 	await act(
-		page.mouse.click(...(await getBlock(page, "block1")), {
+		page.mouse.click(...(await getBlock(page, { id: "block1" })).centerTop, {
 			button: "right",
 		}),
 	);
@@ -205,8 +221,8 @@ test("enable block", async ({ page, act }) => {
 		page.getByRole("menuitem", { exact: true, name: "Enable Block" }).click(),
 	);
 
-	expect(await isBlockEnabled(page, "block1")).toBe(true);
-	expect(await isBlockEnabled(page, "block2")).toBe(false);
+	expect((await getBlock(page, { id: "block1" })).isEnabled).toBe(true);
+	expect((await getBlock(page, { id: "block2" })).isEnabled).toBe(false);
 	expect(await getHighlightedBlockIds(page)).toEqual(["block1"]);
 	expect(await getSelectedId(page)).toBe("block1");
 });
@@ -222,7 +238,9 @@ test("edit block comment", async ({ page, act }) => {
 			{ type: "math_number", id: "block2" },
 		]),
 	);
-	await act(page.mouse.click(...(await getBlock(page, "block1"))));
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "block1" })).centerTop),
+	);
 
 	await act(page.locator(`g[data-id="block1"] .blocklyIconGroup`).click());
 	expect(await getHighlightedBlockIds(page)).toEqual(["block1"]);
@@ -247,7 +265,9 @@ test("edit block mutator", async ({ page, act }) => {
 			{ type: "math_number", id: "block2" },
 		]),
 	);
-	await act(page.mouse.click(...(await getBlock(page, "block1"))));
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "block1" })).centerTop),
+	);
 
 	await act(page.locator(`g[data-id="block1"] .blockly-icon-mutator`).click());
 	expect(await getHighlightedBlockIds(page)).toEqual(["block1"]);

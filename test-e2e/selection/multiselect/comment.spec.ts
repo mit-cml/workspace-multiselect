@@ -1,7 +1,6 @@
 import { expect } from "@playwright/test";
 import {
 	getComment,
-	getCommentBounds,
 	getEmptySpace,
 	getGridSpacing,
 	getHighlightedCommentIds,
@@ -15,8 +14,12 @@ test("shift click selects comments", async ({ page, act }) => {
 	await act(loadComments(page, [{ id: "comment1" }, { id: "comment2" }]));
 
 	await act(page.keyboard.down("Shift"));
-	await act(page.mouse.click(...(await getComment(page, "comment1"))));
-	await act(page.mouse.click(...(await getComment(page, "comment2"))));
+	await act(
+		page.mouse.click(...(await getComment(page, "comment1")).centerTop),
+	);
+	await act(
+		page.mouse.click(...(await getComment(page, "comment2")).centerTop),
+	);
 
 	expect(await getHighlightedCommentIds(page)).toEqual([
 		"comment1",
@@ -27,10 +30,14 @@ test("shift click selects comments", async ({ page, act }) => {
 
 test("shift click adds comment to selection", async ({ page, act }) => {
 	await act(loadComments(page, [{ id: "comment1" }, { id: "comment2" }]));
-	await act(page.mouse.click(...(await getComment(page, "comment1"))));
+	await act(
+		page.mouse.click(...(await getComment(page, "comment1")).centerTop),
+	);
 
 	await act(page.keyboard.down("Shift"));
-	await act(page.mouse.click(...(await getComment(page, "comment2"))));
+	await act(
+		page.mouse.click(...(await getComment(page, "comment2")).centerTop),
+	);
 
 	expect(await getHighlightedCommentIds(page)).toEqual([
 		"comment1",
@@ -42,10 +49,16 @@ test("shift click adds comment to selection", async ({ page, act }) => {
 test("shift click removes comment from selection", async ({ page, act }) => {
 	await act(loadComments(page, [{ id: "comment1" }, { id: "comment2" }]));
 	await act(page.keyboard.down("Shift"));
-	await act(page.mouse.click(...(await getComment(page, "comment1"))));
-	await act(page.mouse.click(...(await getComment(page, "comment2"))));
+	await act(
+		page.mouse.click(...(await getComment(page, "comment1")).centerTop),
+	);
+	await act(
+		page.mouse.click(...(await getComment(page, "comment2")).centerTop),
+	);
 
-	await act(page.mouse.click(...(await getComment(page, "comment1"))));
+	await act(
+		page.mouse.click(...(await getComment(page, "comment1")).centerTop),
+	);
 
 	expect(await getHighlightedCommentIds(page)).toEqual(["comment2"]);
 	expect(await getSelectedId(page)).toBe("comment2");
@@ -54,8 +67,12 @@ test("shift click removes comment from selection", async ({ page, act }) => {
 test("shift click on empty space keeps selection", async ({ page, act }) => {
 	await act(loadComments(page, [{ id: "comment1" }, { id: "comment2" }]));
 	await act(page.keyboard.down("Shift"));
-	await act(page.mouse.click(...(await getComment(page, "comment1"))));
-	await act(page.mouse.click(...(await getComment(page, "comment2"))));
+	await act(
+		page.mouse.click(...(await getComment(page, "comment1")).centerTop),
+	);
+	await act(
+		page.mouse.click(...(await getComment(page, "comment2")).centerTop),
+	);
 
 	await act(page.mouse.click(...(await getEmptySpace(page))));
 
@@ -69,8 +86,12 @@ test("shift click on empty space keeps selection", async ({ page, act }) => {
 test("releasing shift keeps selection", async ({ page, act }) => {
 	await act(loadComments(page, [{ id: "comment1" }, { id: "comment2" }]));
 	await act(page.keyboard.down("Shift"));
-	await act(page.mouse.click(...(await getComment(page, "comment1"))));
-	await act(page.mouse.click(...(await getComment(page, "comment2"))));
+	await act(
+		page.mouse.click(...(await getComment(page, "comment1")).centerTop),
+	);
+	await act(
+		page.mouse.click(...(await getComment(page, "comment2")).centerTop),
+	);
 
 	await act(page.keyboard.up("Shift"));
 
@@ -84,11 +105,17 @@ test("releasing shift keeps selection", async ({ page, act }) => {
 test("clicking selected comment keeps selection", async ({ page, act }) => {
 	await act(loadComments(page, [{ id: "comment1" }, { id: "comment2" }]));
 	await act(page.keyboard.down("Shift"));
-	await act(page.mouse.click(...(await getComment(page, "comment1"))));
-	await act(page.mouse.click(...(await getComment(page, "comment2"))));
+	await act(
+		page.mouse.click(...(await getComment(page, "comment1")).centerTop),
+	);
+	await act(
+		page.mouse.click(...(await getComment(page, "comment2")).centerTop),
+	);
 	await act(page.keyboard.up("Shift"));
 
-	await act(page.mouse.click(...(await getComment(page, "comment1"))));
+	await act(
+		page.mouse.click(...(await getComment(page, "comment1")).centerTop),
+	);
 
 	expect(await getHighlightedCommentIds(page)).toEqual([
 		"comment1",
@@ -109,11 +136,17 @@ test("clicking unselected comment clears selection and selects it", async ({
 		]),
 	);
 	await act(page.keyboard.down("Shift"));
-	await act(page.mouse.click(...(await getComment(page, "comment1"))));
-	await act(page.mouse.click(...(await getComment(page, "comment2"))));
+	await act(
+		page.mouse.click(...(await getComment(page, "comment1")).centerTop),
+	);
+	await act(
+		page.mouse.click(...(await getComment(page, "comment2")).centerTop),
+	);
 	await act(page.keyboard.up("Shift"));
 
-	await act(page.mouse.click(...(await getComment(page, "comment3"))));
+	await act(
+		page.mouse.click(...(await getComment(page, "comment3")).centerTop),
+	);
 
 	expect(await getHighlightedCommentIds(page)).toEqual(["comment3"]);
 	expect(await getSelectedId(page)).toBe("comment3");
@@ -122,8 +155,12 @@ test("clicking unselected comment clears selection and selects it", async ({
 test("clicking empty space clears selection", async ({ page, act }) => {
 	await act(loadComments(page, [{ id: "comment1" }, { id: "comment2" }]));
 	await act(page.keyboard.down("Shift"));
-	await act(page.mouse.click(...(await getComment(page, "comment1"))));
-	await act(page.mouse.click(...(await getComment(page, "comment2"))));
+	await act(
+		page.mouse.click(...(await getComment(page, "comment1")).centerTop),
+	);
+	await act(
+		page.mouse.click(...(await getComment(page, "comment2")).centerTop),
+	);
 	await act(page.keyboard.up("Shift"));
 
 	await act(page.mouse.click(...(await getEmptySpace(page))));
@@ -140,8 +177,8 @@ test("shift dragging rectangle selects comments", async ({ page, act }) => {
 			{ id: "comment3" },
 		]),
 	);
-	const comment1Bounds = await getCommentBounds(page, "comment1");
-	const comment2Bounds = await getCommentBounds(page, "comment2");
+	const comment1Bounds = (await getComment(page, "comment1")).bounds;
+	const comment2Bounds = (await getComment(page, "comment2")).bounds;
 	const gridSpacing = await getGridSpacing(page);
 	if (gridSpacing === null) throw new Error("Workspace has no grid");
 	const halfGridSpacing = gridSpacing / 2;
@@ -178,11 +215,15 @@ test("shift dragging rectangle deselects comments", async ({ page, act }) => {
 			{ id: "comment3" },
 		]),
 	);
-	const comment1Bounds = await getCommentBounds(page, "comment1");
-	const comment2Bounds = await getCommentBounds(page, "comment2");
+	const comment1Bounds = (await getComment(page, "comment1")).bounds;
+	const comment2Bounds = (await getComment(page, "comment2")).bounds;
 	await act(page.keyboard.down("Shift"));
-	await act(page.mouse.click(...(await getComment(page, "comment1"))));
-	await act(page.mouse.click(...(await getComment(page, "comment2"))));
+	await act(
+		page.mouse.click(...(await getComment(page, "comment1")).centerTop),
+	);
+	await act(
+		page.mouse.click(...(await getComment(page, "comment2")).centerTop),
+	);
 	await act(page.keyboard.up("Shift"));
 
 	const gridSpacing = await getGridSpacing(page);

@@ -1,11 +1,5 @@
 import { expect } from "@playwright/test";
-import {
-	getBlock,
-	getBlockField,
-	isMultiselectEnabled,
-	loadBlocks,
-	test,
-} from "../../test";
+import { getBlock, isMultiselectEnabled, loadBlocks, test } from "../../test";
 
 test("pressing shift in workspace enables multiselect", async ({
 	page,
@@ -32,7 +26,11 @@ test("pressing shift while field dropdown is open enables multiselect", async ({
 	act,
 }) => {
 	await act(loadBlocks(page, [{ type: "logic_boolean", id: "block1" }]));
-	await act(page.mouse.click(...(await getBlockField(page, "block1", "BOOL"))));
+	await act(
+		page.mouse.click(
+			...(await getBlock(page, { id: "block1" })).fields.BOOL.center,
+		),
+	);
 
 	await act(page.keyboard.down("Shift"));
 
@@ -44,7 +42,11 @@ test("releasing shift while field dropdown is open disables multiselect", async 
 	act,
 }) => {
 	await act(loadBlocks(page, [{ type: "logic_boolean", id: "block1" }]));
-	await act(page.mouse.click(...(await getBlockField(page, "block1", "BOOL"))));
+	await act(
+		page.mouse.click(
+			...(await getBlock(page, { id: "block1" })).fields.BOOL.center,
+		),
+	);
 	await act(page.keyboard.down("Shift"));
 
 	await act(page.keyboard.up("Shift"));
@@ -57,7 +59,11 @@ test("pressing shift while editing field text enables multiselect", async ({
 	act,
 }) => {
 	await act(loadBlocks(page, [{ type: "math_number", id: "block1" }]));
-	await act(page.mouse.click(...(await getBlockField(page, "block1", "NUM"))));
+	await act(
+		page.mouse.click(
+			...(await getBlock(page, { id: "block1" })).fields.NUM.center,
+		),
+	);
 
 	await act(page.keyboard.down("Shift"));
 
@@ -69,7 +75,11 @@ test("releasing shift while editing field text disables multiselect", async ({
 	act,
 }) => {
 	await act(loadBlocks(page, [{ type: "math_number", id: "block1" }]));
-	await act(page.mouse.click(...(await getBlockField(page, "block1", "NUM"))));
+	await act(
+		page.mouse.click(
+			...(await getBlock(page, { id: "block1" })).fields.NUM.center,
+		),
+	);
 	await act(page.keyboard.down("Shift"));
 
 	await act(page.keyboard.up("Shift"));
@@ -90,7 +100,9 @@ test("pressing shift while comment is open enables multiselect", async ({
 			},
 		]),
 	);
-	await act(page.mouse.click(...(await getBlock(page, "block1"))));
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "block1" })).centerTop),
+	);
 	await act(page.locator(`g[data-id="block1"] .blocklyIconGroup`).click());
 
 	await act(page.keyboard.down("Shift"));
@@ -111,7 +123,9 @@ test("releasing shift while comment is open disables multiselect", async ({
 			},
 		]),
 	);
-	await act(page.mouse.click(...(await getBlock(page, "block1"))));
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "block1" })).centerTop),
+	);
 	await act(page.locator(`g[data-id="block1"] .blocklyIconGroup`).click());
 	await act(page.keyboard.down("Shift"));
 
@@ -125,7 +139,9 @@ test("pressing shift while mutator is open enables multiselect", async ({
 	act,
 }) => {
 	await act(loadBlocks(page, [{ type: "procedures_defreturn", id: "block1" }]));
-	await act(page.mouse.click(...(await getBlock(page, "block1"))));
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "block1" })).centerTop),
+	);
 	await act(page.locator(`g[data-id="block1"] .blockly-icon-mutator`).click());
 
 	await act(page.keyboard.down("Shift"));
@@ -138,7 +154,9 @@ test("releasing shift while mutator is open disables multiselect", async ({
 	act,
 }) => {
 	await act(loadBlocks(page, [{ type: "procedures_defreturn", id: "block1" }]));
-	await act(page.mouse.click(...(await getBlock(page, "block1"))));
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "block1" })).centerTop),
+	);
 	await act(page.locator(`g[data-id="block1"] .blockly-icon-mutator`).click());
 	await act(page.keyboard.down("Shift"));
 

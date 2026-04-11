@@ -2,9 +2,7 @@ import { expect } from "@playwright/test";
 import {
 	getAllBlockIds,
 	getBlock,
-	getBlockBounds,
 	getEmptySpace,
-	getFlyoutBlock,
 	getGridSpacing,
 	getHighlightedBlockIds,
 	getMultiselectDraggableId,
@@ -22,14 +20,18 @@ test.beforeEach(async ({ page, act }) => {
 		]),
 	);
 	await act(page.keyboard.down("Shift"));
-	await act(page.mouse.click(...(await getBlock(page, "block1"))));
-	await act(page.mouse.click(...(await getBlock(page, "block2"))));
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "block1" })).centerTop),
+	);
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "block2" })).centerTop),
+	);
 	await act(page.keyboard.up("Shift"));
 });
 
 test("duplicate blocks via context menu", async ({ page, act }) => {
 	await act(
-		page.mouse.click(...(await getBlock(page, "block1")), {
+		page.mouse.click(...(await getBlock(page, { id: "block1" })).centerTop, {
 			button: "right",
 		}),
 	);
@@ -54,7 +56,9 @@ test("copy and paste blocks via keyboard", async ({ page, act }) => {
 	expect(await getHighlightedBlockIds(page)).toEqual(["block1", "block2"]);
 	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 
-	await act(page.mouse.click(...(await getBlock(page, "block3"))));
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "block3" })).centerTop),
+	);
 	expect(await getHighlightedBlockIds(page)).toEqual(["block3"]);
 	expect(await getSelectedId(page)).toBe("block3");
 	await act(page.locator(".blocklyMultiselect image").click());
@@ -71,7 +75,7 @@ test("copy and paste blocks via keyboard", async ({ page, act }) => {
 
 test("copy and paste blocks via context menu", async ({ page, act }) => {
 	await act(
-		page.mouse.click(...(await getBlock(page, "block1")), {
+		page.mouse.click(...(await getBlock(page, { id: "block1" })).centerTop, {
 			button: "right",
 		}),
 	);
@@ -121,7 +125,7 @@ test("delete blocks via keyboard", async ({ page, act }) => {
 
 test("delete blocks via context menu", async ({ page, act }) => {
 	await act(
-		page.mouse.click(...(await getBlock(page, "block1")), {
+		page.mouse.click(...(await getBlock(page, { id: "block1" })).centerTop, {
 			button: "right",
 		}),
 	);
@@ -165,24 +169,25 @@ test("drag blocks", async ({ page, act }) => {
 	const gridSpacing = await getGridSpacing(page);
 	if (gridSpacing === null) throw new Error("Workspace has no grid");
 	const halfGridSpacing = gridSpacing / 2;
-	const block1BoundsStart = await getBlockBounds(page, "block1");
-	const block2BoundsStart = await getBlockBounds(page, "block2");
-	const block3BoundsStart = await getBlockBounds(page, "block3");
-	const [block1X, block1Y] = await getBlock(page, "block1");
+	const block1BoundsStart = (await getBlock(page, { id: "block1" })).bounds;
+	const block2BoundsStart = (await getBlock(page, { id: "block2" })).bounds;
+	const block3BoundsStart = (await getBlock(page, { id: "block3" })).bounds;
+	const [block1Center, block1Top] = (await getBlock(page, { id: "block1" }))
+		.centerTop;
 
-	await act(page.mouse.move(block1X, block1Y));
+	await act(page.mouse.move(block1Center, block1Top));
 	await act(page.mouse.down());
 	await act(
 		page.mouse.move(
-			block1X + halfGridSpacing + 1,
-			block1Y + halfGridSpacing + 1,
+			block1Center + halfGridSpacing + 1,
+			block1Top + halfGridSpacing + 1,
 		),
 	);
 	await act(page.mouse.up());
 
-	const block1BoundsEnd = await getBlockBounds(page, "block1");
-	const block2BoundsEnd = await getBlockBounds(page, "block2");
-	const block3BoundsEnd = await getBlockBounds(page, "block3");
+	const block1BoundsEnd = (await getBlock(page, { id: "block1" })).bounds;
+	const block2BoundsEnd = (await getBlock(page, { id: "block2" })).bounds;
+	const block3BoundsEnd = (await getBlock(page, { id: "block3" })).bounds;
 	expect(block1BoundsEnd.left - block1BoundsStart.left).toBeCloseTo(
 		gridSpacing,
 	);
@@ -201,7 +206,12 @@ test("dragging block from toolbox selects new block", async ({ page, act }) => {
 	await act(page.getByRole("treeitem", { name: "Logic" }).click());
 	expect(await getHighlightedBlockIds(page)).toEqual(["block1", "block2"]);
 	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
-	await act(page.mouse.move(...(await getFlyoutBlock(page, "controls_if"))));
+	await act(
+		page.mouse.move(
+			...(await getBlock(page, { type: "controls_if", workspace: "toolbox" }))
+				.centerTop,
+		),
+	);
 	await act(page.mouse.down());
 	await act(page.mouse.move(...(await getEmptySpace(page))));
 	await act(page.mouse.up());

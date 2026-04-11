@@ -4,10 +4,6 @@ import {
 	getHighlightedBlockIds,
 	getMultiselectDraggableId,
 	getSelectedId,
-	hasBlockComment,
-	hasInlineInputs,
-	isBlockCollapsed,
-	isBlockEnabled,
 	loadBlocks,
 	test,
 } from "../../test";
@@ -22,17 +18,25 @@ test("double click collapses blocks", async ({ page, act }) => {
 		]),
 	);
 	await act(page.keyboard.down("Shift"));
-	await act(page.mouse.click(...(await getBlock(page, "block1"))));
-	await act(page.mouse.click(...(await getBlock(page, "block2"))));
-	await act(page.mouse.click(...(await getBlock(page, "block3"))));
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "block1" })).centerTop),
+	);
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "block2" })).centerTop),
+	);
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "block3" })).centerTop),
+	);
 	await act(page.keyboard.up("Shift"));
 
-	await act(page.mouse.dblclick(...(await getBlock(page, "block1"))));
+	await act(
+		page.mouse.dblclick(...(await getBlock(page, { id: "block1" })).centerTop),
+	);
 
-	expect(await isBlockCollapsed(page, "block1")).toBe(true);
-	expect(await isBlockCollapsed(page, "block2")).toBe(true);
-	expect(await isBlockCollapsed(page, "block3")).toBe(true);
-	expect(await isBlockCollapsed(page, "block4")).toBe(false);
+	expect((await getBlock(page, { id: "block1" })).isCollapsed).toBe(true);
+	expect((await getBlock(page, { id: "block2" })).isCollapsed).toBe(true);
+	expect((await getBlock(page, { id: "block3" })).isCollapsed).toBe(true);
+	expect((await getBlock(page, { id: "block4" })).isCollapsed).toBe(false);
 	expect(await getHighlightedBlockIds(page)).toEqual([
 		"block1",
 		"block2",
@@ -54,17 +58,25 @@ test("double click expands blocks when all collapsed", async ({
 		]),
 	);
 	await act(page.keyboard.down("Shift"));
-	await act(page.mouse.click(...(await getBlock(page, "block1"))));
-	await act(page.mouse.click(...(await getBlock(page, "block2"))));
-	await act(page.mouse.click(...(await getBlock(page, "block3"))));
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "block1" })).centerTop),
+	);
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "block2" })).centerTop),
+	);
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "block3" })).centerTop),
+	);
 	await act(page.keyboard.up("Shift"));
 
-	await act(page.mouse.dblclick(...(await getBlock(page, "block1"))));
+	await act(
+		page.mouse.dblclick(...(await getBlock(page, { id: "block1" })).centerTop),
+	);
 
-	expect(await isBlockCollapsed(page, "block1")).toBe(false);
-	expect(await isBlockCollapsed(page, "block2")).toBe(false);
-	expect(await isBlockCollapsed(page, "block3")).toBe(false);
-	expect(await isBlockCollapsed(page, "block4")).toBe(true);
+	expect((await getBlock(page, { id: "block1" })).isCollapsed).toBe(false);
+	expect((await getBlock(page, { id: "block2" })).isCollapsed).toBe(false);
+	expect((await getBlock(page, { id: "block3" })).isCollapsed).toBe(false);
+	expect((await getBlock(page, { id: "block4" })).isCollapsed).toBe(true);
 	expect(await getHighlightedBlockIds(page)).toEqual([
 		"block1",
 		"block2",
@@ -98,15 +110,25 @@ test("add comment to blocks", async ({ page, act }) => {
 		]),
 	);
 	await act(page.keyboard.down("Shift"));
-	await act(page.mouse.click(...(await getBlock(page, "block2"))));
-	await act(page.mouse.click(...(await getBlock(page, "block3"))));
-	await act(page.mouse.click(...(await getBlock(page, "block4"))));
-	await act(page.mouse.click(...(await getBlock(page, "block5"))));
-	await act(page.mouse.click(...(await getBlock(page, "block6"))));
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "block2" })).centerTop),
+	);
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "block3" })).centerTop),
+	);
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "block4" })).centerTop),
+	);
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "block5" })).centerTop),
+	);
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "block6" })).centerTop),
+	);
 	await act(page.keyboard.up("Shift"));
 
 	await act(
-		page.mouse.click(...(await getBlock(page, "block2")), {
+		page.mouse.click(...(await getBlock(page, { id: "block2" })).centerTop, {
 			button: "right",
 		}),
 	);
@@ -124,13 +146,13 @@ test("add comment to blocks", async ({ page, act }) => {
 			.click(),
 	);
 
-	expect(await hasBlockComment(page, "block1")).toBe(false);
-	expect(await hasBlockComment(page, "block2")).toBe(true);
-	expect(await hasBlockComment(page, "block3")).toBe(true);
-	expect(await hasBlockComment(page, "block4")).toBe(true);
-	expect(await hasBlockComment(page, "block5")).toBe(true);
-	expect(await hasBlockComment(page, "block6")).toBe(true);
-	expect(await hasBlockComment(page, "block7")).toBe(false);
+	expect((await getBlock(page, { id: "block1" })).hasComment).toBe(false);
+	expect((await getBlock(page, { id: "block2" })).hasComment).toBe(true);
+	expect((await getBlock(page, { id: "block3" })).hasComment).toBe(true);
+	expect((await getBlock(page, { id: "block4" })).hasComment).toBe(true);
+	expect((await getBlock(page, { id: "block5" })).hasComment).toBe(true);
+	expect((await getBlock(page, { id: "block6" })).hasComment).toBe(true);
+	expect((await getBlock(page, { id: "block7" })).hasComment).toBe(false);
 	expect(await getHighlightedBlockIds(page)).toEqual([
 		"block2",
 		"block3",
@@ -170,15 +192,25 @@ test("remove comment from blocks", async ({ page, act }) => {
 		]),
 	);
 	await act(page.keyboard.down("Shift"));
-	await act(page.mouse.click(...(await getBlock(page, "block2"))));
-	await act(page.mouse.click(...(await getBlock(page, "block3"))));
-	await act(page.mouse.click(...(await getBlock(page, "block4"))));
-	await act(page.mouse.click(...(await getBlock(page, "block5"))));
-	await act(page.mouse.click(...(await getBlock(page, "block6"))));
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "block2" })).centerTop),
+	);
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "block3" })).centerTop),
+	);
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "block4" })).centerTop),
+	);
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "block5" })).centerTop),
+	);
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "block6" })).centerTop),
+	);
 	await act(page.keyboard.up("Shift"));
 
 	await act(
-		page.mouse.click(...(await getBlock(page, "block4")), {
+		page.mouse.click(...(await getBlock(page, { id: "block4" })).centerTop, {
 			button: "right",
 		}),
 	);
@@ -196,13 +228,13 @@ test("remove comment from blocks", async ({ page, act }) => {
 			.click(),
 	);
 
-	expect(await hasBlockComment(page, "block1")).toBe(false);
-	expect(await hasBlockComment(page, "block2")).toBe(false);
-	expect(await hasBlockComment(page, "block3")).toBe(false);
-	expect(await hasBlockComment(page, "block4")).toBe(false);
-	expect(await hasBlockComment(page, "block5")).toBe(false);
-	expect(await hasBlockComment(page, "block6")).toBe(false);
-	expect(await hasBlockComment(page, "block7")).toBe(true);
+	expect((await getBlock(page, { id: "block1" })).hasComment).toBe(false);
+	expect((await getBlock(page, { id: "block2" })).hasComment).toBe(false);
+	expect((await getBlock(page, { id: "block3" })).hasComment).toBe(false);
+	expect((await getBlock(page, { id: "block4" })).hasComment).toBe(false);
+	expect((await getBlock(page, { id: "block5" })).hasComment).toBe(false);
+	expect((await getBlock(page, { id: "block6" })).hasComment).toBe(false);
+	expect((await getBlock(page, { id: "block7" })).hasComment).toBe(true);
 	expect(await getHighlightedBlockIds(page)).toEqual([
 		"block2",
 		"block3",
@@ -226,15 +258,25 @@ test("switch blocks to external inputs", async ({ page, act }) => {
 		]),
 	);
 	await act(page.keyboard.down("Shift"));
-	await act(page.mouse.click(...(await getBlock(page, "block2"))));
-	await act(page.mouse.click(...(await getBlock(page, "block3"))));
-	await act(page.mouse.click(...(await getBlock(page, "block4"))));
-	await act(page.mouse.click(...(await getBlock(page, "block5"))));
-	await act(page.mouse.click(...(await getBlock(page, "block6"))));
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "block2" })).centerTop),
+	);
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "block3" })).centerTop),
+	);
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "block4" })).centerTop),
+	);
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "block5" })).centerTop),
+	);
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "block6" })).centerTop),
+	);
 	await act(page.keyboard.up("Shift"));
 
 	await act(
-		page.mouse.click(...(await getBlock(page, "block2")), {
+		page.mouse.click(...(await getBlock(page, { id: "block2" })).centerTop, {
 			button: "right",
 		}),
 	);
@@ -252,13 +294,13 @@ test("switch blocks to external inputs", async ({ page, act }) => {
 			.click(),
 	);
 
-	expect(await hasInlineInputs(page, "block1")).toBe(true);
-	expect(await hasInlineInputs(page, "block2")).toBe(false);
-	expect(await hasInlineInputs(page, "block3")).toBe(false);
-	expect(await hasInlineInputs(page, "block4")).toBe(false);
-	expect(await hasInlineInputs(page, "block5")).toBe(false);
-	expect(await hasInlineInputs(page, "block6")).toBe(false);
-	expect(await hasInlineInputs(page, "block7")).toBe(true);
+	expect((await getBlock(page, { id: "block1" })).hasInlineInputs).toBe(true);
+	expect((await getBlock(page, { id: "block2" })).hasInlineInputs).toBe(false);
+	expect((await getBlock(page, { id: "block3" })).hasInlineInputs).toBe(false);
+	expect((await getBlock(page, { id: "block4" })).hasInlineInputs).toBe(false);
+	expect((await getBlock(page, { id: "block5" })).hasInlineInputs).toBe(false);
+	expect((await getBlock(page, { id: "block6" })).hasInlineInputs).toBe(false);
+	expect((await getBlock(page, { id: "block7" })).hasInlineInputs).toBe(true);
 	expect(await getHighlightedBlockIds(page)).toEqual([
 		"block2",
 		"block3",
@@ -282,15 +324,25 @@ test("switch blocks to inline inputs", async ({ page, act }) => {
 		]),
 	);
 	await act(page.keyboard.down("Shift"));
-	await act(page.mouse.click(...(await getBlock(page, "block2"))));
-	await act(page.mouse.click(...(await getBlock(page, "block3"))));
-	await act(page.mouse.click(...(await getBlock(page, "block4"))));
-	await act(page.mouse.click(...(await getBlock(page, "block5"))));
-	await act(page.mouse.click(...(await getBlock(page, "block6"))));
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "block2" })).centerTop),
+	);
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "block3" })).centerTop),
+	);
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "block4" })).centerTop),
+	);
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "block5" })).centerTop),
+	);
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "block6" })).centerTop),
+	);
 	await act(page.keyboard.up("Shift"));
 
 	await act(
-		page.mouse.click(...(await getBlock(page, "block4")), {
+		page.mouse.click(...(await getBlock(page, { id: "block4" })).centerTop, {
 			button: "right",
 		}),
 	);
@@ -308,13 +360,13 @@ test("switch blocks to inline inputs", async ({ page, act }) => {
 			.click(),
 	);
 
-	expect(await hasInlineInputs(page, "block1")).toBe(true);
-	expect(await hasInlineInputs(page, "block2")).toBe(true);
-	expect(await hasInlineInputs(page, "block3")).toBe(true);
-	expect(await hasInlineInputs(page, "block4")).toBe(true);
-	expect(await hasInlineInputs(page, "block5")).toBe(true);
-	expect(await hasInlineInputs(page, "block6")).toBe(true);
-	expect(await hasInlineInputs(page, "block7")).toBe(true);
+	expect((await getBlock(page, { id: "block1" })).hasInlineInputs).toBe(true);
+	expect((await getBlock(page, { id: "block2" })).hasInlineInputs).toBe(true);
+	expect((await getBlock(page, { id: "block3" })).hasInlineInputs).toBe(true);
+	expect((await getBlock(page, { id: "block4" })).hasInlineInputs).toBe(true);
+	expect((await getBlock(page, { id: "block5" })).hasInlineInputs).toBe(true);
+	expect((await getBlock(page, { id: "block6" })).hasInlineInputs).toBe(true);
+	expect((await getBlock(page, { id: "block7" })).hasInlineInputs).toBe(true);
 	expect(await getHighlightedBlockIds(page)).toEqual([
 		"block2",
 		"block3",
@@ -338,15 +390,25 @@ test("disable blocks", async ({ page, act }) => {
 		]),
 	);
 	await act(page.keyboard.down("Shift"));
-	await act(page.mouse.click(...(await getBlock(page, "block2"))));
-	await act(page.mouse.click(...(await getBlock(page, "block3"))));
-	await act(page.mouse.click(...(await getBlock(page, "block4"))));
-	await act(page.mouse.click(...(await getBlock(page, "block5"))));
-	await act(page.mouse.click(...(await getBlock(page, "block6"))));
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "block2" })).centerTop),
+	);
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "block3" })).centerTop),
+	);
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "block4" })).centerTop),
+	);
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "block5" })).centerTop),
+	);
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "block6" })).centerTop),
+	);
 	await act(page.keyboard.up("Shift"));
 
 	await act(
-		page.mouse.click(...(await getBlock(page, "block2")), {
+		page.mouse.click(...(await getBlock(page, { id: "block2" })).centerTop, {
 			button: "right",
 		}),
 	);
@@ -364,13 +426,13 @@ test("disable blocks", async ({ page, act }) => {
 			.click(),
 	);
 
-	expect(await isBlockEnabled(page, "block1")).toBe(true);
-	expect(await isBlockEnabled(page, "block2")).toBe(false);
-	expect(await isBlockEnabled(page, "block3")).toBe(false);
-	expect(await isBlockEnabled(page, "block4")).toBe(false);
-	expect(await isBlockEnabled(page, "block5")).toBe(false);
-	expect(await isBlockEnabled(page, "block6")).toBe(false);
-	expect(await isBlockEnabled(page, "block7")).toBe(true);
+	expect((await getBlock(page, { id: "block1" })).isEnabled).toBe(true);
+	expect((await getBlock(page, { id: "block2" })).isEnabled).toBe(false);
+	expect((await getBlock(page, { id: "block3" })).isEnabled).toBe(false);
+	expect((await getBlock(page, { id: "block4" })).isEnabled).toBe(false);
+	expect((await getBlock(page, { id: "block5" })).isEnabled).toBe(false);
+	expect((await getBlock(page, { id: "block6" })).isEnabled).toBe(false);
+	expect((await getBlock(page, { id: "block7" })).isEnabled).toBe(true);
 	expect(await getHighlightedBlockIds(page)).toEqual([
 		"block2",
 		"block3",
@@ -394,15 +456,25 @@ test("enable blocks", async ({ page, act }) => {
 		]),
 	);
 	await act(page.keyboard.down("Shift"));
-	await act(page.mouse.click(...(await getBlock(page, "block2"))));
-	await act(page.mouse.click(...(await getBlock(page, "block3"))));
-	await act(page.mouse.click(...(await getBlock(page, "block4"))));
-	await act(page.mouse.click(...(await getBlock(page, "block5"))));
-	await act(page.mouse.click(...(await getBlock(page, "block6"))));
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "block2" })).centerTop),
+	);
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "block3" })).centerTop),
+	);
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "block4" })).centerTop),
+	);
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "block5" })).centerTop),
+	);
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "block6" })).centerTop),
+	);
 	await act(page.keyboard.up("Shift"));
 
 	await act(
-		page.mouse.click(...(await getBlock(page, "block4")), {
+		page.mouse.click(...(await getBlock(page, { id: "block4" })).centerTop, {
 			button: "right",
 		}),
 	);
@@ -420,13 +492,13 @@ test("enable blocks", async ({ page, act }) => {
 			.click(),
 	);
 
-	expect(await isBlockEnabled(page, "block1")).toBe(true);
-	expect(await isBlockEnabled(page, "block2")).toBe(true);
-	expect(await isBlockEnabled(page, "block3")).toBe(true);
-	expect(await isBlockEnabled(page, "block4")).toBe(true);
-	expect(await isBlockEnabled(page, "block5")).toBe(true);
-	expect(await isBlockEnabled(page, "block6")).toBe(true);
-	expect(await isBlockEnabled(page, "block7")).toBe(true);
+	expect((await getBlock(page, { id: "block1" })).isEnabled).toBe(true);
+	expect((await getBlock(page, { id: "block2" })).isEnabled).toBe(true);
+	expect((await getBlock(page, { id: "block3" })).isEnabled).toBe(true);
+	expect((await getBlock(page, { id: "block4" })).isEnabled).toBe(true);
+	expect((await getBlock(page, { id: "block5" })).isEnabled).toBe(true);
+	expect((await getBlock(page, { id: "block6" })).isEnabled).toBe(true);
+	expect((await getBlock(page, { id: "block7" })).isEnabled).toBe(true);
 	expect(await getHighlightedBlockIds(page)).toEqual([
 		"block2",
 		"block3",
@@ -454,8 +526,12 @@ test("edit block comment", async ({ page, act }) => {
 		]),
 	);
 	await act(page.keyboard.down("Shift"));
-	await act(page.mouse.click(...(await getBlock(page, "block1"))));
-	await act(page.mouse.click(...(await getBlock(page, "block2"))));
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "block1" })).centerTop),
+	);
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "block2" })).centerTop),
+	);
 	await act(page.keyboard.up("Shift"));
 
 	await act(page.locator(`g[data-id="block1"] .blocklyIconGroup`).click());
@@ -486,8 +562,12 @@ test("edit block mutator", async ({ page, act }) => {
 		]),
 	);
 	await act(page.keyboard.down("Shift"));
-	await act(page.mouse.click(...(await getBlock(page, "block1"))));
-	await act(page.mouse.click(...(await getBlock(page, "block2"))));
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "block1" })).centerTop),
+	);
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "block2" })).centerTop),
+	);
 	await act(page.keyboard.up("Shift"));
 
 	await act(page.locator(`g[data-id="block1"] .blockly-icon-mutator`).click());
