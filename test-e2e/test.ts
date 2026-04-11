@@ -12,19 +12,39 @@ declare const Blockly: typeof import("blockly");
 
 declare global {
 	interface Window {
-		multiDraggableWeakMap: WeakMap<object, { id: string }>;
+		multiDraggableWeakMap: WeakMap<WorkspaceSvg, { id: string }>;
 	}
 }
 
-export const test = base.extend<{
-	act: (action: Promise<void>) => Promise<void>;
-}>({
-	page: async ({ page }, use) => {
+type Act = (action: Promise<void>) => Promise<void>;
+type BlockQuery = { workspace?: "main" | "toolbox" } & (
+	| { id: string; type?: never }
+	| { type: string; id?: never }
+);
+type Point = [number, number];
+type Bounds = { top: number; bottom: number; left: number; right: number };
+type FieldJSON = { center: Point; value: unknown | null };
+type BlockJSON = {
+	centerTop: Point;
+	bounds: Bounds;
+	isCollapsed: boolean;
+	hasComment: boolean;
+	hasInlineInputs: boolean;
+	isEnabled: boolean;
+	fields: Record<string, FieldJSON>;
+};
+type CommentJSON = { centerTop: Point; bounds: Bounds };
+
+export const test = base.extend<{ act: Act }>({
+	page: async (
+		{ page }: { page: Page },
+		use: (page: Page) => Promise<void>,
+	) => {
 		await page.goto("/");
 		await page.locator(".blocklySvg").hover();
 		await use(page);
 	},
-	act: async ({ page }, use) => {
+	act: async ({ page }: { page: Page }, use: (act: Act) => Promise<void>) => {
 		await use(async (action) => {
 			await action;
 			await page.evaluate(async () => {
@@ -56,7 +76,10 @@ export const test = base.extend<{
 	},
 });
 
-export const loadBlocks = (page: Page, blocks: serialization.blocks.State[]) =>
+export const loadBlocks = (
+	page: Page,
+	blocks: serialization.blocks.State[],
+): Promise<void> =>
 	page.evaluate((blocks) => {
 		const workspace = Blockly.getMainWorkspace() as WorkspaceSvg;
 		Blockly.serialization.workspaces.load(
@@ -70,90 +93,77 @@ export const loadBlocks = (page: Page, blocks: serialization.blocks.State[]) =>
 		workspace.cleanUp();
 	}, blocks);
 
-export const getBlockBounds = (page: Page, id: string) =>
-	page.evaluate((id) => {
-		const workspace = Blockly.getMainWorkspace() as WorkspaceSvg;
-		const block = workspace.getBlockById(id);
-		if (!block) throw new Error(`Block "${id}" not found`);
-		const blockBounds = block.getBoundingRectangleWithoutChildren();
+export const getBlock = (page: Page, query: BlockQuery): Promise<BlockJSON> =>
+	page.evaluate((query: BlockQuery) => {
+		const mainWorkspace = Blockly.getMainWorkspace() as WorkspaceSvg;
+		let workspace: WorkspaceSvg;
+		switch (query.workspace ?? "main") {
+			case "main":
+				workspace = mainWorkspace;
+				break;
+			case "toolbox": {
+				const flyout = mainWorkspace.getFlyout();
+				if (!flyout) throw new Error("Toolbox flyout not found");
+				workspace = flyout.getWorkspace();
+				break;
+			}
+			default:
+				throw new Error(`Workspace "${query.workspace}" not found`);
+		}
+		const block = query.id
+			? workspace.getBlockById(query.id)
+			: workspace.getTopBlocks().find((b) => b.type === query.type);
+		if (!block)
+			throw new Error(
+				`Block ${query.id ? `"${query.id}"` : `type "${query.type}"`} not found`,
+			);
+		const workspaceBounds = block.getBoundingRectangleWithoutChildren();
 		const topLeft = Blockly.utils.svgMath.wsToScreenCoordinates(
 			workspace,
-			new Blockly.utils.Coordinate(blockBounds.left, blockBounds.top),
+			new Blockly.utils.Coordinate(workspaceBounds.left, workspaceBounds.top),
 		);
 		const bottomRight = Blockly.utils.svgMath.wsToScreenCoordinates(
 			workspace,
-			new Blockly.utils.Coordinate(blockBounds.right, blockBounds.bottom),
+			new Blockly.utils.Coordinate(
+				workspaceBounds.right,
+				workspaceBounds.bottom,
+			),
 		);
-		return {
+		const bounds = {
 			top: topLeft.y,
 			bottom: bottomRight.y,
 			left: topLeft.x,
 			right: bottomRight.x,
 		};
-	}, id);
+		const centerTop: Point = [(bounds.left + bounds.right) / 2, bounds.top + 1];
+		const fields: Record<string, FieldJSON> = {};
+		for (const input of block.inputList) {
+			for (const field of input.fieldRow) {
+				if (!field.name) continue;
+				const svgRoot = field.getSvgRoot();
+				if (!svgRoot) continue;
+				const fieldBounds = svgRoot.getBoundingClientRect();
+				fields[field.name] = {
+					center: [
+						(fieldBounds.left + fieldBounds.right) / 2,
+						(fieldBounds.top + fieldBounds.bottom) / 2,
+					],
+					value: field.getValue(),
+				};
+			}
+		}
+		return {
+			centerTop,
+			bounds,
+			isCollapsed: block.isCollapsed(),
+			hasComment: block.hasIcon(Blockly.icons.CommentIcon.TYPE),
+			hasInlineInputs: block.getInputsInline(),
+			isEnabled: block.isEnabled(),
+			fields,
+		};
+	}, query);
 
-export const getBlock = (page: Page, id: string) =>
-	page.evaluate((id) => {
-		const workspace = Blockly.getMainWorkspace() as WorkspaceSvg;
-		const block = workspace.getBlockById(id);
-		if (!block) throw new Error(`Block "${id}" not found`);
-		const blockBounds = block.getBoundingRectangleWithoutChildren();
-		const { x, y } = Blockly.utils.svgMath.wsToScreenCoordinates(
-			workspace,
-			new Blockly.utils.Coordinate(
-				(blockBounds.left + blockBounds.right) / 2,
-				blockBounds.top + 1,
-			),
-		);
-		return [x, y] as const;
-	}, id);
-
-export const getBlockField = (page: Page, id: string, fieldName: string) =>
-	page.evaluate(
-		([id, fieldName]) => {
-			const workspace = Blockly.getMainWorkspace() as WorkspaceSvg;
-			const block = workspace.getBlockById(id);
-			if (!block) throw new Error(`Block "${id}" not found`);
-			const field = block.getField(fieldName);
-			if (!field)
-				throw new Error(`Field "${fieldName}" not found on block "${id}"`);
-			const svgRoot = field.getSvgRoot();
-			if (!svgRoot)
-				throw new Error(
-					`Field "${fieldName}" on block "${id}" has no SVG root`,
-				);
-			const fieldBounds = svgRoot.getBoundingClientRect();
-			return [
-				(fieldBounds.left + fieldBounds.right) / 2,
-				(fieldBounds.top + fieldBounds.bottom) / 2,
-			] as const;
-		},
-		[id, fieldName],
-	);
-
-export const getGridSpacing = (page: Page) =>
-	page.evaluate(() => {
-		const workspace = Blockly.getMainWorkspace() as WorkspaceSvg;
-		return workspace.getGrid()?.getSpacing() ?? null;
-	});
-
-export const getEmptySpace = (page: Page) =>
-	page.evaluate(() => {
-		const workspace = Blockly.getMainWorkspace() as WorkspaceSvg;
-		const blocksBounds = workspace.getBlocksBoundingBox();
-		const grid = workspace.getGrid();
-		if (!grid) throw new Error("Workspace has no grid");
-		const { x, y } = Blockly.utils.svgMath.wsToScreenCoordinates(
-			workspace,
-			new Blockly.utils.Coordinate(
-				blocksBounds.right + grid.getSpacing(),
-				blocksBounds.bottom + grid.getSpacing(),
-			),
-		);
-		return [x, y] as const;
-	});
-
-export const getAllBlockIds = (page: Page) =>
+export const getAllBlockIds = (page: Page): Promise<string[]> =>
 	page.evaluate(() =>
 		(Blockly.getMainWorkspace() as WorkspaceSvg)
 			.getAllBlocks()
@@ -161,7 +171,7 @@ export const getAllBlockIds = (page: Page) =>
 			.sort(),
 	);
 
-export const getHighlightedBlockIds = (page: Page) =>
+export const getHighlightedBlockIds = (page: Page): Promise<string[]> =>
 	page.evaluate(() =>
 		(Blockly.getMainWorkspace() as WorkspaceSvg)
 			.getAllBlocks()
@@ -172,56 +182,10 @@ export const getHighlightedBlockIds = (page: Page) =>
 			.sort(),
 	);
 
-export const getBlockFieldValue = (page: Page, id: string, fieldName: string) =>
-	page.evaluate(
-		([id, fieldName]) => {
-			const workspace = Blockly.getMainWorkspace() as WorkspaceSvg;
-			const block = workspace.getBlockById(id);
-			if (!block) throw new Error(`Block "${id}" not found`);
-			const field = block.getField(fieldName);
-			if (!field)
-				throw new Error(`Field "${fieldName}" not found on block "${id}"`);
-			return field.getValue();
-		},
-		[id, fieldName],
-	);
-
-export const isBlockCollapsed = (page: Page, id: string) =>
-	page.evaluate((id) => {
-		const workspace = Blockly.getMainWorkspace() as WorkspaceSvg;
-		const block = workspace.getBlockById(id);
-		if (!block) throw new Error(`Block "${id}" not found`);
-		return block.isCollapsed();
-	}, id);
-
-export const hasBlockComment = (page: Page, id: string) =>
-	page.evaluate((id) => {
-		const workspace = Blockly.getMainWorkspace() as WorkspaceSvg;
-		const block = workspace.getBlockById(id);
-		if (!block) throw new Error(`Block "${id}" not found`);
-		return block.hasIcon(Blockly.icons.CommentIcon.TYPE);
-	}, id);
-
-export const hasInlineInputs = (page: Page, id: string) =>
-	page.evaluate((id) => {
-		const workspace = Blockly.getMainWorkspace() as WorkspaceSvg;
-		const block = workspace.getBlockById(id);
-		if (!block) throw new Error(`Block "${id}" not found`);
-		return block.getInputsInline();
-	}, id);
-
-export const isBlockEnabled = (page: Page, id: string) =>
-	page.evaluate((id) => {
-		const workspace = Blockly.getMainWorkspace() as WorkspaceSvg;
-		const block = workspace.getBlockById(id);
-		if (!block) throw new Error(`Block "${id}" not found`);
-		return block.isEnabled();
-	}, id);
-
 export const loadComments = (
 	page: Page,
 	comments: serialization.workspaceComments.State[],
-) =>
+): Promise<void> =>
 	page.evaluate((comments) => {
 		const workspace = Blockly.getMainWorkspace() as WorkspaceSvg;
 		const commentHeight = 100;
@@ -243,49 +207,36 @@ export const loadComments = (
 		}
 	}, comments);
 
-export const getCommentBounds = (page: Page, id: string) =>
+export const getComment = (page: Page, id: string): Promise<CommentJSON> =>
 	page.evaluate((id) => {
 		const workspace = Blockly.getMainWorkspace() as WorkspaceSvg;
 		const comment = workspace.getCommentById(
 			id,
 		) as RenderedWorkspaceComment | null;
 		if (!comment) throw new Error(`Comment "${id}" not found`);
-		const commentBounds = comment.getBoundingRectangle();
+		const workspaceBounds = comment.getBoundingRectangle();
 		const topLeft = Blockly.utils.svgMath.wsToScreenCoordinates(
 			workspace,
-			new Blockly.utils.Coordinate(commentBounds.left, commentBounds.top),
+			new Blockly.utils.Coordinate(workspaceBounds.left, workspaceBounds.top),
 		);
 		const bottomRight = Blockly.utils.svgMath.wsToScreenCoordinates(
 			workspace,
-			new Blockly.utils.Coordinate(commentBounds.right, commentBounds.bottom),
+			new Blockly.utils.Coordinate(
+				workspaceBounds.right,
+				workspaceBounds.bottom,
+			),
 		);
-		return {
+		const bounds = {
 			top: topLeft.y,
 			bottom: bottomRight.y,
 			left: topLeft.x,
 			right: bottomRight.x,
 		};
+		const centerTop: Point = [(bounds.left + bounds.right) / 2, bounds.top + 1];
+		return { centerTop, bounds };
 	}, id);
 
-export const getComment = (page: Page, id: string) =>
-	page.evaluate((id) => {
-		const workspace = Blockly.getMainWorkspace() as WorkspaceSvg;
-		const comment = workspace.getCommentById(
-			id,
-		) as RenderedWorkspaceComment | null;
-		if (!comment) throw new Error(`Comment "${id}" not found`);
-		const commentBounds = comment.getBoundingRectangle();
-		const { x, y } = Blockly.utils.svgMath.wsToScreenCoordinates(
-			workspace,
-			new Blockly.utils.Coordinate(
-				(commentBounds.left + commentBounds.right) / 2,
-				commentBounds.top + 1,
-			),
-		);
-		return [x, y] as const;
-	}, id);
-
-export const getAllCommentIds = (page: Page) =>
+export const getAllCommentIds = (page: Page): Promise<string[]> =>
 	page.evaluate(() =>
 		(Blockly.getMainWorkspace() as WorkspaceSvg)
 			.getTopComments()
@@ -293,7 +244,7 @@ export const getAllCommentIds = (page: Page) =>
 			.sort(),
 	);
 
-export const getHighlightedCommentIds = (page: Page) =>
+export const getHighlightedCommentIds = (page: Page): Promise<string[]> =>
 	page.evaluate(() =>
 		(Blockly.getMainWorkspace() as WorkspaceSvg)
 			.getTopComments()
@@ -306,10 +257,10 @@ export const getHighlightedCommentIds = (page: Page) =>
 			.sort(),
 	);
 
-export const getSelectedId = (page: Page) =>
+export const getSelectedId = (page: Page): Promise<string | null> =>
 	page.evaluate(() => Blockly.getSelected()?.id ?? null);
 
-export const getMultiselectDraggableId = (page: Page) =>
+export const getMultiselectDraggableId = (page: Page): Promise<string> =>
 	page.evaluate(() => {
 		const multiselectDraggable = window.multiDraggableWeakMap.get(
 			Blockly.getMainWorkspace() as WorkspaceSvg,
@@ -319,7 +270,29 @@ export const getMultiselectDraggableId = (page: Page) =>
 		return multiselectDraggable.id;
 	});
 
-export const isMultiselectEnabled = (page: Page) =>
+export const getGridSpacing = (page: Page): Promise<number | null> =>
+	page.evaluate(() => {
+		const workspace = Blockly.getMainWorkspace() as WorkspaceSvg;
+		return workspace.getGrid()?.getSpacing() ?? null;
+	});
+
+export const getEmptySpace = (page: Page): Promise<Point> =>
+	page.evaluate(() => {
+		const workspace = Blockly.getMainWorkspace() as WorkspaceSvg;
+		const blocksBounds = workspace.getBlocksBoundingBox();
+		const grid = workspace.getGrid();
+		if (!grid) throw new Error("Workspace has no grid");
+		const { x, y } = Blockly.utils.svgMath.wsToScreenCoordinates(
+			workspace,
+			new Blockly.utils.Coordinate(
+				blocksBounds.right + grid.getSpacing(),
+				blocksBounds.bottom + grid.getSpacing(),
+			),
+		);
+		return [x, y];
+	});
+
+export const isMultiselectEnabled = (page: Page): Promise<boolean> =>
 	page.evaluate(() => {
 		const icon = document.querySelector(
 			".blocklyMultiselect image",
@@ -340,24 +313,3 @@ export const isMultiselectEnabled = (page: Page) =>
 			`Multiselect icon href "${href}" does not match either icon`,
 		);
 	});
-
-export const getFlyoutBlock = (page: Page, type: string) =>
-	page.evaluate((type) => {
-		const workspace = Blockly.getMainWorkspace() as WorkspaceSvg;
-		const flyout = workspace.getFlyout();
-		if (!flyout) throw new Error("Flyout not found");
-		const flyoutWorkspace = flyout.getWorkspace();
-		const block = flyoutWorkspace
-			.getTopBlocks()
-			.find((block) => block.type === type);
-		if (!block) throw new Error(`Flyout block "${type}" not found`);
-		const blockBounds = block.getBoundingRectangle();
-		const { x, y } = Blockly.utils.svgMath.wsToScreenCoordinates(
-			flyoutWorkspace,
-			new Blockly.utils.Coordinate(
-				(blockBounds.left + blockBounds.right) / 2,
-				blockBounds.top + 1,
-			),
-		);
-		return [x, y] as const;
-	}, type);

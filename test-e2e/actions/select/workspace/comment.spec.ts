@@ -2,10 +2,9 @@ import { expect } from "@playwright/test";
 import {
 	getAllBlockIds,
 	getAllCommentIds,
+	getBlock,
 	getComment,
-	getCommentBounds,
 	getEmptySpace,
-	getFlyoutBlock,
 	getGridSpacing,
 	getHighlightedBlockIds,
 	getHighlightedCommentIds,
@@ -16,12 +15,14 @@ import {
 
 test.beforeEach(async ({ page, act }) => {
 	await act(loadComments(page, [{ id: "comment1" }, { id: "comment2" }]));
-	await act(page.mouse.click(...(await getComment(page, "comment1"))));
+	await act(
+		page.mouse.click(...(await getComment(page, "comment1")).centerTop),
+	);
 });
 
 test("duplicate comment via context menu", async ({ page, act }) => {
 	await act(
-		page.mouse.click(...(await getComment(page, "comment1")), {
+		page.mouse.click(...(await getComment(page, "comment1")).centerTop, {
 			button: "right",
 		}),
 	);
@@ -60,7 +61,7 @@ test("copy and paste comment via keyboard", async ({ page, act }) => {
 
 test("copy and paste comment via context menu", async ({ page, act }) => {
 	await act(
-		page.mouse.click(...(await getComment(page, "comment1")), {
+		page.mouse.click(...(await getComment(page, "comment1")).centerTop, {
 			button: "right",
 		}),
 	);
@@ -106,7 +107,7 @@ test("delete comment via keyboard", async ({ page, act }) => {
 
 test("delete comment via context menu", async ({ page, act }) => {
 	await act(
-		page.mouse.click(...(await getComment(page, "comment1")), {
+		page.mouse.click(...(await getComment(page, "comment1")).centerTop, {
 			button: "right",
 		}),
 	);
@@ -148,22 +149,23 @@ test("drag comment", async ({ page, act }) => {
 	const gridSpacing = await getGridSpacing(page);
 	if (gridSpacing === null) throw new Error("Workspace has no grid");
 	const halfGridSpacing = gridSpacing / 2;
-	const comment1BoundsStart = await getCommentBounds(page, "comment1");
-	const comment2BoundsStart = await getCommentBounds(page, "comment2");
-	const [comment1X, comment1Y] = await getComment(page, "comment1");
+	const comment1BoundsStart = (await getComment(page, "comment1")).bounds;
+	const comment2BoundsStart = (await getComment(page, "comment2")).bounds;
+	const [comment1Center, comment1Top] = (await getComment(page, "comment1"))
+		.centerTop;
 
-	await act(page.mouse.move(comment1X, comment1Y));
+	await act(page.mouse.move(comment1Center, comment1Top));
 	await act(page.mouse.down());
 	await act(
 		page.mouse.move(
-			comment1X + halfGridSpacing + 1,
-			comment1Y + halfGridSpacing + 1,
+			comment1Center + halfGridSpacing + 1,
+			comment1Top + halfGridSpacing + 1,
 		),
 	);
 	await act(page.mouse.up());
 
-	const comment1BoundsEnd = await getCommentBounds(page, "comment1");
-	const comment2BoundsEnd = await getCommentBounds(page, "comment2");
+	const comment1BoundsEnd = (await getComment(page, "comment1")).bounds;
+	const comment2BoundsEnd = (await getComment(page, "comment2")).bounds;
 	expect(comment1BoundsEnd.left - comment1BoundsStart.left).toBeCloseTo(
 		gridSpacing,
 	);
@@ -180,7 +182,12 @@ test("dragging block from toolbox selects new block", async ({ page, act }) => {
 	await act(page.getByRole("treeitem", { name: "Logic" }).click());
 	expect(await getHighlightedCommentIds(page)).toEqual(["comment1"]);
 	expect(await getSelectedId(page)).toBe("comment1");
-	await act(page.mouse.move(...(await getFlyoutBlock(page, "controls_if"))));
+	await act(
+		page.mouse.move(
+			...(await getBlock(page, { type: "controls_if", workspace: "toolbox" }))
+				.centerTop,
+		),
+	);
 	await act(page.mouse.down());
 	await act(page.mouse.move(...(await getEmptySpace(page))));
 	await act(page.mouse.up());

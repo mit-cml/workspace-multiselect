@@ -2,9 +2,7 @@ import { expect } from "@playwright/test";
 import {
 	getAllBlockIds,
 	getBlock,
-	getBlockBounds,
 	getEmptySpace,
-	getFlyoutBlock,
 	getGridSpacing,
 	getHighlightedBlockIds,
 	getSelectedId,
@@ -19,12 +17,14 @@ test.beforeEach(async ({ page, act }) => {
 			{ type: "math_number", id: "block2" },
 		]),
 	);
-	await act(page.mouse.click(...(await getBlock(page, "block1"))));
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "block1" })).centerTop),
+	);
 });
 
 test("duplicate block via context menu", async ({ page, act }) => {
 	await act(
-		page.mouse.click(...(await getBlock(page, "block1")), {
+		page.mouse.click(...(await getBlock(page, { id: "block1" })).centerTop, {
 			button: "right",
 		}),
 	);
@@ -61,7 +61,7 @@ test("copy and paste block via keyboard", async ({ page, act }) => {
 
 test("copy and paste block via context menu", async ({ page, act }) => {
 	await act(
-		page.mouse.click(...(await getBlock(page, "block1")), {
+		page.mouse.click(...(await getBlock(page, { id: "block1" })).centerTop, {
 			button: "right",
 		}),
 	);
@@ -107,7 +107,7 @@ test("delete block via keyboard", async ({ page, act }) => {
 
 test("delete block via context menu", async ({ page, act }) => {
 	await act(
-		page.mouse.click(...(await getBlock(page, "block1")), {
+		page.mouse.click(...(await getBlock(page, { id: "block1" })).centerTop, {
 			button: "right",
 		}),
 	);
@@ -149,22 +149,23 @@ test("drag block", async ({ page, act }) => {
 	const gridSpacing = await getGridSpacing(page);
 	if (gridSpacing === null) throw new Error("Workspace has no grid");
 	const halfGridSpacing = gridSpacing / 2;
-	const block1BoundsStart = await getBlockBounds(page, "block1");
-	const block2BoundsStart = await getBlockBounds(page, "block2");
-	const [block1X, block1Y] = await getBlock(page, "block1");
+	const block1BoundsStart = (await getBlock(page, { id: "block1" })).bounds;
+	const block2BoundsStart = (await getBlock(page, { id: "block2" })).bounds;
+	const [block1Center, block1Top] = (await getBlock(page, { id: "block1" }))
+		.centerTop;
 
-	await act(page.mouse.move(block1X, block1Y));
+	await act(page.mouse.move(block1Center, block1Top));
 	await act(page.mouse.down());
 	await act(
 		page.mouse.move(
-			block1X + halfGridSpacing + 1,
-			block1Y + halfGridSpacing + 1,
+			block1Center + halfGridSpacing + 1,
+			block1Top + halfGridSpacing + 1,
 		),
 	);
 	await act(page.mouse.up());
 
-	const block1BoundsEnd = await getBlockBounds(page, "block1");
-	const block2BoundsEnd = await getBlockBounds(page, "block2");
+	const block1BoundsEnd = (await getBlock(page, { id: "block1" })).bounds;
+	const block2BoundsEnd = (await getBlock(page, { id: "block2" })).bounds;
 	expect(block1BoundsEnd.left - block1BoundsStart.left).toBeCloseTo(
 		gridSpacing,
 	);
@@ -179,7 +180,12 @@ test("dragging block from toolbox selects new block", async ({ page, act }) => {
 	await act(page.getByRole("treeitem", { name: "Logic" }).click());
 	expect(await getHighlightedBlockIds(page)).toEqual(["block1"]);
 	expect(await getSelectedId(page)).toBe("block1");
-	await act(page.mouse.move(...(await getFlyoutBlock(page, "controls_if"))));
+	await act(
+		page.mouse.move(
+			...(await getBlock(page, { type: "controls_if", workspace: "toolbox" }))
+				.centerTop,
+		),
+	);
 	await act(page.mouse.down());
 	await act(page.mouse.move(...(await getEmptySpace(page))));
 	await act(page.mouse.up());
