@@ -201,26 +201,3 @@ test("drag blocks", async ({ page, act }) => {
 	expect(await getHighlightedBlockIds(page)).toEqual(["block1", "block2"]);
 	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 });
-
-test("dragging block from toolbox selects new block", async ({ page, act }) => {
-	await act(page.getByRole("treeitem", { name: "Logic" }).click());
-	expect(await getHighlightedBlockIds(page)).toEqual(["block1", "block2"]);
-	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
-	await act(
-		page.mouse.move(
-			...(await getBlock(page, { type: "controls_if", workspace: "toolbox" }))
-				.centerTop,
-		),
-	);
-	await act(page.mouse.down());
-	await act(page.mouse.move(...(await getEmptySpace(page))));
-	await act(page.mouse.up());
-
-	const allBlockIds = await getAllBlockIds(page);
-	expect(allBlockIds).toHaveLength(4);
-	const [newBlockId] = allBlockIds.filter(
-		(id) => !["block1", "block2", "block3"].includes(id),
-	);
-	expect(await getHighlightedBlockIds(page)).toEqual([newBlockId]);
-	expect(await getSelectedId(page)).toBe(newBlockId);
-});

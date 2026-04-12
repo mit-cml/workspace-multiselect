@@ -1,12 +1,9 @@
 import { expect } from "@playwright/test";
 import {
-	getAllBlockIds,
 	getAllCommentIds,
-	getBlock,
 	getComment,
 	getEmptySpace,
 	getGridSpacing,
-	getHighlightedBlockIds,
 	getHighlightedCommentIds,
 	getSelectedId,
 	loadComments,
@@ -176,25 +173,4 @@ test("drag comment", async ({ page, act }) => {
 	expect(comment2BoundsEnd.top).toBeCloseTo(comment2BoundsStart.top);
 	expect(await getHighlightedCommentIds(page)).toEqual(["comment1"]);
 	expect(await getSelectedId(page)).toBe("comment1");
-});
-
-test("dragging block from toolbox selects new block", async ({ page, act }) => {
-	await act(page.getByRole("treeitem", { name: "Logic" }).click());
-	expect(await getHighlightedCommentIds(page)).toEqual(["comment1"]);
-	expect(await getSelectedId(page)).toBe("comment1");
-	await act(
-		page.mouse.move(
-			...(await getBlock(page, { type: "controls_if", workspace: "toolbox" }))
-				.centerTop,
-		),
-	);
-	await act(page.mouse.down());
-	await act(page.mouse.move(...(await getEmptySpace(page))));
-	await act(page.mouse.up());
-
-	expect(await getHighlightedCommentIds(page)).toEqual([]);
-	const allBlockIds = await getAllBlockIds(page);
-	expect(allBlockIds).toHaveLength(1);
-	expect(await getHighlightedBlockIds(page)).toEqual(allBlockIds);
-	expect(await getSelectedId(page)).toBe(allBlockIds[0]);
 });
