@@ -6,14 +6,16 @@ import {
 	getGridSpacing,
 	getHighlightedBlockIds,
 	getSelectedId,
+	getTrash,
 	loadBlocks,
+	openTrash,
 	test,
 } from "../../../test";
 
 test.beforeEach(async ({ page, act }) => {
 	await act(
 		loadBlocks(page, [
-			{ type: "math_number", id: "block1" },
+			{ type: "logic_boolean", id: "block1" },
 			{ type: "math_number", id: "block2" },
 		]),
 	);
@@ -120,6 +122,44 @@ test("delete block via context menu", async ({ page, act }) => {
 	expect(await getAllBlockIds(page)).toEqual(["block2"]);
 	expect(await getHighlightedBlockIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBeNull();
+});
+
+test("drag block to trash", async ({ page, act }) => {
+	await act(
+		page.mouse.move(...(await getBlock(page, { id: "block1" })).centerTop),
+	);
+	await act(page.mouse.down());
+	await act(page.mouse.move(...(await getTrash(page))));
+	await act(page.mouse.up());
+
+	expect(await getAllBlockIds(page)).toEqual(["block2"]);
+	expect(await getHighlightedBlockIds(page)).toEqual([]);
+	expect(await getSelectedId(page)).toBe("block1");
+
+	await openTrash(page);
+	await getBlock(page, { type: "logic_boolean", workspace: "trash" });
+});
+
+test("drag block from trash", async ({ page, act }) => {
+	await act(page.keyboard.press("Delete"));
+	expect(await getAllBlockIds(page)).toEqual(["block2"]);
+
+	await openTrash(page);
+	await act(
+		page.mouse.move(
+			...(await getBlock(page, { type: "logic_boolean", workspace: "trash" }))
+				.centerTop,
+		),
+	);
+	await act(page.mouse.down());
+	await act(page.mouse.move(...(await getEmptySpace(page))));
+	await act(page.mouse.up());
+
+	const allBlockIds = await getAllBlockIds(page);
+	expect(allBlockIds).toHaveLength(2);
+	const [newBlockId] = allBlockIds.filter((id) => id !== "block2");
+	expect(await getHighlightedBlockIds(page)).toEqual([newBlockId]);
+	expect(await getSelectedId(page)).toBe(newBlockId);
 });
 
 test("undo via keyboard", async ({ page, act }) => {
