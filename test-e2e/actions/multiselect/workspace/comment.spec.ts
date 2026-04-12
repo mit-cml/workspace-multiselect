@@ -234,6 +234,11 @@ test("drag comments", async ({ page, act }) => {
 			comment1Top + halfGridSpacing + 1,
 		),
 	);
+	expect(await getHighlightedCommentIds(page)).toEqual([
+		"comment1",
+		"comment2",
+	]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 	await act(page.mouse.up());
 
 	const comment1BoundsEnd = (await getComment(page, "comment1")).bounds;
