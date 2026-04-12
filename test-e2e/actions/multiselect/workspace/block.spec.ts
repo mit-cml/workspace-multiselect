@@ -229,6 +229,8 @@ test("drag blocks", async ({ page, act }) => {
 			block1Top + halfGridSpacing + 1,
 		),
 	);
+	expect(await getHighlightedBlockIds(page)).toEqual(["block1", "block2"]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 	await act(page.mouse.up());
 
 	const block1BoundsEnd = (await getBlock(page, { id: "block1" })).bounds;
