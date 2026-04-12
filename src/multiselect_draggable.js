@@ -257,6 +257,12 @@ export class MultiselectDraggable {
    * @param {Blockly.Events.BLOCK_DRAG} e A drag event
    */
   endDrag(e) {
+    const dragTarget = this.workspace.getDragTarget(e);
+    if (dragTarget && this.topSubDraggables.some(
+        (draggable) => dragTarget.shouldPreventMove(draggable))) {
+      this.revertDrag();
+    }
+
     for (const draggable of this.topSubDraggables) {
       draggable.endDrag(e);
     }

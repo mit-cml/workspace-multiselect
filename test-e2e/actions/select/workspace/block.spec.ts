@@ -1,6 +1,7 @@
 import { expect } from "@playwright/test";
 import {
 	getAllBlockIds,
+	getBackpack,
 	getBlock,
 	getEmptySpace,
 	getGridSpacing,
@@ -8,6 +9,7 @@ import {
 	getSelectedId,
 	getTrash,
 	loadBlocks,
+	openBackpack,
 	openTrash,
 	test,
 } from "../../../test";
@@ -158,6 +160,58 @@ test("drag block from trash", async ({ page, act }) => {
 	const allBlockIds = await getAllBlockIds(page);
 	expect(allBlockIds).toHaveLength(2);
 	const [newBlockId] = allBlockIds.filter((id) => id !== "block2");
+	expect(await getHighlightedBlockIds(page)).toEqual([newBlockId]);
+	expect(await getSelectedId(page)).toBe(newBlockId);
+});
+
+test("drag block to backpack", async ({ page, act }) => {
+	const block1BoundsStart = (await getBlock(page, { id: "block1" })).bounds;
+	await act(
+		page.mouse.move(...(await getBlock(page, { id: "block1" })).centerTop),
+	);
+	await act(page.mouse.down());
+	await act(page.mouse.move(...(await getBackpack(page))));
+	await act(page.mouse.up());
+
+	expect(await getAllBlockIds(page)).toEqual(["block1", "block2"]);
+	expect(await getHighlightedBlockIds(page)).toEqual(["block1"]);
+	expect(await getSelectedId(page)).toBe("block1");
+	const block1BoundsEnd = (await getBlock(page, { id: "block1" })).bounds;
+	expect(block1BoundsEnd.left).toBe(block1BoundsStart.left);
+	expect(block1BoundsEnd.top).toBe(block1BoundsStart.top);
+
+	await openBackpack(page);
+	await getBlock(page, { type: "logic_boolean", workspace: "backpack" });
+});
+
+test("drag block from backpack", async ({ page, act }) => {
+	await act(
+		page.mouse.move(...(await getBlock(page, { id: "block1" })).centerTop),
+	);
+	await act(page.mouse.down());
+	await act(page.mouse.move(...(await getBackpack(page))));
+	await act(page.mouse.up());
+
+	await openBackpack(page);
+	await act(
+		page.mouse.move(
+			...(
+				await getBlock(page, {
+					type: "logic_boolean",
+					workspace: "backpack",
+				})
+			).centerTop,
+		),
+	);
+	await act(page.mouse.down());
+	await act(page.mouse.move(...(await getEmptySpace(page))));
+	await act(page.mouse.up());
+
+	const allBlockIds = await getAllBlockIds(page);
+	expect(allBlockIds).toHaveLength(3);
+	const [newBlockId] = allBlockIds.filter(
+		(id) => !["block1", "block2"].includes(id),
+	);
 	expect(await getHighlightedBlockIds(page)).toEqual([newBlockId]);
 	expect(await getSelectedId(page)).toBe(newBlockId);
 });

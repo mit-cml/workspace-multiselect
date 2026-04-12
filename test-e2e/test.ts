@@ -1,3 +1,4 @@
+import type { Backpack } from "@blockly/workspace-backpack";
 import { test as base, type Page } from "@playwright/test";
 import type {
 	comments,
@@ -17,7 +18,7 @@ declare global {
 }
 
 type Act = (action: Promise<void>) => Promise<void>;
-type BlockQuery = { workspace?: "main" | "toolbox" | "trash" } & (
+type BlockQuery = { workspace?: "main" | "toolbox" | "trash" | "backpack" } & (
 	| { id: string; type?: never }
 	| { type: string; id?: never }
 );
@@ -112,6 +113,16 @@ export const getBlock = (page: Page, query: BlockQuery): Promise<BlockJSON> =>
 				if (!trash) throw new Error("Trash not found");
 				if (!trash.flyout) throw new Error("Trash flyout not found");
 				workspace = trash.flyout.getWorkspace();
+				break;
+			}
+			case "backpack": {
+				const backpack = mainWorkspace
+					.getComponentManager()
+					.getComponent("backpack") as Backpack | undefined;
+				if (!backpack) throw new Error("Backpack not found");
+				const flyout = backpack.getFlyout();
+				if (!flyout) throw new Error("Backpack flyout not found");
+				workspace = flyout.getWorkspace();
 				break;
 			}
 			default:
@@ -318,6 +329,23 @@ export const openTrash = async (page: Page): Promise<void> => {
 		if (!trash) throw new Error("Trash not found");
 		if (!trash.flyout) throw new Error("Trash flyout not found");
 		return trash.flyout.isVisible();
+	});
+};
+
+export const getBackpack = async (page: Page): Promise<Point> => {
+	const backpack = await page.locator(".blocklyBackpack").boundingBox();
+	if (!backpack) throw new Error("Backpack not found");
+	return [backpack.x + backpack.width / 2, backpack.y + backpack.height / 2];
+};
+
+export const openBackpack = async (page: Page): Promise<void> => {
+	await page.evaluate(() => {
+		const workspace = Blockly.getMainWorkspace() as WorkspaceSvg;
+		const backpack = workspace.getComponentManager().getComponent("backpack") as
+			| Backpack
+			| undefined;
+		if (!backpack) throw new Error("Backpack not found");
+		backpack.open();
 	});
 };
 

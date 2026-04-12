@@ -1,6 +1,7 @@
 import { expect } from "@playwright/test";
 import {
 	getAllBlockIds,
+	getBackpack,
 	getBlock,
 	getEmptySpace,
 	getGridSpacing,
@@ -9,6 +10,7 @@ import {
 	getSelectedId,
 	getTrash,
 	loadBlocks,
+	openBackpack,
 	openTrash,
 	test,
 } from "../../../test";
@@ -159,6 +161,31 @@ test("drag blocks to trash", async ({ page, act }) => {
 	await openTrash(page);
 	await getBlock(page, { type: "logic_boolean", workspace: "trash" });
 	await getBlock(page, { type: "math_number", workspace: "trash" });
+});
+
+test("drag blocks to backpack", async ({ page, act }) => {
+	const block1BoundsStart = (await getBlock(page, { id: "block1" })).bounds;
+	const block2BoundsStart = (await getBlock(page, { id: "block2" })).bounds;
+	await act(
+		page.mouse.move(...(await getBlock(page, { id: "block1" })).centerTop),
+	);
+	await act(page.mouse.down());
+	await act(page.mouse.move(...(await getBackpack(page))));
+	await act(page.mouse.up());
+
+	expect(await getAllBlockIds(page)).toEqual(["block1", "block2", "block3"]);
+	expect(await getHighlightedBlockIds(page)).toEqual(["block1", "block2"]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
+	const block1BoundsEnd = (await getBlock(page, { id: "block1" })).bounds;
+	const block2BoundsEnd = (await getBlock(page, { id: "block2" })).bounds;
+	expect(block1BoundsEnd.left).toBeCloseTo(block1BoundsStart.left);
+	expect(block1BoundsEnd.top).toBeCloseTo(block1BoundsStart.top);
+	expect(block2BoundsEnd.left).toBeCloseTo(block2BoundsStart.left);
+	expect(block2BoundsEnd.top).toBeCloseTo(block2BoundsStart.top);
+
+	await openBackpack(page);
+	await getBlock(page, { type: "logic_boolean", workspace: "backpack" });
+	await getBlock(page, { type: "math_number", workspace: "backpack" });
 });
 
 test("undo via keyboard", async ({ page, act }) => {
