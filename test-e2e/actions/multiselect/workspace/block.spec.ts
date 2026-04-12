@@ -7,14 +7,16 @@ import {
 	getHighlightedBlockIds,
 	getMultiselectDraggableId,
 	getSelectedId,
+	getTrash,
 	loadBlocks,
+	openTrash,
 	test,
 } from "../../../test";
 
 test.beforeEach(async ({ page, act }) => {
 	await act(
 		loadBlocks(page, [
-			{ type: "math_number", id: "block1" },
+			{ type: "logic_boolean", id: "block1" },
 			{ type: "math_number", id: "block2" },
 			{ type: "math_number", id: "block3" },
 		]),
@@ -140,6 +142,23 @@ test("delete blocks via context menu", async ({ page, act }) => {
 	expect(await getAllBlockIds(page)).toEqual(["block3"]);
 	expect(await getHighlightedBlockIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBeNull();
+});
+
+test("drag blocks to trash", async ({ page, act }) => {
+	await act(
+		page.mouse.move(...(await getBlock(page, { id: "block1" })).centerTop),
+	);
+	await act(page.mouse.down());
+	await act(page.mouse.move(...(await getTrash(page))));
+	await act(page.mouse.up());
+
+	expect(await getAllBlockIds(page)).toEqual(["block3"]);
+	expect(await getHighlightedBlockIds(page)).toEqual([]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
+
+	await openTrash(page);
+	await getBlock(page, { type: "logic_boolean", workspace: "trash" });
+	await getBlock(page, { type: "math_number", workspace: "trash" });
 });
 
 test("undo via keyboard", async ({ page, act }) => {

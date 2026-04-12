@@ -7,6 +7,7 @@ import {
 	getHighlightedCommentIds,
 	getMultiselectDraggableId,
 	getSelectedId,
+	getTrash,
 	loadComments,
 	test,
 } from "../../../test";
@@ -171,6 +172,17 @@ test("delete comments via context menu", async ({ page, act }) => {
 	expect(await getAllCommentIds(page)).toEqual(["comment3"]);
 	expect(await getHighlightedCommentIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBeNull();
+});
+
+test("drag comments to trash", async ({ page, act }) => {
+	await act(page.mouse.move(...(await getComment(page, "comment1")).centerTop));
+	await act(page.mouse.down());
+	await act(page.mouse.move(...(await getTrash(page))));
+	await act(page.mouse.up());
+
+	expect(await getAllCommentIds(page)).toEqual(["comment3"]);
+	expect(await getHighlightedCommentIds(page)).toEqual([]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 });
 
 test("undo via keyboard", async ({ page, act }) => {

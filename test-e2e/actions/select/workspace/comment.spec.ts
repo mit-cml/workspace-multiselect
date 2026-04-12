@@ -6,6 +6,7 @@ import {
 	getGridSpacing,
 	getHighlightedCommentIds,
 	getSelectedId,
+	getTrash,
 	loadComments,
 	test,
 } from "../../../test";
@@ -117,6 +118,17 @@ test("delete comment via context menu", async ({ page, act }) => {
 	expect(await getAllCommentIds(page)).toEqual(["comment2"]);
 	expect(await getHighlightedCommentIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBeNull();
+});
+
+test("drag comment to trash", async ({ page, act }) => {
+	await act(page.mouse.move(...(await getComment(page, "comment1")).centerTop));
+	await act(page.mouse.down());
+	await act(page.mouse.move(...(await getTrash(page))));
+	await act(page.mouse.up());
+
+	expect(await getAllCommentIds(page)).toEqual(["comment2"]);
+	expect(await getHighlightedCommentIds(page)).toEqual([]);
+	expect(await getSelectedId(page)).toBe("comment1");
 });
 
 test("undo via keyboard", async ({ page, act }) => {

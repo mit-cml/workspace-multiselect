@@ -17,7 +17,7 @@ declare global {
 }
 
 type Act = (action: Promise<void>) => Promise<void>;
-type BlockQuery = { workspace?: "main" | "toolbox" } & (
+type BlockQuery = { workspace?: "main" | "toolbox" | "trash" } & (
 	| { id: string; type?: never }
 	| { type: string; id?: never }
 );
@@ -105,6 +105,13 @@ export const getBlock = (page: Page, query: BlockQuery): Promise<BlockJSON> =>
 				const flyout = mainWorkspace.getFlyout();
 				if (!flyout) throw new Error("Toolbox flyout not found");
 				workspace = flyout.getWorkspace();
+				break;
+			}
+			case "trash": {
+				const trash = mainWorkspace.trashcan;
+				if (!trash) throw new Error("Trash not found");
+				if (!trash.flyout) throw new Error("Trash flyout not found");
+				workspace = trash.flyout.getWorkspace();
 				break;
 			}
 			default:
@@ -291,6 +298,28 @@ export const getEmptySpace = (page: Page): Promise<Point> =>
 		);
 		return [x, y];
 	});
+
+export const getTrash = async (page: Page): Promise<Point> => {
+	const trash = await page.locator(".blocklyTrash").boundingBox();
+	if (!trash) throw new Error("Trash not found");
+	return [trash.x + trash.width / 2, trash.y + trash.height / 2];
+};
+
+export const openTrash = async (page: Page): Promise<void> => {
+	await page.evaluate(() => {
+		const workspace = Blockly.getMainWorkspace() as WorkspaceSvg;
+		const trash = workspace.trashcan;
+		if (!trash) throw new Error("Trash not found");
+		trash.openFlyout();
+	});
+	await page.waitForFunction(() => {
+		const workspace = Blockly.getMainWorkspace() as WorkspaceSvg;
+		const trash = workspace.trashcan;
+		if (!trash) throw new Error("Trash not found");
+		if (!trash.flyout) throw new Error("Trash flyout not found");
+		return trash.flyout.isVisible();
+	});
+};
 
 export const isMultiselectEnabled = (page: Page): Promise<boolean> =>
 	page.evaluate(() => {
