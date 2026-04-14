@@ -179,7 +179,7 @@ test("drag comments to trash", async ({ page, act }) => {
 
 	expect(await getAllCommentIds(page)).toEqual(["comment3"]);
 	expect(await getHighlightedCommentIds(page)).toEqual([]);
-	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
+	expect(await getSelectedId(page)).toBeNull();
 });
 
 test("undo via keyboard", async ({ page, act }) => {
