@@ -250,6 +250,10 @@ export class MultiselectDraggable {
     for (const draggable of this.topSubDraggables) {
       draggable.startDrag();
     }
+    for (const subDraggable of this.subDraggables.keys()) {
+      Blockly.utils.dom.addClass(subDraggable.getSvgRoot(), 'blocklySelected');
+    }
+    Blockly.common.setSelected(this);
   }
 
   /**
