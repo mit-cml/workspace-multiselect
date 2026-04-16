@@ -1,6 +1,7 @@
 import { expect } from "@playwright/test";
 import {
 	cmdOrCtrl,
+	cmdOrCtrlLabel,
 	getAllBlockIds,
 	getBackpack,
 	getBlock,
@@ -38,7 +39,7 @@ test("duplicate block via context menu", async ({ page, act }) => {
 	expect(await getSelectedId(page)).toBe("block1");
 	expect(await isEphemeralFocusTaken(page)).toBe(true);
 	await act(
-		page.getByRole("menuitem", { exact: true, name: "Duplicate" }).click(),
+		page.getByRole("menuitem", { exact: true, name: "Duplicate D" }).click(),
 	);
 
 	const allBlockIds = await getAllBlockIds(page);
@@ -76,7 +77,14 @@ test("copy and paste block via context menu", async ({ page, act }) => {
 	expect(await getHighlightedBlockIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBe("block1");
 	expect(await isEphemeralFocusTaken(page)).toBe(true);
-	await act(page.getByRole("menuitem", { exact: true, name: "Copy" }).click());
+	await act(
+		page
+			.getByRole("menuitem", {
+				exact: true,
+				name: `Copy ${cmdOrCtrlLabel("C")}`,
+			})
+			.click(),
+	);
 	expect(await getAllBlockIds(page)).toEqual(["block1", "block2"]);
 	expect(await getHighlightedBlockIds(page)).toEqual(["block1"]);
 	expect(await getSelectedId(page)).toBe("block1");
@@ -86,7 +94,14 @@ test("copy and paste block via context menu", async ({ page, act }) => {
 			button: "right",
 		}),
 	);
-	await act(page.getByRole("menuitem", { exact: true, name: "Paste" }).click());
+	await act(
+		page
+			.getByRole("menuitem", {
+				exact: true,
+				name: `Paste ${cmdOrCtrlLabel("V")}`,
+			})
+			.click(),
+	);
 	const allBlockIds = await getAllBlockIds(page);
 	expect(allBlockIds).toHaveLength(3);
 	const [newBlockId] = allBlockIds.filter(
@@ -111,6 +126,48 @@ test("cut and paste block via keyboard", async ({ page, act }) => {
 	expect(await getSelectedId(page)).toBe(highlightedBlockIds[0]);
 });
 
+test("cut and paste block via context menu", async ({ page, act }) => {
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "block1" })).centerTop, {
+			button: "right",
+		}),
+	);
+	expect(await getHighlightedBlockIds(page)).toEqual([]);
+	expect(await getSelectedId(page)).toBe("block1");
+	expect(await isEphemeralFocusTaken(page)).toBe(true);
+	await act(
+		page
+			.getByRole("menuitem", {
+				exact: true,
+				name: `Cut ${cmdOrCtrlLabel("X")}`,
+			})
+			.click(),
+	);
+	expect(await getAllBlockIds(page)).toEqual(["block2"]);
+	expect(await getHighlightedBlockIds(page)).toEqual(["block2"]);
+	expect(await getSelectedId(page)).toBe("block2");
+
+	await act(
+		page.mouse.click(...(await getEmptySpace(page)), {
+			button: "right",
+		}),
+	);
+	await act(
+		page
+			.getByRole("menuitem", {
+				exact: true,
+				name: `Paste ${cmdOrCtrlLabel("V")}`,
+			})
+			.click(),
+	);
+	expect(await getAllBlockIds(page)).toHaveLength(2);
+	const highlightedBlockIds = await getHighlightedBlockIds(page);
+	expect(highlightedBlockIds).toHaveLength(1);
+	expect(highlightedBlockIds).not.toContain("block2");
+	expect(await getSelectedId(page)).toBe(highlightedBlockIds[0]);
+	expect(await isEphemeralFocusTaken(page)).toBe(false);
+});
+
 test("delete block via keyboard", async ({ page, act }) => {
 	await act(page.keyboard.press("Delete"));
 
@@ -129,7 +186,9 @@ test("delete block via context menu", async ({ page, act }) => {
 	expect(await getSelectedId(page)).toBe("block1");
 	expect(await isEphemeralFocusTaken(page)).toBe(true);
 	await act(
-		page.getByRole("menuitem", { exact: true, name: "Delete Block" }).click(),
+		page
+			.getByRole("menuitem", { exact: true, name: "Delete Block Delete" })
+			.click(),
 	);
 
 	expect(await getAllBlockIds(page)).toEqual(["block2"]);

@@ -1,6 +1,7 @@
 import { expect } from "@playwright/test";
 import {
 	cmdOrCtrl,
+	cmdOrCtrlLabel,
 	getAllCommentIds,
 	getComment,
 	getEmptySpace,
@@ -45,7 +46,7 @@ test("duplicate comments via context menu", async ({ page, act }) => {
 		page
 			.getByRole("menuitem", {
 				exact: true,
-				name: "Duplicate Comment (2)",
+				name: "Duplicate Comment (2) D",
 			})
 			.click(),
 	);
@@ -93,7 +94,12 @@ test("copy and paste comments via context menu", async ({ page, act }) => {
 	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 	expect(await isEphemeralFocusTaken(page)).toBe(true);
 	await act(
-		page.getByRole("menuitem", { exact: true, name: "Copy (2)" }).click(),
+		page
+			.getByRole("menuitem", {
+				exact: true,
+				name: `Copy (2) ${cmdOrCtrlLabel("C")}`,
+			})
+			.click(),
 	);
 	expect(await getAllCommentIds(page)).toEqual([
 		"comment1",
@@ -112,7 +118,12 @@ test("copy and paste comments via context menu", async ({ page, act }) => {
 		}),
 	);
 	await act(
-		page.getByRole("menuitem", { exact: true, name: "Paste (2)" }).click(),
+		page
+			.getByRole("menuitem", {
+				exact: true,
+				name: `Paste (2) ${cmdOrCtrlLabel("V")}`,
+			})
+			.click(),
 	);
 	const allCommentIds = await getAllCommentIds(page);
 	expect(allCommentIds).toHaveLength(5);
@@ -136,6 +147,48 @@ test("cut and paste comments via keyboard", async ({ page, act }) => {
 	expect(highlightedCommentIds).toHaveLength(2);
 	expect(highlightedCommentIds).not.toContain("comment3");
 	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
+});
+
+test("cut and paste comments via context menu", async ({ page, act }) => {
+	await act(
+		page.mouse.click(...(await getComment(page, "comment1")).centerTop, {
+			button: "right",
+		}),
+	);
+	expect(await getHighlightedCommentIds(page)).toEqual([]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
+	expect(await isEphemeralFocusTaken(page)).toBe(true);
+	await act(
+		page
+			.getByRole("menuitem", {
+				exact: true,
+				name: `Cut (2) ${cmdOrCtrlLabel("X")}`,
+			})
+			.click(),
+	);
+	expect(await getAllCommentIds(page)).toEqual(["comment3"]);
+	expect(await getHighlightedCommentIds(page)).toEqual([]);
+	expect(await getSelectedId(page)).toBeNull();
+
+	await act(
+		page.mouse.click(...(await getEmptySpace(page)), {
+			button: "right",
+		}),
+	);
+	await act(
+		page
+			.getByRole("menuitem", {
+				exact: true,
+				name: `Paste (2) ${cmdOrCtrlLabel("V")}`,
+			})
+			.click(),
+	);
+	expect(await getAllCommentIds(page)).toHaveLength(3);
+	const highlightedCommentIds = await getHighlightedCommentIds(page);
+	expect(highlightedCommentIds).toHaveLength(2);
+	expect(highlightedCommentIds).not.toContain("comment3");
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
+	expect(await isEphemeralFocusTaken(page)).toBe(false);
 });
 
 test("delete comments via keyboard", async ({ page, act }) => {

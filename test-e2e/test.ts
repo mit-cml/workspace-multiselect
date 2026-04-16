@@ -39,6 +39,9 @@ type CommentJSON = { centerTop: Point; bounds: Bounds };
 export const cmdOrCtrl = (key: string): string =>
 	`${process.platform === "darwin" ? "Meta" : "Control"}+${key}`;
 
+export const cmdOrCtrlLabel = (key: string): string =>
+	`${process.platform === "darwin" ? "⌘" : "Ctrl +"} ${key}`;
+
 export const test = base.extend<{ act: Act }>({
 	page: async (
 		{ page }: { page: Page },
