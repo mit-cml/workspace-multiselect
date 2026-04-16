@@ -12,7 +12,7 @@ import * as Blockly from 'blockly/core';
 import {
   dragSelectionWeakMap, hasSelectedParent, copyData, connectionDBList,
   dataCopyToStorage, dataCopyFromStorage, registeredShortcut,
-  multiDraggableWeakMap, inPasteShortcut, getByID, shortcutNames,
+  multiDraggableWeakMap, inPasteShortcut, getByID,
 } from './global';
 import {MultiselectDraggable} from './multiselect_draggable';
 
@@ -21,7 +21,7 @@ import {MultiselectDraggable} from './multiselect_draggable';
  * for multiple blocks.
  */
 const registerShortcutDelete = function() {
-  const name = shortcutNames.MULTIDELETE;
+  const name = Blockly.ShortcutItems.names.DELETE;
   const deleteShortcut = {
     name,
     preconditionFn: function(workspace) {
@@ -101,15 +101,12 @@ const registerShortcutDelete = function() {
       Blockly.Events.setGroup(false);
       return true;
     },
+    keyCodes: [Blockly.utils.KeyCodes.DELETE, Blockly.utils.KeyCodes.BACKSPACE],
   };
   if (name in Blockly.ShortcutRegistry.registry.getRegistry()) {
     Blockly.ShortcutRegistry.registry.unregister(name);
   }
   Blockly.ShortcutRegistry.registry.register(deleteShortcut);
-  Blockly.ShortcutRegistry.registry.addKeyMapping(
-      Blockly.utils.KeyCodes.DELETE, deleteShortcut.name, true);
-  Blockly.ShortcutRegistry.registry.addKeyMapping(
-      Blockly.utils.KeyCodes.BACKSPACE, deleteShortcut.name, true);
 };
 
 
@@ -119,7 +116,7 @@ const registerShortcutDelete = function() {
  * @param {boolean} useCopyPasteCrossTab Whether or not to use copy/paste
  */
 const registerCopy = function(useCopyPasteCrossTab) {
-  const name = shortcutNames.MULTICOPY;
+  const name = Blockly.ShortcutItems.names.COPY;
   const copyShortcut = {
     name,
     preconditionFn: function(workspace) {
@@ -194,17 +191,13 @@ const registerCopy = function(useCopyPasteCrossTab) {
       Blockly.Events.setGroup(false);
       return true;
     },
+    keyCodes: [Blockly.ShortcutRegistry.registry.createSerializedKey(
+        Blockly.utils.KeyCodes.C, [Blockly.utils.KeyCodes.CTRL_CMD])],
   };
   if (name in Blockly.ShortcutRegistry.registry.getRegistry()) {
     Blockly.ShortcutRegistry.registry.unregister(name);
   }
   Blockly.ShortcutRegistry.registry.register(copyShortcut);
-
-  const ctrlC = Blockly.ShortcutRegistry.registry.createSerializedKey(
-      Blockly.utils.KeyCodes.C, [Blockly.utils.KeyCodes.CTRL_CMD]);
-  Blockly.ShortcutRegistry.registry.addKeyMapping(
-      ctrlC, copyShortcut.name, true);
-
 };
 
 
@@ -214,7 +207,7 @@ const registerCopy = function(useCopyPasteCrossTab) {
  * @param {boolean} useCopyPasteCrossTab Whether or not to use copy/paste
  */
 const registerCut = function(useCopyPasteCrossTab) {
-  const name = shortcutNames.MULTICUT;
+  const name = Blockly.ShortcutItems.names.CUT;
   const cutShortcut = {
     name,
     preconditionFn: function(workspace) {
@@ -309,18 +302,14 @@ const registerCut = function(useCopyPasteCrossTab) {
       Blockly.Events.setGroup(false);
       return true;
     },
+    keyCodes: [Blockly.ShortcutRegistry.registry.createSerializedKey(
+        Blockly.utils.KeyCodes.X, [Blockly.utils.KeyCodes.CTRL_CMD])],
   };
 
   if (name in Blockly.ShortcutRegistry.registry.getRegistry()) {
     Blockly.ShortcutRegistry.registry.unregister(name);
   }
   Blockly.ShortcutRegistry.registry.register(cutShortcut);
-
-  const ctrlX = Blockly.ShortcutRegistry.registry.createSerializedKey(
-      Blockly.utils.KeyCodes.X, [Blockly.utils.KeyCodes.CTRL_CMD]);
-  Blockly.ShortcutRegistry.registry.addKeyMapping(
-      ctrlX, cutShortcut.name, true);
-
 };
 
 // TODO: Look into undo stack and adding/removing blocks from multidraggable
@@ -330,7 +319,7 @@ const registerCut = function(useCopyPasteCrossTab) {
  * @param {boolean} useCopyPasteCrossTab Whether or not to use copy/paste
  */
 const registerPaste = function(useCopyPasteCrossTab) {
-  const name = shortcutNames.MULTIPASTE;
+  const name = Blockly.ShortcutItems.names.PASTE;
   const pasteShortcut = {
     name,
     preconditionFn: function(workspace) {
@@ -425,18 +414,14 @@ const registerPaste = function(useCopyPasteCrossTab) {
       });
       return true;
     },
+    keyCodes: [Blockly.ShortcutRegistry.registry.createSerializedKey(
+        Blockly.utils.KeyCodes.V, [Blockly.utils.KeyCodes.CTRL_CMD])],
   };
 
   if (name in Blockly.ShortcutRegistry.registry.getRegistry()) {
     Blockly.ShortcutRegistry.registry.unregister(name);
   }
   Blockly.ShortcutRegistry.registry.register(pasteShortcut);
-
-  const ctrlV = Blockly.ShortcutRegistry.registry.createSerializedKey(
-      Blockly.utils.KeyCodes.V, [Blockly.utils.KeyCodes.CTRL_CMD]);
-  Blockly.ShortcutRegistry.registry.addKeyMapping(
-      ctrlV, pasteShortcut.name, true);
-
 };
 
 /**
@@ -529,17 +514,13 @@ export const unregisterOrigShortcut = function() {
 
 export const unregisterOurShortcut = function() {
   registeredShortcut.length = 0;
-  for (const name of [shortcutNames.MULTIDELETE,
-    shortcutNames.MULTICOPY,
-    shortcutNames.MULTICUT, shortcutNames.MULTIPASTE]) {
+  for (const name of [Blockly.ShortcutItems.names.DELETE,
+    Blockly.ShortcutItems.names.COPY,
+    Blockly.ShortcutItems.names.CUT, Blockly.ShortcutItems.names.PASTE]) {
     if (Object.entries(Blockly.ShortcutRegistry.registry.getRegistry())
         .map(([_, value]) => value.name).includes(name)) {
       Blockly.ShortcutRegistry.registry.unregister(name);
     }
-  }
-  for (const name of [Blockly.ShortcutItems.names.DELETE,
-    Blockly.ShortcutItems.names.COPY,
-    Blockly.ShortcutItems.names.CUT, Blockly.ShortcutItems.names.PASTE]) {
     registeredShortcut.push(name);
   }
 };
