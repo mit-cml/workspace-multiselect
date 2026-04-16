@@ -120,6 +120,7 @@ scope of its wrapped input function.
 - [x] Backpack (Need to update UI in Backpack plugin side)
 
 **Workspace-related**
+- [x] Keyboard-navigation
 - [x] Shadow-block-converter
 - [x] Workspace-content-highlight
 - [x] Disable-top-blocks
@@ -131,6 +132,9 @@ scope of its wrapped input function.
 - [x] Block-test
 
 For more information, please check out the following [issue page](https://github.com/mit-cml/workspace-multiselect/issues/50).
+
+### Note on keyboard navigation plugin
+The keyboard navigation plugin must be initialized after the multiselect plugin.
 
 ### Note on disable top blocks plugin
 The disable top blocks plugin has to be initialized after the multiselect plugin. The main reason behind this is that 
