@@ -34,7 +34,7 @@ function createWorkspace(blocklyDiv, options) {
   multiselectPlugin.init(options);
 
   // Initialize keyboard navigation plugin.
-  new KeyboardNavigation(workspace);
+  new KeyboardNavigation(workspace, {allowCrossWorkspacePaste: true});
   multiselectPlugin.onKeyboardNavigationInit();
 
   return workspace;

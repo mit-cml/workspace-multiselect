@@ -140,7 +140,7 @@ The keyboard navigation plugin must be initialized after the multiselect plugin.
 const multiselectPlugin = new Multiselect(workspace);
 multiselectPlugin.init(options);
 
-new KeyboardNavigation(workspace);
+new KeyboardNavigation(workspace, {allowCrossWorkspacePaste: true});
 multiselectPlugin.onKeyboardNavigationInit();
 ```
 
