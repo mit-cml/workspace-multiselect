@@ -299,6 +299,7 @@ const registerCut = function(useCopyPasteCrossTab) {
       if (useCopyPasteCrossTab) {
         dataCopyToStorage();
       }
+      Blockly.getFocusManager().focusTree(workspace);
       Blockly.Events.setGroup(false);
       return true;
     },
