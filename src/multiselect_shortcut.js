@@ -25,7 +25,7 @@ const registerShortcutDelete = function() {
   const deleteShortcut = {
     name,
     preconditionFn: function(workspace) {
-      if (workspace.options.readOnly || Blockly.Gesture.inProgress()) {
+      if (workspace.options.readOnly || workspace.isDragging()) {
         return false;
       }
       const selected = Blockly.common.getSelected();
@@ -120,7 +120,7 @@ const registerCopy = function(useCopyPasteCrossTab) {
   const copyShortcut = {
     name,
     preconditionFn: function(workspace) {
-      if (workspace.options.readOnly || Blockly.Gesture.inProgress()) {
+      if (workspace.options.readOnly || workspace.isDragging()) {
         return false;
       }
       const selected = Blockly.common.getSelected();
@@ -211,7 +211,7 @@ const registerCut = function(useCopyPasteCrossTab) {
   const cutShortcut = {
     name,
     preconditionFn: function(workspace) {
-      if (workspace.options.readOnly || Blockly.Gesture.inProgress()) {
+      if (workspace.options.readOnly || workspace.isDragging()) {
         return false;
       }
       const selected = Blockly.common.getSelected();
@@ -323,7 +323,7 @@ const registerPaste = function(useCopyPasteCrossTab) {
   const pasteShortcut = {
     name,
     preconditionFn: function(workspace) {
-      return !workspace.options.readOnly && !Blockly.Gesture.inProgress();
+      return !workspace.options.readOnly && !workspace.isDragging();
     },
     callback: function(workspace) {
       inPasteShortcut.set(workspace, true);
