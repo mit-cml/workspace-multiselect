@@ -112,7 +112,7 @@ document.addEventListener('DOMContentLoaded', function() {
     multiSelectKeys: ['Shift'],
     multiselectCopyPaste: {
       crossTab: true,
-      menu: true,
+      menu: false,
     },
     grid: {
       spacing: 25,

@@ -134,11 +134,11 @@ scope of its wrapped input function.
 For more information, please check out the following [issue page](https://github.com/mit-cml/workspace-multiselect/issues/50).
 
 ### Note on keyboard navigation plugin
-The keyboard navigation plugin must be initialized after the multiselect plugin. After initializing keyboard navigation, call `onKeyboardNavigationInit()`:
+The keyboard navigation plugin must be initialized after the multiselect plugin. Set `multiselectCopyPaste.menu` to `false` to avoid duplicate clipboard context menu items, pass `allowCrossWorkspacePaste: true` to keyboard navigation, and call `onKeyboardNavigationInit()` after:
 
 ```javascript
 const multiselectPlugin = new Multiselect(workspace);
-multiselectPlugin.init(options);
+multiselectPlugin.init({multiselectCopyPaste: {menu: false}});
 
 new KeyboardNavigation(workspace, {allowCrossWorkspacePaste: true});
 multiselectPlugin.onKeyboardNavigationInit();
