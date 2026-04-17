@@ -138,6 +138,10 @@ export class Multiselect {
 
   }
 
+  onKeyboardNavigationInit() {
+    ContextMenu.registerOurKeyboardNavigationMenuItems(this.useCopyPasteCrossTab_);
+  }
+
   /**
    * Ignore multi-field updates within the given function.
    * @param {Function} func The function to call.
@@ -201,6 +205,7 @@ export class Multiselect {
       Blockly.ContextMenuRegistry.registry.unregister('workspaceSelectAll');
       Blockly.ContextMenuRegistry.registry.unregister('copy_to_backpack');
       ContextMenu.registerOrigContextMenu();
+      ContextMenu.registerOrigKeyboardNavigationMenuItems();
 
       Shortcut.unregisterOrigShortcut();
       Blockly.ShortcutRegistry.registry.unregister('selectall');

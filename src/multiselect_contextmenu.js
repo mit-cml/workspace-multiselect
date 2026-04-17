@@ -16,6 +16,37 @@ import {
 } from './global';
 import {MultiselectDraggable} from './multiselect_draggable';
 
+const multiselectDisplayText = {};
+
+const blockCheck = function(block) {
+  return block && block.isDeletable() && block.isMovable() &&
+         !hasSelectedParent(block);
+};
+
+const blockCopyDisplayText = function(scope) {
+  let workableBlocksLength = 0;
+  const workspace = scope.block.workspace;
+  const dragSelection = dragSelectionWeakMap.get(workspace);
+  dragSelection.forEach(function(id) {
+    const block = workspace.getBlockById(id);
+    if (block && blockCheck(block)) {
+      workableBlocksLength++;
+    }
+  });
+  if (workableBlocksLength <= 1) {
+    return Blockly.Msg['CROSS_TAB_COPY']?
+    Blockly.Msg['CROSS_TAB_COPY'] : Blockly.Msg['COPY_SHORTCUT'];
+  } else {
+    return Blockly.Msg['CROSS_TAB_COPY_X_BLOCKS']?
+        Blockly.Msg['CROSS_TAB_COPY_X_BLOCKS'].replace(
+            '%1', workableBlocksLength) :
+        (Blockly.Msg['CROSS_TAB_COPY']?
+        Blockly.Msg['CROSS_TAB_COPY'] : Blockly.Msg['COPY_SHORTCUT']
+        ) + ' (' +
+        workableBlocksLength + ')';
+  }
+};
+
 /**
  * Copy multiple selected blocks to clipboard.
  * @param {boolean} useCopyPasteCrossTab Whether or not to use
@@ -24,29 +55,7 @@ import {MultiselectDraggable} from './multiselect_draggable';
 const registerCopy = function(useCopyPasteCrossTab) {
   const id = 'blockCopyToStorage';
   const copyOptions = {
-    displayText: function(scope) {
-      let workableBlocksLength = 0;
-      const workspace = scope.block.workspace;
-      const dragSelection = dragSelectionWeakMap.get(workspace);
-      dragSelection.forEach(function(id) {
-        const block = workspace.getBlockById(id);
-        if (block && copyOptions.check(block)) {
-          workableBlocksLength++;
-        }
-      });
-      if (workableBlocksLength <= 1) {
-        return Blockly.Msg['CROSS_TAB_COPY']?
-        Blockly.Msg['CROSS_TAB_COPY'] : 'Copy';
-      } else {
-        return Blockly.Msg['CROSS_TAB_COPY_X_BLOCKS']?
-            Blockly.Msg['CROSS_TAB_COPY_X_BLOCKS'].replace(
-                '%1', workableBlocksLength) :
-            (Blockly.Msg['CROSS_TAB_COPY']?
-            Blockly.Msg['CROSS_TAB_COPY'] : 'Copy'
-            ) + ' (' +
-            workableBlocksLength + ')';
-      }
-    },
+    displayText: blockCopyDisplayText,
     preconditionFn: function(scope) {
       const workspace = scope.block.workspace;
       if (workspace.options.readOnly && !useCopyPasteCrossTab) {
@@ -75,10 +84,7 @@ const registerCopy = function(useCopyPasteCrossTab) {
       }
       return 'disabled';
     },
-    check: function(block) {
-      return block && block.isDeletable() && block.isMovable() &&
-             !hasSelectedParent(block);
-    },
+    check: blockCheck,
     callback: function(scope) {
       const workspace = scope.block.workspace;
       copyData.clear();
@@ -130,6 +136,31 @@ const registerCopy = function(useCopyPasteCrossTab) {
     Blockly.ContextMenuRegistry.registry.unregister(id);
   }
   Blockly.ContextMenuRegistry.registry.register(copyOptions);
+  multiselectDisplayText[id] = copyOptions.displayText;
+};
+
+const blockCutDisplayText = function(scope) {
+  let workableBlocksLength = 0;
+  const workspace = scope.block.workspace;
+  const dragSelection = dragSelectionWeakMap.get(workspace);
+  dragSelection.forEach(function(id) {
+    const block = workspace.getBlockById(id);
+    if (block && blockCheck(block)) {
+      workableBlocksLength++;
+    }
+  });
+  if (workableBlocksLength <= 1) {
+    return Blockly.Msg['CROSS_TAB_CUT']?
+    Blockly.Msg['CROSS_TAB_CUT'] : Blockly.Msg['CUT_SHORTCUT'];
+  } else {
+    return Blockly.Msg['CROSS_TAB_CUT_X_BLOCKS']?
+        Blockly.Msg['CROSS_TAB_CUT_X_BLOCKS'].replace(
+            '%1', workableBlocksLength) :
+        (Blockly.Msg['CROSS_TAB_CUT']?
+        Blockly.Msg['CROSS_TAB_CUT'] : Blockly.Msg['CUT_SHORTCUT']
+        ) + ' (' +
+        workableBlocksLength + ')';
+  }
 };
 
 /**
@@ -251,6 +282,7 @@ const registerDuplicate = function() {
     Blockly.ContextMenuRegistry.registry.unregister(id);
   }
   Blockly.ContextMenuRegistry.registry.register(duplicateOption);
+  multiselectDisplayText[id] = duplicateOption.displayText;
 };
 
 /**
@@ -718,6 +750,23 @@ const registerDelete = function() {
   Blockly.ContextMenuRegistry.registry.register(deleteOption);
 };
 
+const pasteDisplayText = function(useCopyPasteCrossTab) {
+  const workableDraggableLength =
+      blockNumGetFromStorage(useCopyPasteCrossTab);
+  if (workableDraggableLength <= 1) {
+    return Blockly.Msg['CROSS_TAB_PASTE']?
+      Blockly.Msg['CROSS_TAB_PASTE'] : Blockly.Msg['PASTE_SHORTCUT'];
+  } else {
+    return Blockly.Msg['CROSS_TAB_PASTE_X_ELEMENTS']?
+        Blockly.Msg['CROSS_TAB_PASTE_X_ELEMENTS'].replace(
+            '%1', workableDraggableLength) :
+        (Blockly.Msg['CROSS_TAB_PASTE']?
+        Blockly.Msg['CROSS_TAB_PASTE'] : Blockly.Msg['PASTE_SHORTCUT']
+        ) + ' (' +
+        workableDraggableLength + ')';
+  }
+};
+
 /**
  * Paste multiple selected draggables from clipboard.
  * @param {boolean} useCopyPasteCrossTab Whether to use cross tab copy paste.
@@ -725,22 +774,7 @@ const registerDelete = function() {
 const registerPaste = function(useCopyPasteCrossTab) {
   const id = 'blockPasteFromStorage';
   const pasteOption = {
-    displayText: function() {
-      const workableDraggableLength =
-          blockNumGetFromStorage(useCopyPasteCrossTab);
-      if (workableDraggableLength <= 1) {
-        return Blockly.Msg['CROSS_TAB_PASTE']?
-          Blockly.Msg['CROSS_TAB_PASTE'] : 'Paste';
-      } else {
-        return Blockly.Msg['CROSS_TAB_PASTE_X_ELEMENTS']?
-            Blockly.Msg['CROSS_TAB_PASTE_X_ELEMENTS'].replace(
-                '%1', workableDraggableLength) :
-            (Blockly.Msg['CROSS_TAB_PASTE']?
-            Blockly.Msg['CROSS_TAB_PASTE'] : 'Paste'
-            ) + ' (' +
-            workableDraggableLength + ')';
-      }
-    },
+    displayText: () => pasteDisplayText(useCopyPasteCrossTab),
     preconditionFn: function(scope) {
       return scope.workspace.options.readOnly?
         'hidden': (blockNumGetFromStorage(useCopyPasteCrossTab) < 1?
@@ -829,6 +863,7 @@ const registerPaste = function(useCopyPasteCrossTab) {
     Blockly.ContextMenuRegistry.registry.unregister(id);
   }
   Blockly.ContextMenuRegistry.registry.register(pasteOption);
+  multiselectDisplayText[id] = pasteOption.displayText;
 };
 
 /**
@@ -1182,6 +1217,38 @@ const registerCommentDuplicate = function() {
     Blockly.ContextMenuRegistry.registry.unregister(id);
   }
   Blockly.ContextMenuRegistry.registry.register(duplicateOption);
+  multiselectDisplayText[id] = duplicateOption.displayText;
+};
+
+const commentCheck = function(comment) {
+  return comment && comment.isDeletable() &&
+      comment.isMovable();
+};
+
+const commentCopyDisplayText = function(scope) {
+  let workableCommentsLength = 0;
+  const workspace = scope.comment.workspace;
+  const dragSelection = dragSelectionWeakMap.get(workspace);
+  dragSelection.forEach(function(id) {
+    const comment = workspace.getCommentById(id);
+    if (comment) {
+      if (commentCheck(comment)) {
+        workableCommentsLength++;
+      }
+    }
+  });
+  if (workableCommentsLength <= 1) {
+    return Blockly.Msg['CROSS_TAB_COPY']?
+        Blockly.Msg['CROSS_TAB_COPY'] : Blockly.Msg['COPY_SHORTCUT'];
+  } else {
+    return Blockly.Msg['CROSS_TAB_COPY_X_COMMENTS']?
+        Blockly.Msg['CROSS_TAB_COPY_X_COMMENTS'].replace(
+            '%1', workableCommentsLength) :
+        (Blockly.Msg['CROSS_TAB_COPY']?
+                Blockly.Msg['CROSS_TAB_COPY'] : Blockly.Msg['COPY_SHORTCUT']
+        ) + ' (' +
+        workableCommentsLength + ')';
+  }
 };
 
 /**
@@ -1192,31 +1259,7 @@ const registerCommentDuplicate = function() {
 const registerCommentCopy = function(useCopyPasteCrossTab) {
   const id = 'commentCopyToStorage';
   const copyOptions = {
-    displayText: function(scope) {
-      let workableCommentsLength = 0;
-      const workspace = scope.comment.workspace;
-      const dragSelection = dragSelectionWeakMap.get(workspace);
-      dragSelection.forEach(function(id) {
-        const comment = workspace.getCommentById(id);
-        if (comment) {
-          if (copyOptions.check(comment)) {
-            workableCommentsLength++;
-          }
-        }
-      });
-      if (workableCommentsLength <= 1) {
-        return Blockly.Msg['CROSS_TAB_COPY']?
-            Blockly.Msg['CROSS_TAB_COPY'] : 'Copy';
-      } else {
-        return Blockly.Msg['CROSS_TAB_COPY_X_COMMENTS']?
-            Blockly.Msg['CROSS_TAB_COMMENTS'].replace(
-                '%1', workableCommentsLength) :
-            (Blockly.Msg['CROSS_TAB_COPY']?
-                    Blockly.Msg['CROSS_TAB_COPY'] : 'Copy'
-            ) + ' (' +
-            workableCommentsLength + ')';
-      }
-    },
+    displayText: commentCopyDisplayText,
     preconditionFn: function(scope) {
       const workspace = scope.comment.workspace;
       if (workspace.options.readOnly && !useCopyPasteCrossTab) {
@@ -1247,10 +1290,7 @@ const registerCommentCopy = function(useCopyPasteCrossTab) {
       }
       return 'disabled';
     },
-    check: function(comment) {
-      return comment && comment.isDeletable() &&
-          comment.isMovable();
-    },
+    check: commentCheck,
     callback: function(scope) {
       const workspace = scope.comment.workspace;
       copyData.clear();
@@ -1291,6 +1331,33 @@ const registerCommentCopy = function(useCopyPasteCrossTab) {
     Blockly.ContextMenuRegistry.registry.unregister(id);
   }
   Blockly.ContextMenuRegistry.registry.register(copyOptions);
+  multiselectDisplayText[id] = copyOptions.displayText;
+};
+
+const commentCutDisplayText = function(scope) {
+  let workableCommentsLength = 0;
+  const workspace = scope.comment.workspace;
+  const dragSelection = dragSelectionWeakMap.get(workspace);
+  dragSelection.forEach(function(id) {
+    const comment = workspace.getCommentById(id);
+    if (comment) {
+      if (commentCheck(comment)) {
+        workableCommentsLength++;
+      }
+    }
+  });
+  if (workableCommentsLength <= 1) {
+    return Blockly.Msg['CROSS_TAB_CUT']?
+        Blockly.Msg['CROSS_TAB_CUT'] : Blockly.Msg['CUT_SHORTCUT'];
+  } else {
+    return Blockly.Msg['CROSS_TAB_CUT_X_COMMENTS']?
+        Blockly.Msg['CROSS_TAB_CUT_X_COMMENTS'].replace(
+            '%1', workableCommentsLength) :
+        (Blockly.Msg['CROSS_TAB_CUT']?
+                Blockly.Msg['CROSS_TAB_CUT'] : Blockly.Msg['CUT_SHORTCUT']
+        ) + ' (' +
+        workableCommentsLength + ')';
+  }
 };
 
 /**
@@ -1353,4 +1420,53 @@ export const registerOurContextMenu = function(useCopyPasteMenu, useCopyPasteCro
   }
   registerSelectAll();
   updateToMultiCopyToBackpack();
+};
+
+const origKeyboardNavigationMenuItems = [];
+
+export const registerOurKeyboardNavigationMenuItems = function(useCopyPasteCrossTab) {
+  const addMultiselectCount = (keyboardNavMenuItem, multiselectDisplayText) => {
+    origKeyboardNavigationMenuItems.push(keyboardNavMenuItem);
+    Blockly.ContextMenuRegistry.registry.unregister(keyboardNavMenuItem.id);
+    Blockly.ContextMenuRegistry.registry.register({
+      ...keyboardNavMenuItem,
+      displayText: (scope) => {
+        const element = keyboardNavMenuItem.displayText(scope);
+        element.firstChild.textContent = multiselectDisplayText(scope);
+        return element;
+      },
+    });
+  };
+
+  addMultiselectCount(
+      Blockly.ContextMenuRegistry.registry.getItem('blockCopyFromContextMenu'),
+      (scope) => {
+        if (scope.block) return blockCopyDisplayText(scope);
+        if (scope.comment) return commentCopyDisplayText(scope);
+      });
+  addMultiselectCount(
+      Blockly.ContextMenuRegistry.registry.getItem('blockCutFromContextMenu'),
+      (scope) => {
+        if (scope.block) return blockCutDisplayText(scope);
+        if (scope.comment) return commentCutDisplayText(scope);
+      });
+  addMultiselectCount(
+      Blockly.ContextMenuRegistry.registry.getItem('blockDuplicate'),
+      multiselectDisplayText['blockDuplicate']);
+  addMultiselectCount(
+      Blockly.ContextMenuRegistry.registry.getItem('blockPasteFromContextMenu'),
+      () => pasteDisplayText(useCopyPasteCrossTab));
+  addMultiselectCount(
+      Blockly.ContextMenuRegistry.registry.getItem('commentDuplicate'),
+      multiselectDisplayText['commentDuplicate']);
+};
+
+export const registerOrigKeyboardNavigationMenuItems = function() {
+  for (const item of origKeyboardNavigationMenuItems) {
+    if (Blockly.ContextMenuRegistry.registry.getItem(item.id) !== null) {
+      Blockly.ContextMenuRegistry.registry.unregister(item.id);
+    }
+    Blockly.ContextMenuRegistry.registry.register(item);
+  }
+  origKeyboardNavigationMenuItems.length = 0;
 };

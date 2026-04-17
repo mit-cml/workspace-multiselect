@@ -134,7 +134,15 @@ scope of its wrapped input function.
 For more information, please check out the following [issue page](https://github.com/mit-cml/workspace-multiselect/issues/50).
 
 ### Note on keyboard navigation plugin
-The keyboard navigation plugin must be initialized after the multiselect plugin.
+The keyboard navigation plugin must be initialized after the multiselect plugin. After initializing keyboard navigation, call `onKeyboardNavigationInit()`:
+
+```javascript
+const multiselectPlugin = new Multiselect(workspace);
+multiselectPlugin.init(options);
+
+new KeyboardNavigation(workspace);
+multiselectPlugin.onKeyboardNavigationInit();
+```
 
 ### Note on disable top blocks plugin
 The disable top blocks plugin has to be initialized after the multiselect plugin. The main reason behind this is that 
@@ -145,6 +153,7 @@ customization. If we install the disable top blocks plugin after the multiselect
 ## API
 
 - `Multiselect.init`: Initialize the plugin.
+- `Multiselect.onKeyboardNavigationInit`: Call after initializing the keyboard navigation plugin.
 - `Multiselect.dispose`: Dispose the plugin.
 - `MultiselectDraggable`: The customized draggable object unique to each workspace that contains the blocks in the multiselection.
 - `dragSelectionWeakMap`: The WeakMap storing set of currently selected block ids by workspace svg.
