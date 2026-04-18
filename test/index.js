@@ -29,6 +29,15 @@ function createWorkspace(blocklyDiv, options) {
   const backpack = new Backpack(workspace);
   backpack.init();
 
+  // Work around backpack plugin bug where its configureContextMenu clears
+  // all menu items for non-PointerEvent events (e.g. keyboard nav).
+  const origConfigureContextMenu = workspace.configureContextMenu;
+  workspace.configureContextMenu = (menuOptions, event) => {
+    if (event instanceof PointerEvent) {
+      origConfigureContextMenu.call(null, menuOptions, event);
+    }
+  };
+
   // Initialize multiselect plugin.
   const multiselectPlugin = new Multiselect(workspace);
   multiselectPlugin.init(options);
