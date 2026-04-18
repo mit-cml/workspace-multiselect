@@ -19,6 +19,7 @@ import {
 } from './global';
 import {MultiselectControls} from './multiselect_controls';
 import {MultiselectDraggable} from './multiselect_draggable';
+import {MultiselectNavigationPolicy} from './multiselect_navigation_policy';
 
 /**
  * Class for using multiple select blocks on workspace.
@@ -140,6 +141,9 @@ export class Multiselect {
 
   onKeyboardNavigationInit() {
     ContextMenu.registerOurKeyboardNavigationMenuItems(this.useCopyPasteCrossTab_);
+    this.navigationPolicy_ = new MultiselectNavigationPolicy();
+    this.workspace_.getNavigator().addNavigationPolicy(this.navigationPolicy_);
+    this.navigationPolicy_.install();
   }
 
   /**
@@ -222,6 +226,11 @@ export class Multiselect {
 
     if (this.origBumpNeighbours) {
       Blockly.BlockSvg.prototype.bumpNeighbours = this.origBumpNeighbours;
+    }
+
+    if (this.navigationPolicy_) {
+      this.navigationPolicy_.uninstall();
+      this.navigationPolicy_ = null;
     }
   }
 

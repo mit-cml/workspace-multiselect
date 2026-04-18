@@ -284,6 +284,37 @@ export const getHighlightedCommentIds = (page: Page): Promise<string[]> =>
 export const getSelectedId = (page: Page): Promise<string | null> =>
 	page.evaluate(() => Blockly.getSelected()?.id ?? null);
 
+export const getFocusedField = (
+	page: Page,
+): Promise<{ blockId: string; name: string } | null> =>
+	page.evaluate(() => {
+		const focusedNode = Blockly.getFocusManager().getFocusedNode();
+		if (focusedNode instanceof Blockly.Field) {
+			const sourceBlock = focusedNode.getSourceBlock();
+			if (sourceBlock && focusedNode.name) {
+				return { blockId: sourceBlock.id, name: focusedNode.name };
+			}
+		}
+		return null;
+	});
+
+export const getFocusedCommentButton = (
+	page: Page,
+): Promise<{ commentId: string; type: "collapse" | "delete" } | null> =>
+	page.evaluate(() => {
+		const focusedNode = Blockly.getFocusManager().getFocusedNode();
+		if (!(focusedNode instanceof Blockly.comments.CommentBarButton))
+			return null;
+		const commentId = (focusedNode as unknown as { id: string }).id;
+		if (focusedNode instanceof Blockly.comments.CollapseCommentBarButton) {
+			return { commentId, type: "collapse" as const };
+		}
+		if (focusedNode instanceof Blockly.comments.DeleteCommentBarButton) {
+			return { commentId, type: "delete" as const };
+		}
+		return null;
+	});
+
 export const isEphemeralFocusTaken = (page: Page): Promise<boolean> =>
 	page.evaluate(() => Blockly.getFocusManager().ephemeralFocusTaken());
 
