@@ -98,6 +98,7 @@ export const loadBlocks = (
 			workspace,
 		);
 		workspace.cleanUp();
+		workspace.scrollCenter();
 	}, blocks);
 
 export const getBlock = (page: Page, query: BlockQuery): Promise<BlockJSON> =>
@@ -206,6 +207,22 @@ export const getHighlightedBlockIds = (page: Page): Promise<string[]> =>
 			.sort(),
 	);
 
+export const getStackBlockIds = (
+	page: Page,
+	topBlockId: string,
+): Promise<string[]> =>
+	page.evaluate((topBlockId) => {
+		const workspace = Blockly.getMainWorkspace() as WorkspaceSvg;
+		const stackBlockIds: string[] = [];
+		let block = workspace.getBlockById(topBlockId);
+		if (!block) throw new Error(`Block "${topBlockId}" not found`);
+		while (block) {
+			stackBlockIds.push(block.id);
+			block = block.getNextBlock();
+		}
+		return stackBlockIds;
+	}, topBlockId);
+
 export const loadComments = (
 	page: Page,
 	comments: serialization.workspaceComments.State[],
@@ -229,6 +246,7 @@ export const loadComments = (
 		for (const comment of workspace.getTopComments() as RenderedWorkspaceComment[]) {
 			comment.snapToGrid();
 		}
+		workspace.scrollCenter();
 	}, comments);
 
 export const getComment = (page: Page, id: string): Promise<CommentJSON> =>

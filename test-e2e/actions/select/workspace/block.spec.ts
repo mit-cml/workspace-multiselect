@@ -284,8 +284,8 @@ test("drag block to backpack", async ({ page, act }) => {
 	expect(await getHighlightedBlockIds(page)).toEqual(["block1"]);
 	expect(await getSelectedId(page)).toBe("block1");
 	const block1BoundsEnd = (await getBlock(page, { id: "block1" })).bounds;
-	expect(block1BoundsEnd.left).toBe(block1BoundsStart.left);
-	expect(block1BoundsEnd.top).toBe(block1BoundsStart.top);
+	expect(block1BoundsEnd.left).toBeCloseTo(block1BoundsStart.left);
+	expect(block1BoundsEnd.top).toBeCloseTo(block1BoundsStart.top);
 
 	await openBackpack(page);
 	await getBlock(page, { type: "logic_boolean", workspace: "backpack" });

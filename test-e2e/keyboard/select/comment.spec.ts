@@ -4,6 +4,7 @@ import {
 	cmdOrCtrlLabel,
 	getComment,
 	getFocusedCommentButton,
+	getGridSpacing,
 	getHighlightedCommentIds,
 	getSelectedId,
 	isEphemeralFocusTaken,
@@ -56,6 +57,198 @@ test("navigate right", async ({ page, act }) => {
 		commentId: "comment2",
 		type: "collapse",
 	});
+});
+
+test("constrained move via shortcut", async ({ page, act }) => {
+	const gridSpacing = await getGridSpacing(page);
+	if (gridSpacing === null) throw new Error("Workspace has no grid");
+	const comment1BoundsStart = (await getComment(page, "comment1")).bounds;
+	const comment2BoundsStart = (await getComment(page, "comment2")).bounds;
+	const comment3BoundsStart = (await getComment(page, "comment3")).bounds;
+
+	await act(page.keyboard.press("M"));
+	await expect(page.locator(".blocklyMoveIndicatorBubble")).toBeVisible();
+	await act(page.keyboard.press("ArrowRight"));
+	await act(page.keyboard.press("Enter"));
+	await expect(page.locator(".blocklyMoveIndicatorBubble")).not.toBeVisible();
+
+	const comment1BoundsEnd = (await getComment(page, "comment1")).bounds;
+	const comment2BoundsEnd = (await getComment(page, "comment2")).bounds;
+	const comment3BoundsEnd = (await getComment(page, "comment3")).bounds;
+	expect(comment2BoundsEnd.left).toBeCloseTo(
+		comment2BoundsStart.left + gridSpacing,
+	);
+	expect(comment2BoundsEnd.top).toBeCloseTo(comment2BoundsStart.top);
+	expect(comment1BoundsEnd.left).toBeCloseTo(comment1BoundsStart.left);
+	expect(comment1BoundsEnd.top).toBeCloseTo(comment1BoundsStart.top);
+	expect(comment3BoundsEnd.left).toBeCloseTo(comment3BoundsStart.left);
+	expect(comment3BoundsEnd.top).toBeCloseTo(comment3BoundsStart.top);
+	expect(await getHighlightedCommentIds(page)).toEqual(["comment2"]);
+	expect(await getSelectedId(page)).toBe("comment2");
+});
+
+test("abort constrained move via shortcut", async ({ page, act }) => {
+	const comment2BoundsStart = (await getComment(page, "comment2")).bounds;
+
+	await act(page.keyboard.press("M"));
+	await expect(page.locator(".blocklyMoveIndicatorBubble")).toBeVisible();
+	await act(page.keyboard.press("ArrowRight"));
+	await act(page.keyboard.press("Escape"));
+	await expect(page.locator(".blocklyMoveIndicatorBubble")).not.toBeVisible();
+
+	const comment2BoundsEnd = (await getComment(page, "comment2")).bounds;
+	expect(comment2BoundsEnd.top).toBeCloseTo(comment2BoundsStart.top);
+	expect(comment2BoundsEnd.left).toBeCloseTo(comment2BoundsStart.left);
+	expect(await getHighlightedCommentIds(page)).toEqual(["comment2"]);
+	expect(await getSelectedId(page)).toBe("comment2");
+});
+
+test("constrained move via context menu", async ({ page, act }) => {
+	const gridSpacing = await getGridSpacing(page);
+	if (gridSpacing === null) throw new Error("Workspace has no grid");
+	const comment1BoundsStart = (await getComment(page, "comment1")).bounds;
+	const comment2BoundsStart = (await getComment(page, "comment2")).bounds;
+	const comment3BoundsStart = (await getComment(page, "comment3")).bounds;
+
+	await act(page.keyboard.press(cmdOrCtrl("Enter")));
+	for (let i = 0; i < 2; i++) {
+		await act(page.keyboard.press("ArrowDown"));
+	}
+	await act(page.keyboard.press("Enter"));
+	await expect(page.locator(".blocklyMoveIndicatorBubble")).toBeVisible();
+	await act(page.keyboard.press("ArrowRight"));
+	await act(page.keyboard.press("Enter"));
+	await expect(page.locator(".blocklyMoveIndicatorBubble")).not.toBeVisible();
+
+	const comment1BoundsEnd = (await getComment(page, "comment1")).bounds;
+	const comment2BoundsEnd = (await getComment(page, "comment2")).bounds;
+	const comment3BoundsEnd = (await getComment(page, "comment3")).bounds;
+	expect(comment2BoundsEnd.left).toBeCloseTo(
+		comment2BoundsStart.left + gridSpacing,
+	);
+	expect(comment2BoundsEnd.top).toBeCloseTo(comment2BoundsStart.top);
+	expect(comment1BoundsEnd.left).toBeCloseTo(comment1BoundsStart.left);
+	expect(comment1BoundsEnd.top).toBeCloseTo(comment1BoundsStart.top);
+	expect(comment3BoundsEnd.left).toBeCloseTo(comment3BoundsStart.left);
+	expect(comment3BoundsEnd.top).toBeCloseTo(comment3BoundsStart.top);
+	expect(await getHighlightedCommentIds(page)).toEqual(["comment2"]);
+	expect(await getSelectedId(page)).toBe("comment2");
+});
+
+test("abort constrained move via context menu", async ({ page, act }) => {
+	const comment2BoundsStart = (await getComment(page, "comment2")).bounds;
+
+	await act(page.keyboard.press(cmdOrCtrl("Enter")));
+	for (let i = 0; i < 2; i++) {
+		await act(page.keyboard.press("ArrowDown"));
+	}
+	await act(page.keyboard.press("Enter"));
+	await expect(page.locator(".blocklyMoveIndicatorBubble")).toBeVisible();
+	await act(page.keyboard.press("ArrowRight"));
+	await act(page.keyboard.press("Escape"));
+	await expect(page.locator(".blocklyMoveIndicatorBubble")).not.toBeVisible();
+
+	const comment2BoundsEnd = (await getComment(page, "comment2")).bounds;
+	expect(comment2BoundsEnd.top).toBeCloseTo(comment2BoundsStart.top);
+	expect(comment2BoundsEnd.left).toBeCloseTo(comment2BoundsStart.left);
+	expect(await getHighlightedCommentIds(page)).toEqual(["comment2"]);
+	expect(await getSelectedId(page)).toBe("comment2");
+});
+
+test("unconstrained move via shortcut", async ({ page, act }) => {
+	const gridSpacing = await getGridSpacing(page);
+	if (gridSpacing === null) throw new Error("Workspace has no grid");
+	const comment1BoundsStart = (await getComment(page, "comment1")).bounds;
+	const comment2BoundsStart = (await getComment(page, "comment2")).bounds;
+	const comment3BoundsStart = (await getComment(page, "comment3")).bounds;
+
+	await act(page.keyboard.press("M"));
+	await expect(page.locator(".blocklyMoveIndicatorBubble")).toBeVisible();
+	await act(page.keyboard.press("Alt+ArrowRight"));
+	await act(page.keyboard.press("Enter"));
+	await expect(page.locator(".blocklyMoveIndicatorBubble")).not.toBeVisible();
+
+	const comment1BoundsEnd = (await getComment(page, "comment1")).bounds;
+	const comment2BoundsEnd = (await getComment(page, "comment2")).bounds;
+	const comment3BoundsEnd = (await getComment(page, "comment3")).bounds;
+	expect(comment2BoundsEnd.left).toBeCloseTo(
+		comment2BoundsStart.left + gridSpacing,
+	);
+	expect(comment2BoundsEnd.top).toBeCloseTo(comment2BoundsStart.top);
+	expect(comment1BoundsEnd.left).toBeCloseTo(comment1BoundsStart.left);
+	expect(comment1BoundsEnd.top).toBeCloseTo(comment1BoundsStart.top);
+	expect(comment3BoundsEnd.left).toBeCloseTo(comment3BoundsStart.left);
+	expect(comment3BoundsEnd.top).toBeCloseTo(comment3BoundsStart.top);
+	expect(await getHighlightedCommentIds(page)).toEqual(["comment2"]);
+	expect(await getSelectedId(page)).toBe("comment2");
+});
+
+test("abort unconstrained move via shortcut", async ({ page, act }) => {
+	const comment2BoundsStart = (await getComment(page, "comment2")).bounds;
+
+	await act(page.keyboard.press("M"));
+	await expect(page.locator(".blocklyMoveIndicatorBubble")).toBeVisible();
+	await act(page.keyboard.press("Alt+ArrowRight"));
+	await act(page.keyboard.press("Escape"));
+	await expect(page.locator(".blocklyMoveIndicatorBubble")).not.toBeVisible();
+
+	const comment2BoundsEnd = (await getComment(page, "comment2")).bounds;
+	expect(comment2BoundsEnd.top).toBeCloseTo(comment2BoundsStart.top);
+	expect(comment2BoundsEnd.left).toBeCloseTo(comment2BoundsStart.left);
+	expect(await getHighlightedCommentIds(page)).toEqual(["comment2"]);
+	expect(await getSelectedId(page)).toBe("comment2");
+});
+
+test("unconstrained move via context menu", async ({ page, act }) => {
+	const gridSpacing = await getGridSpacing(page);
+	if (gridSpacing === null) throw new Error("Workspace has no grid");
+	const comment1BoundsStart = (await getComment(page, "comment1")).bounds;
+	const comment2BoundsStart = (await getComment(page, "comment2")).bounds;
+	const comment3BoundsStart = (await getComment(page, "comment3")).bounds;
+
+	await act(page.keyboard.press(cmdOrCtrl("Enter")));
+	for (let i = 0; i < 2; i++) {
+		await act(page.keyboard.press("ArrowDown"));
+	}
+	await act(page.keyboard.press("Enter"));
+	await expect(page.locator(".blocklyMoveIndicatorBubble")).toBeVisible();
+	await act(page.keyboard.press("Alt+ArrowRight"));
+	await act(page.keyboard.press("Enter"));
+	await expect(page.locator(".blocklyMoveIndicatorBubble")).not.toBeVisible();
+
+	const comment1BoundsEnd = (await getComment(page, "comment1")).bounds;
+	const comment2BoundsEnd = (await getComment(page, "comment2")).bounds;
+	const comment3BoundsEnd = (await getComment(page, "comment3")).bounds;
+	expect(comment2BoundsEnd.left).toBeCloseTo(
+		comment2BoundsStart.left + gridSpacing,
+	);
+	expect(comment2BoundsEnd.top).toBeCloseTo(comment2BoundsStart.top);
+	expect(comment1BoundsEnd.left).toBeCloseTo(comment1BoundsStart.left);
+	expect(comment1BoundsEnd.top).toBeCloseTo(comment1BoundsStart.top);
+	expect(comment3BoundsEnd.left).toBeCloseTo(comment3BoundsStart.left);
+	expect(comment3BoundsEnd.top).toBeCloseTo(comment3BoundsStart.top);
+	expect(await getHighlightedCommentIds(page)).toEqual(["comment2"]);
+	expect(await getSelectedId(page)).toBe("comment2");
+});
+
+test("abort unconstrained move via context menu", async ({ page, act }) => {
+	const comment2BoundsStart = (await getComment(page, "comment2")).bounds;
+
+	await act(page.keyboard.press(cmdOrCtrl("Enter")));
+	for (let i = 0; i < 2; i++) {
+		await act(page.keyboard.press("ArrowDown"));
+	}
+	await act(page.keyboard.press("Enter"));
+	await expect(page.locator(".blocklyMoveIndicatorBubble")).toBeVisible();
+	await act(page.keyboard.press("Alt+ArrowRight"));
+	await act(page.keyboard.press("Escape"));
+	await expect(page.locator(".blocklyMoveIndicatorBubble")).not.toBeVisible();
+
+	const comment2BoundsEnd = (await getComment(page, "comment2")).bounds;
+	expect(comment2BoundsEnd.top).toBeCloseTo(comment2BoundsStart.top);
+	expect(comment2BoundsEnd.left).toBeCloseTo(comment2BoundsStart.left);
+	expect(await getHighlightedCommentIds(page)).toEqual(["comment2"]);
+	expect(await getSelectedId(page)).toBe("comment2");
 });
 
 test("open context menu", async ({ page, act }) => {
