@@ -9,6 +9,7 @@
  */
 import * as Blockly from 'blockly/core';
 import {dragSelectionWeakMap, hasSelectedParent, inMultipleSelectionModeWeakMap} from './global';
+import {MultiselectNavigationPolicy} from './multiselect_navigation_policy';
 
 
 /**
@@ -369,8 +370,11 @@ export class MultiselectDraggable {
 
   // IContextMenu methods
   showContextMenu(e) {
-    const targetId = e.target.closest('[data-id]').getAttribute('data-id');
-    const target = this.workspace.getBlockById(targetId) || this.workspace.getCommentById(targetId);
+    const targetId = e.target?.closest('[data-id]')?.getAttribute('data-id');
+    const target = targetId
+        ? this.workspace.getBlockById(targetId) ||
+            this.workspace.getCommentById(targetId)
+        : MultiselectNavigationPolicy.getSelectionBounds(this).topBlock;
     target.showContextMenu(e);
   }
 
