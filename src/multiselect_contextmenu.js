@@ -1459,6 +1459,30 @@ export const registerOurKeyboardNavigationMenuItems = function(useCopyPasteCross
   addMultiselectCount(
       Blockly.ContextMenuRegistry.registry.getItem('commentDuplicate'),
       multiselectDisplayText['commentDuplicate']);
+
+  const hideForMultiselect = (keyboardNavMenuItem) => {
+    const originalPrecondition = keyboardNavMenuItem.preconditionFn;
+    origKeyboardNavigationMenuItems.push(keyboardNavMenuItem);
+    Blockly.ContextMenuRegistry.registry.unregister(keyboardNavMenuItem.id);
+    Blockly.ContextMenuRegistry.registry.register({
+      ...keyboardNavMenuItem,
+      preconditionFn: (scope, menuOpenEvent) => {
+        if (Blockly.getSelected() instanceof MultiselectDraggable) return 'hidden';
+        // MOVE_COMMENT is missing the PointerEvent check that MOVE_BLOCK
+        // has, so it incorrectly appears in right-click menus.
+        // https://github.com/RaspberryPiFoundation/blockly-keyboard-experimentation/blob/%40blockly/keyboard-navigation%403.0.5/src/actions/move.ts#L187-L194
+        if (menuOpenEvent instanceof PointerEvent) return 'hidden';
+        return originalPrecondition(scope, menuOpenEvent);
+      },
+    });
+  };
+
+  if (Blockly.ContextMenuRegistry.registry.getItem('move')) {
+    hideForMultiselect(Blockly.ContextMenuRegistry.registry.getItem('move'));
+  }
+  if (Blockly.ContextMenuRegistry.registry.getItem('move_comment')) {
+    hideForMultiselect(Blockly.ContextMenuRegistry.registry.getItem('move_comment'));
+  }
 };
 
 export const registerOrigKeyboardNavigationMenuItems = function() {

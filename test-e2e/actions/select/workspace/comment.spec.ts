@@ -32,7 +32,6 @@ test("open context menu", async ({ page, act }) => {
 	const expectedMenuItems: [string, boolean][] = [
 		["Duplicate Comment D", true],
 		["Remove Comment", true],
-		["Move Comment M", true],
 		[`Cut ${cmdOrCtrlLabel("X")}`, true],
 		[`Copy ${cmdOrCtrlLabel("C")}`, true],
 		[`Paste ${cmdOrCtrlLabel("V")}`, true],

@@ -73,7 +73,6 @@ test("open context menu", async ({ page, act }) => {
 		["Disable Block (2)", true],
 		["Delete 2 Blocks Delete", true],
 		["Help", true],
-		["Move Block M", false],
 		[`Cut (2) ${cmdOrCtrlLabel("X")}`, true],
 		[`Copy (2) ${cmdOrCtrlLabel("C")}`, true],
 		[`Paste ${cmdOrCtrlLabel("V")}`, true],
