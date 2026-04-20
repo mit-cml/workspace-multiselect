@@ -57,6 +57,42 @@ test.beforeEach(async ({ page, act }) => {
 	await act(page.keyboard.up("Shift"));
 });
 
+test("open context menu", async ({ page, act }) => {
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "block1" })).centerTop, {
+			button: "right",
+		}),
+	);
+
+	await expect(page.getByRole("menu")).toBeVisible();
+	const expectedMenuItems: [string, boolean][] = [
+		["Duplicate (3) D", true],
+		["Add Comment (4)", true],
+		["Collapse Block (3)", true],
+		["Disable Block (3)", true],
+		["Delete 5 Blocks Delete", true],
+		["Help", true],
+		[`Cut (3) ${cmdOrCtrlLabel("X")}`, true],
+		[`Copy (3) ${cmdOrCtrlLabel("C")}`, true],
+		[`Paste ${cmdOrCtrlLabel("V")}`, true],
+		["Copy to Backpack (3)", true],
+	];
+	expect(await page.getByRole("menuitem").allTextContents()).toEqual(
+		expectedMenuItems.map(([name]) => name),
+	);
+	for (const [name, enabled] of expectedMenuItems) {
+		const menuItem = page.getByRole("menuitem", { exact: true, name });
+		if (enabled) {
+			await expect(menuItem).toBeEnabled();
+		} else {
+			await expect(menuItem).toBeDisabled();
+		}
+	}
+	expect(await getHighlightedBlockIds(page)).toEqual([]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
+	expect(await isEphemeralFocusTaken(page)).toBe(true);
+});
+
 test("duplicate blocks via context menu", async ({ page, act }) => {
 	await act(
 		page.mouse.click(...(await getBlock(page, { id: "block1" })).centerTop, {

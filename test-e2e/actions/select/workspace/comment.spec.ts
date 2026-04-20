@@ -21,6 +21,38 @@ test.beforeEach(async ({ page, act }) => {
 	);
 });
 
+test("open context menu", async ({ page, act }) => {
+	await act(
+		page.mouse.click(...(await getComment(page, "comment1")).centerTop, {
+			button: "right",
+		}),
+	);
+
+	await expect(page.getByRole("menu")).toBeVisible();
+	const expectedMenuItems: [string, boolean][] = [
+		["Duplicate Comment D", true],
+		["Remove Comment", true],
+		["Move Comment M", true],
+		[`Cut ${cmdOrCtrlLabel("X")}`, true],
+		[`Copy ${cmdOrCtrlLabel("C")}`, true],
+		[`Paste ${cmdOrCtrlLabel("V")}`, true],
+	];
+	expect(await page.getByRole("menuitem").allTextContents()).toEqual(
+		expectedMenuItems.map(([name]) => name),
+	);
+	for (const [name, enabled] of expectedMenuItems) {
+		const menuItem = page.getByRole("menuitem", { exact: true, name });
+		if (enabled) {
+			await expect(menuItem).toBeEnabled();
+		} else {
+			await expect(menuItem).toBeDisabled();
+		}
+	}
+	expect(await getHighlightedCommentIds(page)).toEqual([]);
+	expect(await getSelectedId(page)).toBe("comment1");
+	expect(await isEphemeralFocusTaken(page)).toBe(true);
+});
+
 test("duplicate comment via context menu", async ({ page, act }) => {
 	await act(
 		page.mouse.click(...(await getComment(page, "comment1")).centerTop, {
