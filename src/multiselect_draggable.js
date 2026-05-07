@@ -289,8 +289,8 @@ export class MultiselectDraggable {
    * Reverts any drags done on the multiselectDraggable object.
    */
   revertDrag() {
-    for (const draggable of this.subDraggables) {
-      draggable[0].revertDrag();
+    for (const draggable of this.topSubDraggables) {
+      draggable.revertDrag();
     }
   }
 
@@ -411,9 +411,9 @@ export class MultiselectDraggable {
    */
   toFlyoutInfo() {
     const flyoutList = [];
-    for (const draggable of this.subDraggables) {
-      if (draggable[0].toFlyoutInfo !== undefined) {
-        const draggableFlyoutInfo = draggable[0].toFlyoutInfo();
+    for (const draggable of this.topSubDraggables) {
+      if (draggable.toFlyoutInfo !== undefined) {
+        const draggableFlyoutInfo = draggable.toFlyoutInfo();
         flyoutList.push(...draggableFlyoutInfo);
       }
     }
