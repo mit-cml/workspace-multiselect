@@ -142,6 +142,7 @@ export class Multiselect {
 
   onKeyboardNavigationInit(options = {}) {
     ContextMenu.registerOurKeyboardNavigationMenuItems(this.useCopyPasteCrossTab_);
+    Shortcut.registerDuplicateShortcut();
     this.navigationPolicy_ = new MultiselectNavigationPolicy();
     this.workspace_.getNavigator().addNavigationPolicy(this.navigationPolicy_);
     this.navigationPolicy_.install();
@@ -222,6 +223,7 @@ export class Multiselect {
       ContextMenu.registerOrigContextMenu();
       ContextMenu.registerOrigKeyboardNavigationMenuItems();
 
+      Shortcut.unregisterDuplicateShortcut();
       Shortcut.unregisterOrigShortcut();
       Blockly.ShortcutRegistry.registry.unregister('selectall');
       Shortcut.registerOrigShortcut();

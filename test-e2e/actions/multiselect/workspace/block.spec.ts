@@ -93,6 +93,45 @@ test("open context menu", async ({ page, act }) => {
 	expect(await isEphemeralFocusTaken(page)).toBe(true);
 });
 
+test("duplicate blocks via keyboard", async ({ page, act }) => {
+	expect(await getAllBlockIds(page)).toEqual([
+		"block1",
+		"block2",
+		"block2-child",
+		"block3",
+		"block3-child",
+		"block4",
+	]);
+	expect(await getHighlightedBlockIds(page)).toEqual([
+		"block1",
+		"block2",
+		"block2-child",
+		"block3",
+	]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
+
+	await act(page.keyboard.press("D"));
+
+	const allBlockIds = await getAllBlockIds(page);
+	expect(allBlockIds).toHaveLength(11);
+	const newBlockIds = allBlockIds.filter(
+		(id) =>
+			![
+				"block1",
+				"block2",
+				"block2-child",
+				"block3",
+				"block3-child",
+				"block4",
+			].includes(id),
+	);
+	const highlightedBlockIds = await getHighlightedBlockIds(page);
+	expect(newBlockIds).toHaveLength(5);
+	expect(highlightedBlockIds).toHaveLength(3);
+	expect(newBlockIds).toEqual(expect.arrayContaining(highlightedBlockIds));
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
+});
+
 test("duplicate blocks via context menu", async ({ page, act }) => {
 	await act(
 		page.mouse.click(...(await getBlock(page, { id: "block1" })).centerTop, {

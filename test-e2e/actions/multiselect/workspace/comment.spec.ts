@@ -64,6 +64,29 @@ test("open context menu", async ({ page, act }) => {
 	expect(await isEphemeralFocusTaken(page)).toBe(true);
 });
 
+test("duplicate comments via keyboard", async ({ page, act }) => {
+	expect(await getAllCommentIds(page)).toEqual([
+		"comment1",
+		"comment2",
+		"comment3",
+	]);
+	expect(await getHighlightedCommentIds(page)).toEqual([
+		"comment1",
+		"comment2",
+	]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
+
+	await act(page.keyboard.press("D"));
+
+	const allCommentIds = await getAllCommentIds(page);
+	expect(allCommentIds).toHaveLength(5);
+	const newCommentIds = allCommentIds.filter(
+		(id) => !["comment1", "comment2", "comment3"].includes(id),
+	);
+	expect(await getHighlightedCommentIds(page)).toEqual(newCommentIds);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
+});
+
 test("duplicate comments via context menu", async ({ page, act }) => {
 	await act(
 		page.mouse.click(...(await getComment(page, "comment1")).centerTop, {
