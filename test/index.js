@@ -14,9 +14,8 @@ import {Multiselect} from '../src/index';
 import {multiDraggableWeakMap} from '../src/global';
 window.multiDraggableWeakMap = multiDraggableWeakMap;
 import {Backpack} from '@blockly/workspace-backpack';
-import {NavigationController} from '@blockly/keyboard-navigation';
+import {KeyboardNavigation} from '@blockly/keyboard-navigation';
 
-const navigationController = new NavigationController();
 /**
  * Create a workspace.
  * @param {HTMLElement} blocklyDiv The blockly container div.
@@ -30,18 +29,51 @@ function createWorkspace(blocklyDiv, options) {
   const backpack = new Backpack(workspace);
   backpack.init();
 
-  navigationController.addWorkspace(workspace);
+  // Work around backpack plugin bug where its configureContextMenu clears
+  // all menu items for non-PointerEvent events (e.g. keyboard nav).
+  const origConfigureContextMenu = workspace.configureContextMenu;
+  workspace.configureContextMenu = (menuOptions, event) => {
+    if (event instanceof PointerEvent) {
+      origConfigureContextMenu.call(null, menuOptions, event);
+    }
+  };
 
   // Initialize multiselect plugin.
   const multiselectPlugin = new Multiselect(workspace);
   multiselectPlugin.init(options);
 
+  // Initialize keyboard navigation plugin.
+  const keyboardNav = new KeyboardNavigation(workspace, {allowCrossWorkspacePaste: true});
+  multiselectPlugin.onKeyboardNavigationInit({
+    // instance: keyboardNav,
+    // shortcutKeybindings: {
+    //   toolbox: [Blockly.utils.KeyCodes.ALT, Blockly.utils.KeyCodes.T],
+    //   clean_up_workspace: [Blockly.utils.KeyCodes.ALT, Blockly.utils.KeyCodes.C],
+    //   list_shortcuts: [Blockly.utils.KeyCodes.ALT, Blockly.utils.KeyCodes.SLASH],
+    //   disconnect: [Blockly.utils.KeyCodes.ALT, Blockly.utils.KeyCodes.X],
+    //   start_move: [Blockly.utils.KeyCodes.ALT, Blockly.utils.KeyCodes.M],
+    //   duplicate: [Blockly.utils.KeyCodes.ALT, Blockly.utils.KeyCodes.D],
+    //   next_stack: [Blockly.utils.KeyCodes.ALT, Blockly.utils.KeyCodes.N],
+    //   previous_stack: [Blockly.utils.KeyCodes.ALT, Blockly.utils.KeyCodes.B],
+    //   to_workspace: [Blockly.utils.KeyCodes.ALT, Blockly.utils.KeyCodes.W],
+    // },
+  });
+
   return workspace;
 }
 
 Blockly.ContextMenuItems.registerCommentOptions();
-// Initialize keyboard nav plugin.
-navigationController.init();
+KeyboardNavigation.registerKeyboardNavigationStyles();
+class NavigationDeferringToolbox extends Blockly.Toolbox {
+  onKeyDown_() {}
+}
+Blockly.registry.register(
+    Blockly.registry.Type.TOOLBOX,
+    Blockly.registry.DEFAULT,
+    NavigationDeferringToolbox,
+    true,
+);
+KeyboardNavigation.registerFlyoutCursor();
 
 Blockly.Blocks['radix'] = {
   init() {
@@ -102,7 +134,7 @@ document.addEventListener('DOMContentLoaded', function() {
     multiSelectKeys: ['Shift'],
     multiselectCopyPaste: {
       crossTab: true,
-      menu: true,
+      menu: false,
     },
     grid: {
       spacing: 25,

@@ -19,6 +19,8 @@ import {
 } from './global';
 import {MultiselectControls} from './multiselect_controls';
 import {MultiselectDraggable} from './multiselect_draggable';
+import {MultiselectNavigationPolicy} from './multiselect_navigation_policy';
+import {applyShortcutKeybindings} from './navigation_shortcut_keybindings';
 
 /**
  * Class for using multiple select blocks on workspace.
@@ -41,7 +43,6 @@ export class Multiselect {
     this.useCopyPasteMenu_ = true;
     this.multiFieldUpdate_ = true;
     this.multiSelectKeys_ = ['shift'];
-    this.registeredShortcut_ = true;
   }
 
   /**
@@ -56,40 +57,37 @@ export class Multiselect {
       });
     }
     const injectionDiv = this.workspace_.getInjectionDiv();
-    const dropdownDiv = Blockly.DropDownDiv.getContentDiv();
+    this.injectionDivWrappers_ = this.bindListeners_(injectionDiv);
     const widgetDiv = Blockly.WidgetDiv.getDiv();
-    this.onKeyDownWrapper_ = Blockly.browserEvents.conditionalBind(
-        injectionDiv, 'keydown', this, this.onKeyDown_);
-    this.onKeyDownDropdownDivWrapper_ = Blockly.browserEvents.conditionalBind(
-        dropdownDiv, 'keydown', this, this.onKeyDown_);
     if (widgetDiv) {
-      this.onKeyDownWidgetDivWrapper_ = Blockly.browserEvents.conditionalBind(
-          widgetDiv, 'keydown', this, this.onKeyDown_);
+      this.widgetDivWrappers_ = this.bindListeners_(widgetDiv);
     }
-    this.onKeyUpWrapper_ = Blockly.browserEvents.conditionalBind(
-        injectionDiv, 'keyup', this, this.onKeyUp_);
-    this.onKeyUpDropdownDivWrapper_ = Blockly.browserEvents.conditionalBind(
-        dropdownDiv, 'keyup', this, this.onKeyUp_);
-    if (widgetDiv) {
-      this.onKeyUpWidgetDivWrapper_ = Blockly.browserEvents.conditionalBind(
-          widgetDiv, 'keyup', this, this.onKeyUp_);
-    }
-    this.onFocusOutWrapper_ = Blockly.browserEvents.conditionalBind(
-        injectionDiv, 'focusout', this, this.onBlur_);
-    this.onFocusOutDropdownDivWrapper_ = Blockly.browserEvents.conditionalBind(
-        dropdownDiv, 'focusout', this, this.onBlur_);
-    if (widgetDiv) {
-      this.onFocusOutWidgetDivWrapper_ = Blockly.browserEvents.conditionalBind(
-          widgetDiv, 'focusout', this, this.onBlur_);
-    }
+    this.dropdownDivWrappers_ = this.bindListeners_(
+        Blockly.DropDownDiv.getContentDiv());
+    this.dropdownDivObserver_ = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        for (const node of mutation.removedNodes) {
+          if (node.classList?.contains('blocklyDropDownDiv')) {
+            this.unbindListeners_(this.dropdownDivWrappers_);
+          }
+        }
+        for (const node of mutation.addedNodes) {
+          if (node.classList?.contains('blocklyDropDownDiv')) {
+            this.dropdownDivWrappers_ = this.bindListeners_(
+                Blockly.DropDownDiv.getContentDiv());
+          }
+        }
+      }
+    });
+    this.dropdownDivObserver_.observe(
+        document.querySelector('.blocklyDropDownDiv').parentNode,
+        {childList: true});
     injectionDiv.addEventListener('mouseenter', () => {
       if (options.workspaceAutoFocus === false ||
-          document.activeElement === this.workspace_.getSvgGroup().parentElement ||
-          document.activeElement.nodeName.toLowerCase() === 'input' ||
-          document.activeElement.nodeName.toLowerCase() === 'textarea') {
+          Blockly.getFocusManager().getFocusedTree() === this.workspace_) {
         return;
       }
-      this.workspace_.getSvgGroup().parentElement.focus();
+      Blockly.getFocusManager().focusTree(this.workspace_);
     });
     this.eventListenerWrapper_ = this.eventListener_.bind(this);
     this.workspace_.addChangeListener(this.eventListenerWrapper_);
@@ -140,15 +138,23 @@ export class Multiselect {
       Blockly.BlockSvg.prototype.bumpNeighbours = function() {};
     }
 
-    Blockly.browserEvents.conditionalBind(
-        injectionDiv, 'keydown', this, this.unbindMultiselectCopyPaste_
-    );
+  }
 
-    // This is for the keyboard navigation plugin and checks whether it puts
-    // the workspace into keyboard accessibility mode by default.
-    if (this.workspace_.keyboardAccessibilityMode) {
-      Shortcut.unregisterOurShortcut();
-      this.registeredShortcut_ = false;
+  onKeyboardNavigationInit(options = {}) {
+    ContextMenu.registerOurKeyboardNavigationMenuItems(this.useCopyPasteCrossTab_);
+    Shortcut.registerDuplicateShortcut();
+    this.navigationPolicy_ = new MultiselectNavigationPolicy();
+    this.workspace_.getNavigator().addNavigationPolicy(this.navigationPolicy_);
+    this.navigationPolicy_.install();
+
+    if (options.shortcutKeybindings) {
+      if (!options.instance) {
+        throw new Error(
+            'KeyboardNavigation instance required when using shortcutKeybindings');
+      }
+      applyShortcutKeybindings(options.shortcutKeybindings);
+      options.instance.navigationController
+          .shortcutDialog.createModalContent();
     }
   }
 
@@ -185,42 +191,16 @@ export class Multiselect {
    * @param {boolean} keepRegistry Keep the context menu and shortcut registry.
    */
   dispose(keepRegistry = false) {
-    if (this.onKeyDownWrapper_) {
-      Blockly.browserEvents.unbind(this.onKeyDownWrapper_);
-      this.onKeyDownWrapper_ = null;
+    this.unbindListeners_(this.injectionDivWrappers_);
+    this.injectionDivWrappers_ = null;
+    if (this.widgetDivWrappers_) {
+      this.unbindListeners_(this.widgetDivWrappers_);
+      this.widgetDivWrappers_ = null;
     }
-    if (this.onKeyDownDropdownDivWrapper_) {
-      Blockly.browserEvents.unbind(this.onKeyDownDropdownDivWrapper_);
-      this.onKeyDownDropdownDivWrapper_ = null;
-    }
-    if (this.onKeyDownWidgetDivWrapper_) {
-      Blockly.browserEvents.unbind(this.onKeyDownWidgetDivWrapper_);
-      this.onKeyDownWidgetDivWrapper_ = null;
-    }
-    if (this.onKeyUpWrapper_) {
-      Blockly.browserEvents.unbind(this.onKeyUpWrapper_);
-      this.onKeyUpWrapper_ = null;
-    }
-    if (this.onKeyUpDropdownDivWrapper_) {
-      Blockly.browserEvents.unbind(this.onKeyUpDropdownDivWrapper_);
-      this.onKeyUpDropdownDivWrapper_ = null;
-    }
-    if (this.onKeyUpWidgetDivWrapper_) {
-      Blockly.browserEvents.unbind(this.onKeyUpWidgetDivWrapper_);
-      this.onKeyUpWidgetDivWrapper_ = null;
-    }
-    if (this.onFocusOutWrapper_) {
-      Blockly.browserEvents.unbind(this.onFocusOutWrapper_);
-      this.onFocusOutWrapper_ = null;
-    }
-    if (this.onFocusOutDropdownDivWrapper_) {
-      Blockly.browserEvents.unbind(this.onFocusOutDropdownDivWrapper_);
-      this.onFocusOutDropdownDivWrapper_ = null;
-    }
-    if (this.onFocusOutWidgetDivWrapper_) {
-      Blockly.browserEvents.unbind(this.onFocusOutWidgetDivWrapper_);
-      this.onFocusOutWidgetDivWrapper_ = null;
-    }
+    this.unbindListeners_(this.dropdownDivWrappers_);
+    this.dropdownDivWrappers_ = null;
+    this.dropdownDivObserver_.disconnect();
+    this.dropdownDivObserver_ = null;
     if (this.eventListenerWrapper_) {
       this.workspace_.removeChangeListener(this.eventListenerWrapper_);
       this.eventListenerWrapper_ = null;
@@ -241,7 +221,9 @@ export class Multiselect {
       Blockly.ContextMenuRegistry.registry.unregister('workspaceSelectAll');
       Blockly.ContextMenuRegistry.registry.unregister('copy_to_backpack');
       ContextMenu.registerOrigContextMenu();
+      ContextMenu.registerOrigKeyboardNavigationMenuItems();
 
+      Shortcut.unregisterDuplicateShortcut();
       Shortcut.unregisterOrigShortcut();
       Blockly.ShortcutRegistry.registry.unregister('selectall');
       Shortcut.registerOrigShortcut();
@@ -257,6 +239,28 @@ export class Multiselect {
 
     if (this.origBumpNeighbours) {
       Blockly.BlockSvg.prototype.bumpNeighbours = this.origBumpNeighbours;
+    }
+
+    if (this.navigationPolicy_) {
+      this.navigationPolicy_.uninstall();
+      this.navigationPolicy_ = null;
+    }
+  }
+
+  bindListeners_(div) {
+    return [
+      Blockly.browserEvents.conditionalBind(
+          div, 'keydown', this, this.onKeyDown_),
+      Blockly.browserEvents.conditionalBind(
+          div, 'keyup', this, this.onKeyUp_),
+      Blockly.browserEvents.conditionalBind(
+          div, 'focusout', this, this.onBlur_),
+    ];
+  }
+
+  unbindListeners_(wrappers) {
+    for (const wrapper of wrappers) {
+      Blockly.browserEvents.unbind(wrapper);
     }
   }
 
@@ -278,6 +282,19 @@ export class Multiselect {
 
       const wrappedFunc = function(e, ws) {
         func.call(this, e, ws);
+        const dragSelection = dragSelectionWeakMap.get(ws);
+        const multiDraggable = multiDraggableWeakMap.get(ws);
+        if (dragSelection) {
+          const isEmptySpaceClick = !e.target.closest('g[data-id]');
+          if (isEmptySpaceClick && dragSelection.size) {
+            if (inMultipleSelectionModeWeakMap.get(ws)) {
+              Blockly.common.setSelected(multiDraggable);
+            } else {
+              multiDraggable.clearAll_();
+              dragSelection.clear();
+            }
+          }
+        }
         if (this.targetBlock && e.buttons === 1 &&
             !inMultipleSelectionModeWeakMap.get(ws)) {
           const preCondition = function(block) {
@@ -310,7 +327,6 @@ export class Multiselect {
               }
             } else if (selected && selected instanceof MultiselectDraggable) {
               // Case where the selected is a multidraggable instance
-              const dragSelection = dragSelectionWeakMap.get(ws);
               if (dragSelection.size) {
                 // Checking whether any of the blocks in
                 // the dragSelection is not collapsed.
@@ -433,34 +449,6 @@ export class Multiselect {
   }
 
   /**
-   * Handle a keyboard navigation key-down on the workspace.
-   * @param {KeyboardEvent} e The keyboard event.
-   * @private
-   */
-  unbindMultiselectCopyPaste_(e) {
-    // TODO: Update this to re-register/unregister the original shortcuts after
-    //  Blockly/keyboard navigation plugin update
-    // This is to unregister the multiselect plugin's shortcuts
-    // when the user is in the keyboard navigation mode. Currently,
-    // when the user is in keyboard accessibility mode, they cannot
-    // use the normal copy/cut/paste functionalities.
-    // This is because the original (Blockly core) copy/cut/paste
-    // functions do not allow for collisions. This can be fixed
-    // either by allowing for collisions in the Blockly core
-    // copy/cut/paste functions or allowing for unregister/re-registering
-    // of the keyboard navigation plugin's copy/cut/paste functions.
-    if (this.workspace_.keyboardAccessibilityMode &&
-        this.registeredShortcut_) {
-      Shortcut.unregisterOurShortcut();
-      this.registeredShortcut_ = false;
-    } else if (!this.workspace_.keyboardAccessibilityMode &&
-        !this.registeredShortcut_) {
-      Shortcut.registerOurShortcut();
-      this.registeredShortcut_ = true;
-    }
-  }
-
-  /**
    * Handle a key-up on the workspace.
    * @param {KeyboardEvent} e The keyboard event.
    * @private
@@ -477,28 +465,16 @@ export class Multiselect {
    * @private
    */
   onBlur_(e) {
-    if (inMultipleSelectionModeWeakMap.get(this.workspace_)) {
-      // Revert last unselected block if the related target
-      // is a field related element, for accomodating field update
-      // directly while the multi-selection mode is on.
-      if (e.relatedTarget && (e.relatedTarget.tagName === 'INPUT' ||
-          e.relatedTarget.tagName === 'TEXTAREA' ||
-          e.relatedTarget.tagName === 'DIV' &&
-          e.relatedTarget.classList.value.indexOf(
-              'blocklyDropdownMenu') > -1)) {
-        this.controls_.revertLastUnselectedBlock();
+    setTimeout(() => {
+      if (inMultipleSelectionModeWeakMap.get(this.workspace_)) {
+        if (Blockly.getFocusManager().getFocusedTree() === this.workspace_) {
+          if (Blockly.getFocusManager().ephemeralFocusTaken()) {
+            this.controls_.revertLastUnselectedBlock();
+          }
+        } else {
+          this.controls_.disableMultiselect();
+        }
       }
-
-      const injectionDiv = this.workspace_.getInjectionDiv();
-      const dropdownDiv = Blockly.DropDownDiv.getContentDiv();
-      const widgetDiv = Blockly.WidgetDiv.getDiv();
-      if (e.relatedTarget && (
-          injectionDiv.contains(e.relatedTarget) ||
-          dropdownDiv.contains(e.relatedTarget) ||
-          widgetDiv?.contains(e.relatedTarget))) {
-        return;
-      }
-      this.controls_.disableMultiselect();
-    }
+    }, 0);
   }
 }

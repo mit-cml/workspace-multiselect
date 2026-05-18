@@ -16,6 +16,37 @@ import {
 } from './global';
 import {MultiselectDraggable} from './multiselect_draggable';
 
+const multiselectDisplayText = {};
+
+const blockCheck = function(block) {
+  return block && block.isDeletable() && block.isMovable() &&
+         !hasSelectedParent(block);
+};
+
+const blockCopyDisplayText = function(scope) {
+  let workableBlocksLength = 0;
+  const workspace = scope.block.workspace;
+  const dragSelection = dragSelectionWeakMap.get(workspace);
+  dragSelection.forEach(function(id) {
+    const block = workspace.getBlockById(id);
+    if (block && blockCheck(block)) {
+      workableBlocksLength++;
+    }
+  });
+  if (workableBlocksLength <= 1) {
+    return Blockly.Msg['CROSS_TAB_COPY']?
+    Blockly.Msg['CROSS_TAB_COPY'] : Blockly.Msg['COPY_SHORTCUT'];
+  } else {
+    return Blockly.Msg['CROSS_TAB_COPY_X_BLOCKS']?
+        Blockly.Msg['CROSS_TAB_COPY_X_BLOCKS'].replace(
+            '%1', workableBlocksLength) :
+        (Blockly.Msg['CROSS_TAB_COPY']?
+        Blockly.Msg['CROSS_TAB_COPY'] : Blockly.Msg['COPY_SHORTCUT']
+        ) + ' (' +
+        workableBlocksLength + ')';
+  }
+};
+
 /**
  * Copy multiple selected blocks to clipboard.
  * @param {boolean} useCopyPasteCrossTab Whether or not to use
@@ -24,29 +55,7 @@ import {MultiselectDraggable} from './multiselect_draggable';
 const registerCopy = function(useCopyPasteCrossTab) {
   const id = 'blockCopyToStorage';
   const copyOptions = {
-    displayText: function(scope) {
-      let workableBlocksLength = 0;
-      const workspace = scope.block.workspace;
-      const dragSelection = dragSelectionWeakMap.get(workspace);
-      dragSelection.forEach(function(id) {
-        const block = workspace.getBlockById(id);
-        if (block && copyOptions.check(block)) {
-          workableBlocksLength++;
-        }
-      });
-      if (workableBlocksLength <= 1) {
-        return Blockly.Msg['CROSS_TAB_COPY']?
-        Blockly.Msg['CROSS_TAB_COPY'] : 'Copy';
-      } else {
-        return Blockly.Msg['CROSS_TAB_COPY_X_BLOCKS']?
-            Blockly.Msg['CROSS_TAB_COPY_X_BLOCKS'].replace(
-                '%1', workableBlocksLength) :
-            (Blockly.Msg['CROSS_TAB_COPY']?
-            Blockly.Msg['CROSS_TAB_COPY'] : 'Copy'
-            ) + ' (' +
-            workableBlocksLength + ')';
-      }
-    },
+    displayText: blockCopyDisplayText,
     preconditionFn: function(scope) {
       const workspace = scope.block.workspace;
       if (workspace.options.readOnly && !useCopyPasteCrossTab) {
@@ -75,10 +84,7 @@ const registerCopy = function(useCopyPasteCrossTab) {
       }
       return 'disabled';
     },
-    check: function(block) {
-      return block && block.isDeletable() && block.isMovable() &&
-             !hasSelectedParent(block);
-    },
+    check: blockCheck,
     callback: function(scope) {
       const workspace = scope.block.workspace;
       copyData.clear();
@@ -130,6 +136,31 @@ const registerCopy = function(useCopyPasteCrossTab) {
     Blockly.ContextMenuRegistry.registry.unregister(id);
   }
   Blockly.ContextMenuRegistry.registry.register(copyOptions);
+  multiselectDisplayText[id] = copyOptions.displayText;
+};
+
+const blockCutDisplayText = function(scope) {
+  let workableBlocksLength = 0;
+  const workspace = scope.block.workspace;
+  const dragSelection = dragSelectionWeakMap.get(workspace);
+  dragSelection.forEach(function(id) {
+    const block = workspace.getBlockById(id);
+    if (block && blockCheck(block)) {
+      workableBlocksLength++;
+    }
+  });
+  if (workableBlocksLength <= 1) {
+    return Blockly.Msg['CROSS_TAB_CUT']?
+    Blockly.Msg['CROSS_TAB_CUT'] : Blockly.Msg['CUT_SHORTCUT'];
+  } else {
+    return Blockly.Msg['CROSS_TAB_CUT_X_BLOCKS']?
+        Blockly.Msg['CROSS_TAB_CUT_X_BLOCKS'].replace(
+            '%1', workableBlocksLength) :
+        (Blockly.Msg['CROSS_TAB_CUT']?
+        Blockly.Msg['CROSS_TAB_CUT'] : Blockly.Msg['CUT_SHORTCUT']
+        ) + ' (' +
+        workableBlocksLength + ')';
+  }
 };
 
 /**
@@ -210,7 +241,7 @@ const registerDuplicate = function() {
         });
         dragSelection.clear();
         multiDraggable.clearAll_();
-        Blockly.common.setSelected(null);
+        Blockly.getFocusManager().focusTree(workspace);
       } else {
         apply(scope.block);
       }
@@ -234,12 +265,14 @@ const registerDuplicate = function() {
       connectionDBList.forEach(function(connectionDB) {
         connectionDB[0].connect(connectionDB[1]);
       });
-      if (dragSelection.size === 1) {
-        Blockly.common.setSelected(getByID(workspace, dragSelection.values().next().value));
-      } else {
-        Blockly.common.setSelected(multiDraggable);
-      }
       Blockly.Events.setGroup(false);
+      Blockly.renderManagement.finishQueuedRenders().then(() => {
+        if (dragSelection.size === 1) {
+          Blockly.common.setSelected(getByID(workspace, dragSelection.values().next().value));
+        } else {
+          Blockly.common.setSelected(multiDraggable);
+        }
+      });
     },
     scopeType: Blockly.ContextMenuRegistry.ScopeType.BLOCK,
     id,
@@ -249,6 +282,7 @@ const registerDuplicate = function() {
     Blockly.ContextMenuRegistry.registry.unregister(id);
   }
   Blockly.ContextMenuRegistry.registry.register(duplicateOption);
+  multiselectDisplayText[id] = duplicateOption.displayText;
 };
 
 /**
@@ -524,13 +558,13 @@ const registerDisable = function() {
   const disableOption = {
     displayText: function(scope) {
       let workableBlocksLength = 0;
-      const state = scope.block.isEnabled();
+      const state = !scope.block.hasDisabledReason(Blockly.constants.MANUALLY_DISABLED);
       const workspace = scope.block.workspace;
       const dragSelection = dragSelectionWeakMap.get(workspace);
       dragSelection.forEach(function(id) {
         const block = workspace.getBlockById(id);
         if (disableOption.check(block) &&
-            block.isEnabled() === state) {
+            !block.hasDisabledReason(Blockly.constants.MANUALLY_DISABLED) === state) {
           workableBlocksLength++;
         }
       });
@@ -560,7 +594,11 @@ const registerDisable = function() {
       const block = scope.block;
       if (!block.isInFlyout && block.workspace.options.disable &&
           block.isEditable()) {
-        if (block.getInheritedDisabled()) {
+        const disabledReasons = block.getDisabledReasons();
+        const isDisabledForOtherReason =
+          disabledReasons.size >
+          (disabledReasons.has(Blockly.constants.MANUALLY_DISABLED) ? 1 : 0);
+        if (block.getInheritedDisabled() || isDisabledForOtherReason) {
           return 'disabled';
         }
         return 'enabled';
@@ -570,13 +608,13 @@ const registerDisable = function() {
     check: function(block) {
       return block &&
              disableOption.preconditionFn({block: block}) === 'enabled' &&
-             (!hasSelectedParent(block) || !block.isEnabled());
+             (!hasSelectedParent(block) || block.hasDisabledReason(Blockly.constants.MANUALLY_DISABLED));
     },
     callback: function(scope) {
-      const state = !scope.block.isEnabled();
+      const state = scope.block.hasDisabledReason(Blockly.constants.MANUALLY_DISABLED);
       const apply = function(block) {
         if (disableOption.check(block)) {
-          block.setEnabled(state);
+          block.setDisabledReason(!state, Blockly.constants.MANUALLY_DISABLED);
         }
       };
       const workspace = scope.block.workspace;
@@ -699,7 +737,7 @@ const registerDelete = function() {
         apply(selected);
       }
 
-      Blockly.common.setSelected(null);
+      Blockly.getFocusManager().focusTree(workspace);
       Blockly.Events.setGroup(false);
     },
     scopeType: Blockly.ContextMenuRegistry.ScopeType.BLOCK,
@@ -712,6 +750,23 @@ const registerDelete = function() {
   Blockly.ContextMenuRegistry.registry.register(deleteOption);
 };
 
+const pasteDisplayText = function(useCopyPasteCrossTab) {
+  const workableDraggableLength =
+      blockNumGetFromStorage(useCopyPasteCrossTab);
+  if (workableDraggableLength <= 1) {
+    return Blockly.Msg['CROSS_TAB_PASTE']?
+      Blockly.Msg['CROSS_TAB_PASTE'] : Blockly.Msg['PASTE_SHORTCUT'];
+  } else {
+    return Blockly.Msg['CROSS_TAB_PASTE_X_ELEMENTS']?
+        Blockly.Msg['CROSS_TAB_PASTE_X_ELEMENTS'].replace(
+            '%1', workableDraggableLength) :
+        (Blockly.Msg['CROSS_TAB_PASTE']?
+        Blockly.Msg['CROSS_TAB_PASTE'] : Blockly.Msg['PASTE_SHORTCUT']
+        ) + ' (' +
+        workableDraggableLength + ')';
+  }
+};
+
 /**
  * Paste multiple selected draggables from clipboard.
  * @param {boolean} useCopyPasteCrossTab Whether to use cross tab copy paste.
@@ -719,22 +774,7 @@ const registerDelete = function() {
 const registerPaste = function(useCopyPasteCrossTab) {
   const id = 'blockPasteFromStorage';
   const pasteOption = {
-    displayText: function() {
-      const workableDraggableLength =
-          blockNumGetFromStorage(useCopyPasteCrossTab);
-      if (workableDraggableLength <= 1) {
-        return Blockly.Msg['CROSS_TAB_PASTE']?
-          Blockly.Msg['CROSS_TAB_PASTE'] : 'Paste';
-      } else {
-        return Blockly.Msg['CROSS_TAB_PASTE_X_ELEMENTS']?
-            Blockly.Msg['CROSS_TAB_PASTE_X_ELEMENTS'].replace(
-                '%1', workableDraggableLength) :
-            (Blockly.Msg['CROSS_TAB_PASTE']?
-            Blockly.Msg['CROSS_TAB_PASTE'] : 'Paste'
-            ) + ' (' +
-            workableDraggableLength + ')';
-      }
-    },
+    displayText: () => pasteDisplayText(useCopyPasteCrossTab),
     preconditionFn: function(scope) {
       return scope.workspace.options.readOnly?
         'hidden': (blockNumGetFromStorage(useCopyPasteCrossTab) < 1?
@@ -806,11 +846,13 @@ const registerPaste = function(useCopyPasteCrossTab) {
             blockList[connectionDB[1]].previousConnection);
       });
       Blockly.Events.setGroup(false);
-      if (dragSelection.size === 1) {
-        Blockly.common.setSelected(getByID(workspace, dragSelection.values().next().value));
-      } else {
-        Blockly.common.setSelected(multiDraggable);
-      }
+      Blockly.renderManagement.finishQueuedRenders().then(() => {
+        if (dragSelection.size === 1) {
+          Blockly.common.setSelected(getByID(workspace, dragSelection.values().next().value));
+        } else {
+          Blockly.common.setSelected(multiDraggable);
+        }
+      });
       return true;
     },
     scopeType: Blockly.ContextMenuRegistry.ScopeType.WORKSPACE,
@@ -821,6 +863,7 @@ const registerPaste = function(useCopyPasteCrossTab) {
     Blockly.ContextMenuRegistry.registry.unregister(id);
   }
   Blockly.ContextMenuRegistry.registry.register(pasteOption);
+  multiselectDisplayText[id] = pasteOption.displayText;
 };
 
 /**
@@ -854,7 +897,7 @@ const registerSelectAll = function() {
         } else {
           Blockly.getSelected().unselect();
         }
-        Blockly.common.setSelected(null);
+        Blockly.getFocusManager().focusTree(scope.workspace);
         multiDraggable.clearAll_();
         dragSelectionWeakMap.get(scope.workspace).clear();
       }
@@ -1062,7 +1105,7 @@ const registerCommentDelete = function() {
         apply(scope.comment);
       }
 
-      Blockly.common.setSelected(null);
+      Blockly.getFocusManager().focusTree(workspace);
       Blockly.Events.setGroup(false);
     },
     scopeType: Blockly.ContextMenuRegistry.ScopeType.COMMENT,
@@ -1145,7 +1188,7 @@ const registerCommentDuplicate = function() {
         });
         dragSelection.clear();
         multiDraggable.clearAll_();
-        Blockly.common.setSelected(null);
+        Blockly.getFocusManager().focusTree(workspace);
       } else {
         apply(scope.comment);
       }
@@ -1157,12 +1200,14 @@ const registerCommentDuplicate = function() {
           comment.select();
         }
       }
-      if (dragSelection.size === 1) {
-        Blockly.common.setSelected(getByID(workspace, dragSelection.values().next().value));
-      } else {
-        Blockly.common.setSelected(multiDraggable);
-      }
       Blockly.Events.setGroup(false);
+      Blockly.renderManagement.finishQueuedRenders().then(() => {
+        if (dragSelection.size === 1) {
+          Blockly.common.setSelected(getByID(workspace, dragSelection.values().next().value));
+        } else {
+          Blockly.common.setSelected(multiDraggable);
+        }
+      });
     },
     scopeType: Blockly.ContextMenuRegistry.ScopeType.COMMENT,
     id,
@@ -1172,6 +1217,38 @@ const registerCommentDuplicate = function() {
     Blockly.ContextMenuRegistry.registry.unregister(id);
   }
   Blockly.ContextMenuRegistry.registry.register(duplicateOption);
+  multiselectDisplayText[id] = duplicateOption.displayText;
+};
+
+const commentCheck = function(comment) {
+  return comment && comment.isDeletable() &&
+      comment.isMovable();
+};
+
+const commentCopyDisplayText = function(scope) {
+  let workableCommentsLength = 0;
+  const workspace = scope.comment.workspace;
+  const dragSelection = dragSelectionWeakMap.get(workspace);
+  dragSelection.forEach(function(id) {
+    const comment = workspace.getCommentById(id);
+    if (comment) {
+      if (commentCheck(comment)) {
+        workableCommentsLength++;
+      }
+    }
+  });
+  if (workableCommentsLength <= 1) {
+    return Blockly.Msg['CROSS_TAB_COPY']?
+        Blockly.Msg['CROSS_TAB_COPY'] : Blockly.Msg['COPY_SHORTCUT'];
+  } else {
+    return Blockly.Msg['CROSS_TAB_COPY_X_COMMENTS']?
+        Blockly.Msg['CROSS_TAB_COPY_X_COMMENTS'].replace(
+            '%1', workableCommentsLength) :
+        (Blockly.Msg['CROSS_TAB_COPY']?
+                Blockly.Msg['CROSS_TAB_COPY'] : Blockly.Msg['COPY_SHORTCUT']
+        ) + ' (' +
+        workableCommentsLength + ')';
+  }
 };
 
 /**
@@ -1182,31 +1259,7 @@ const registerCommentDuplicate = function() {
 const registerCommentCopy = function(useCopyPasteCrossTab) {
   const id = 'commentCopyToStorage';
   const copyOptions = {
-    displayText: function(scope) {
-      let workableCommentsLength = 0;
-      const workspace = scope.comment.workspace;
-      const dragSelection = dragSelectionWeakMap.get(workspace);
-      dragSelection.forEach(function(id) {
-        const comment = workspace.getCommentById(id);
-        if (comment) {
-          if (copyOptions.check(comment)) {
-            workableCommentsLength++;
-          }
-        }
-      });
-      if (workableCommentsLength <= 1) {
-        return Blockly.Msg['CROSS_TAB_COPY']?
-            Blockly.Msg['CROSS_TAB_COPY'] : 'Copy';
-      } else {
-        return Blockly.Msg['CROSS_TAB_COPY_X_COMMENTS']?
-            Blockly.Msg['CROSS_TAB_COMMENTS'].replace(
-                '%1', workableCommentsLength) :
-            (Blockly.Msg['CROSS_TAB_COPY']?
-                    Blockly.Msg['CROSS_TAB_COPY'] : 'Copy'
-            ) + ' (' +
-            workableCommentsLength + ')';
-      }
-    },
+    displayText: commentCopyDisplayText,
     preconditionFn: function(scope) {
       const workspace = scope.comment.workspace;
       if (workspace.options.readOnly && !useCopyPasteCrossTab) {
@@ -1237,10 +1290,7 @@ const registerCommentCopy = function(useCopyPasteCrossTab) {
       }
       return 'disabled';
     },
-    check: function(comment) {
-      return comment && comment.isDeletable() &&
-          comment.isMovable();
-    },
+    check: commentCheck,
     callback: function(scope) {
       const workspace = scope.comment.workspace;
       copyData.clear();
@@ -1281,6 +1331,33 @@ const registerCommentCopy = function(useCopyPasteCrossTab) {
     Blockly.ContextMenuRegistry.registry.unregister(id);
   }
   Blockly.ContextMenuRegistry.registry.register(copyOptions);
+  multiselectDisplayText[id] = copyOptions.displayText;
+};
+
+const commentCutDisplayText = function(scope) {
+  let workableCommentsLength = 0;
+  const workspace = scope.comment.workspace;
+  const dragSelection = dragSelectionWeakMap.get(workspace);
+  dragSelection.forEach(function(id) {
+    const comment = workspace.getCommentById(id);
+    if (comment) {
+      if (commentCheck(comment)) {
+        workableCommentsLength++;
+      }
+    }
+  });
+  if (workableCommentsLength <= 1) {
+    return Blockly.Msg['CROSS_TAB_CUT']?
+        Blockly.Msg['CROSS_TAB_CUT'] : Blockly.Msg['CUT_SHORTCUT'];
+  } else {
+    return Blockly.Msg['CROSS_TAB_CUT_X_COMMENTS']?
+        Blockly.Msg['CROSS_TAB_CUT_X_COMMENTS'].replace(
+            '%1', workableCommentsLength) :
+        (Blockly.Msg['CROSS_TAB_CUT']?
+                Blockly.Msg['CROSS_TAB_CUT'] : Blockly.Msg['CUT_SHORTCUT']
+        ) + ' (' +
+        workableCommentsLength + ')';
+  }
 };
 
 /**
@@ -1343,4 +1420,77 @@ export const registerOurContextMenu = function(useCopyPasteMenu, useCopyPasteCro
   }
   registerSelectAll();
   updateToMultiCopyToBackpack();
+};
+
+const origKeyboardNavigationMenuItems = [];
+
+export const registerOurKeyboardNavigationMenuItems = function(useCopyPasteCrossTab) {
+  const addMultiselectCount = (keyboardNavMenuItem, multiselectDisplayText) => {
+    origKeyboardNavigationMenuItems.push(keyboardNavMenuItem);
+    Blockly.ContextMenuRegistry.registry.unregister(keyboardNavMenuItem.id);
+    Blockly.ContextMenuRegistry.registry.register({
+      ...keyboardNavMenuItem,
+      displayText: (scope) => {
+        const element = keyboardNavMenuItem.displayText(scope);
+        element.firstChild.textContent = multiselectDisplayText(scope);
+        return element;
+      },
+    });
+  };
+
+  addMultiselectCount(
+      Blockly.ContextMenuRegistry.registry.getItem('blockCopyFromContextMenu'),
+      (scope) => {
+        if (scope.block) return blockCopyDisplayText(scope);
+        if (scope.comment) return commentCopyDisplayText(scope);
+      });
+  addMultiselectCount(
+      Blockly.ContextMenuRegistry.registry.getItem('blockCutFromContextMenu'),
+      (scope) => {
+        if (scope.block) return blockCutDisplayText(scope);
+        if (scope.comment) return commentCutDisplayText(scope);
+      });
+  addMultiselectCount(
+      Blockly.ContextMenuRegistry.registry.getItem('blockDuplicate'),
+      multiselectDisplayText['blockDuplicate']);
+  addMultiselectCount(
+      Blockly.ContextMenuRegistry.registry.getItem('blockPasteFromContextMenu'),
+      () => pasteDisplayText(useCopyPasteCrossTab));
+  addMultiselectCount(
+      Blockly.ContextMenuRegistry.registry.getItem('commentDuplicate'),
+      multiselectDisplayText['commentDuplicate']);
+
+  const hideForMultiselect = (keyboardNavMenuItem) => {
+    const originalPrecondition = keyboardNavMenuItem.preconditionFn;
+    origKeyboardNavigationMenuItems.push(keyboardNavMenuItem);
+    Blockly.ContextMenuRegistry.registry.unregister(keyboardNavMenuItem.id);
+    Blockly.ContextMenuRegistry.registry.register({
+      ...keyboardNavMenuItem,
+      preconditionFn: (scope, menuOpenEvent) => {
+        if (Blockly.getSelected() instanceof MultiselectDraggable) return 'hidden';
+        // MOVE_COMMENT is missing the PointerEvent check that MOVE_BLOCK
+        // has, so it incorrectly appears in right-click menus.
+        // https://github.com/RaspberryPiFoundation/blockly-keyboard-experimentation/blob/%40blockly/keyboard-navigation%403.0.5/src/actions/move.ts#L187-L194
+        if (menuOpenEvent instanceof PointerEvent) return 'hidden';
+        return originalPrecondition(scope, menuOpenEvent);
+      },
+    });
+  };
+
+  if (Blockly.ContextMenuRegistry.registry.getItem('move')) {
+    hideForMultiselect(Blockly.ContextMenuRegistry.registry.getItem('move'));
+  }
+  if (Blockly.ContextMenuRegistry.registry.getItem('move_comment')) {
+    hideForMultiselect(Blockly.ContextMenuRegistry.registry.getItem('move_comment'));
+  }
+};
+
+export const registerOrigKeyboardNavigationMenuItems = function() {
+  for (const item of origKeyboardNavigationMenuItems) {
+    if (Blockly.ContextMenuRegistry.registry.getItem(item.id) !== null) {
+      Blockly.ContextMenuRegistry.registry.unregister(item.id);
+    }
+    Blockly.ContextMenuRegistry.registry.register(item);
+  }
+  origKeyboardNavigationMenuItems.length = 0;
 };

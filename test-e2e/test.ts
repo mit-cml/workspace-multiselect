@@ -36,6 +36,12 @@ type BlockJSON = {
 };
 type CommentJSON = { centerTop: Point; bounds: Bounds };
 
+export const cmdOrCtrl = (key: string): string =>
+	`${process.platform === "darwin" ? "Meta" : "Control"}+${key}`;
+
+export const cmdOrCtrlLabel = (key: string): string =>
+	`${process.platform === "darwin" ? "⌘" : "Ctrl +"} ${key}`;
+
 export const test = base.extend<{ act: Act }>({
 	page: async (
 		{ page }: { page: Page },
@@ -92,6 +98,7 @@ export const loadBlocks = (
 			workspace,
 		);
 		workspace.cleanUp();
+		workspace.scrollCenter();
 	}, blocks);
 
 export const getBlock = (page: Page, query: BlockQuery): Promise<BlockJSON> =>
@@ -200,6 +207,22 @@ export const getHighlightedBlockIds = (page: Page): Promise<string[]> =>
 			.sort(),
 	);
 
+export const getStackBlockIds = (
+	page: Page,
+	topBlockId: string,
+): Promise<string[]> =>
+	page.evaluate((topBlockId) => {
+		const workspace = Blockly.getMainWorkspace() as WorkspaceSvg;
+		const stackBlockIds: string[] = [];
+		let block = workspace.getBlockById(topBlockId);
+		if (!block) throw new Error(`Block "${topBlockId}" not found`);
+		while (block) {
+			stackBlockIds.push(block.id);
+			block = block.getNextBlock();
+		}
+		return stackBlockIds;
+	}, topBlockId);
+
 export const loadComments = (
 	page: Page,
 	comments: serialization.workspaceComments.State[],
@@ -223,6 +246,7 @@ export const loadComments = (
 		for (const comment of workspace.getTopComments() as RenderedWorkspaceComment[]) {
 			comment.snapToGrid();
 		}
+		workspace.scrollCenter();
 	}, comments);
 
 export const getComment = (page: Page, id: string): Promise<CommentJSON> =>
@@ -277,6 +301,40 @@ export const getHighlightedCommentIds = (page: Page): Promise<string[]> =>
 
 export const getSelectedId = (page: Page): Promise<string | null> =>
 	page.evaluate(() => Blockly.getSelected()?.id ?? null);
+
+export const getFocusedField = (
+	page: Page,
+): Promise<{ blockId: string; name: string } | null> =>
+	page.evaluate(() => {
+		const focusedNode = Blockly.getFocusManager().getFocusedNode();
+		if (focusedNode instanceof Blockly.Field) {
+			const sourceBlock = focusedNode.getSourceBlock();
+			if (sourceBlock && focusedNode.name) {
+				return { blockId: sourceBlock.id, name: focusedNode.name };
+			}
+		}
+		return null;
+	});
+
+export const getFocusedCommentButton = (
+	page: Page,
+): Promise<{ commentId: string; type: "collapse" | "delete" } | null> =>
+	page.evaluate(() => {
+		const focusedNode = Blockly.getFocusManager().getFocusedNode();
+		if (!(focusedNode instanceof Blockly.comments.CommentBarButton))
+			return null;
+		const commentId = (focusedNode as unknown as { id: string }).id;
+		if (focusedNode instanceof Blockly.comments.CollapseCommentBarButton) {
+			return { commentId, type: "collapse" as const };
+		}
+		if (focusedNode instanceof Blockly.comments.DeleteCommentBarButton) {
+			return { commentId, type: "delete" as const };
+		}
+		return null;
+	});
+
+export const isEphemeralFocusTaken = (page: Page): Promise<boolean> =>
+	page.evaluate(() => Blockly.getFocusManager().ephemeralFocusTaken());
 
 export const getMultiselectDraggableId = (page: Page): Promise<string> =>
 	page.evaluate(() => {

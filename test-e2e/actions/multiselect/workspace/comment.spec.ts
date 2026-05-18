@@ -1,5 +1,7 @@
 import { expect } from "@playwright/test";
 import {
+	cmdOrCtrl,
+	cmdOrCtrlLabel,
 	getAllCommentIds,
 	getComment,
 	getEmptySpace,
@@ -8,6 +10,7 @@ import {
 	getMultiselectDraggableId,
 	getSelectedId,
 	getTrash,
+	isEphemeralFocusTaken,
 	loadComments,
 	test,
 } from "../../../test";
@@ -30,37 +33,38 @@ test.beforeEach(async ({ page, act }) => {
 	await act(page.keyboard.up("Shift"));
 });
 
-test("duplicate comments via context menu", async ({ page, act }) => {
+test("open context menu", async ({ page, act }) => {
 	await act(
 		page.mouse.click(...(await getComment(page, "comment1")).centerTop, {
 			button: "right",
 		}),
 	);
-	expect(await getHighlightedCommentIds(page)).toEqual([
-		"comment1",
-		"comment2",
-	]);
-	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
-	await act(
-		page
-			.getByRole("menuitem", {
-				exact: true,
-				name: "Duplicate Comment (2)",
-			})
-			.click(),
-	);
 
-	const allCommentIds = await getAllCommentIds(page);
-	expect(allCommentIds).toHaveLength(5);
-	const newCommentIds = allCommentIds.filter(
-		(id) => !["comment1", "comment2", "comment3"].includes(id),
+	await expect(page.getByRole("menu")).toBeVisible();
+	const expectedMenuItems: [string, boolean][] = [
+		["Duplicate Comment (2) D", true],
+		["Remove Comment (2)", true],
+		[`Cut (2) ${cmdOrCtrlLabel("X")}`, true],
+		[`Copy (2) ${cmdOrCtrlLabel("C")}`, true],
+		[`Paste ${cmdOrCtrlLabel("V")}`, true],
+	];
+	expect(await page.getByRole("menuitem").allTextContents()).toEqual(
+		expectedMenuItems.map(([name]) => name),
 	);
-	expect(await getHighlightedCommentIds(page)).toEqual(newCommentIds);
+	for (const [name, enabled] of expectedMenuItems) {
+		const menuItem = page.getByRole("menuitem", { exact: true, name });
+		if (enabled) {
+			await expect(menuItem).toBeEnabled();
+		} else {
+			await expect(menuItem).toBeDisabled();
+		}
+	}
+	expect(await getHighlightedCommentIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
+	expect(await isEphemeralFocusTaken(page)).toBe(true);
 });
 
-test("copy and paste comments via keyboard", async ({ page, act }) => {
-	await act(page.keyboard.press("Control+C"));
+test("duplicate comments via keyboard", async ({ page, act }) => {
 	expect(await getAllCommentIds(page)).toEqual([
 		"comment1",
 		"comment2",
@@ -72,7 +76,59 @@ test("copy and paste comments via keyboard", async ({ page, act }) => {
 	]);
 	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 
-	await act(page.keyboard.press("Control+V"));
+	await act(page.keyboard.press("D"));
+
+	const allCommentIds = await getAllCommentIds(page);
+	expect(allCommentIds).toHaveLength(5);
+	const newCommentIds = allCommentIds.filter(
+		(id) => !["comment1", "comment2", "comment3"].includes(id),
+	);
+	expect(await getHighlightedCommentIds(page)).toEqual(newCommentIds);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
+});
+
+test("duplicate comments via context menu", async ({ page, act }) => {
+	await act(
+		page.mouse.click(...(await getComment(page, "comment1")).centerTop, {
+			button: "right",
+		}),
+	);
+	expect(await getHighlightedCommentIds(page)).toEqual([]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
+	expect(await isEphemeralFocusTaken(page)).toBe(true);
+	await act(
+		page
+			.getByRole("menuitem", {
+				exact: true,
+				name: "Duplicate Comment (2) D",
+			})
+			.click(),
+	);
+
+	const allCommentIds = await getAllCommentIds(page);
+	expect(allCommentIds).toHaveLength(5);
+	const newCommentIds = allCommentIds.filter(
+		(id) => !["comment1", "comment2", "comment3"].includes(id),
+	);
+	expect(await getHighlightedCommentIds(page)).toEqual(newCommentIds);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
+	expect(await isEphemeralFocusTaken(page)).toBe(false);
+});
+
+test("copy and paste comments via keyboard", async ({ page, act }) => {
+	await act(page.keyboard.press(cmdOrCtrl("C")));
+	expect(await getAllCommentIds(page)).toEqual([
+		"comment1",
+		"comment2",
+		"comment3",
+	]);
+	expect(await getHighlightedCommentIds(page)).toEqual([
+		"comment1",
+		"comment2",
+	]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
+
+	await act(page.keyboard.press(cmdOrCtrl("V")));
 	const allCommentIds = await getAllCommentIds(page);
 	expect(allCommentIds).toHaveLength(5);
 	const newCommentIds = allCommentIds.filter(
@@ -88,13 +144,16 @@ test("copy and paste comments via context menu", async ({ page, act }) => {
 			button: "right",
 		}),
 	);
-	expect(await getHighlightedCommentIds(page)).toEqual([
-		"comment1",
-		"comment2",
-	]);
+	expect(await getHighlightedCommentIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
+	expect(await isEphemeralFocusTaken(page)).toBe(true);
 	await act(
-		page.getByRole("menuitem", { exact: true, name: "Copy (2)" }).click(),
+		page
+			.getByRole("menuitem", {
+				exact: true,
+				name: `Copy (2) ${cmdOrCtrlLabel("C")}`,
+			})
+			.click(),
 	);
 	expect(await getAllCommentIds(page)).toEqual([
 		"comment1",
@@ -113,7 +172,12 @@ test("copy and paste comments via context menu", async ({ page, act }) => {
 		}),
 	);
 	await act(
-		page.getByRole("menuitem", { exact: true, name: "Paste (2)" }).click(),
+		page
+			.getByRole("menuitem", {
+				exact: true,
+				name: `Paste (2) ${cmdOrCtrlLabel("V")}`,
+			})
+			.click(),
 	);
 	const allCommentIds = await getAllCommentIds(page);
 	expect(allCommentIds).toHaveLength(5);
@@ -122,23 +186,63 @@ test("copy and paste comments via context menu", async ({ page, act }) => {
 	);
 	expect(await getHighlightedCommentIds(page)).toEqual(newCommentIds);
 	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
+	expect(await isEphemeralFocusTaken(page)).toBe(false);
 });
 
 test("cut and paste comments via keyboard", async ({ page, act }) => {
-	await act(page.keyboard.press("Control+X"));
+	await act(page.keyboard.press(cmdOrCtrl("X")));
 	expect(await getAllCommentIds(page)).toEqual(["comment3"]);
+	expect(await getHighlightedCommentIds(page)).toEqual([]);
+	expect(await getSelectedId(page)).toBeNull();
 
-	await act(page.keyboard.press("Control+V"));
-	expect(await getAllCommentIds(page)).toEqual([
-		"comment1",
-		"comment2",
-		"comment3",
-	]);
-	expect(await getHighlightedCommentIds(page)).toEqual([
-		"comment1",
-		"comment2",
-	]);
+	await act(page.keyboard.press(cmdOrCtrl("V")));
+	expect(await getAllCommentIds(page)).toHaveLength(3);
+	const highlightedCommentIds = await getHighlightedCommentIds(page);
+	expect(highlightedCommentIds).toHaveLength(2);
+	expect(highlightedCommentIds).not.toContain("comment3");
 	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
+});
+
+test("cut and paste comments via context menu", async ({ page, act }) => {
+	await act(
+		page.mouse.click(...(await getComment(page, "comment1")).centerTop, {
+			button: "right",
+		}),
+	);
+	expect(await getHighlightedCommentIds(page)).toEqual([]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
+	expect(await isEphemeralFocusTaken(page)).toBe(true);
+	await act(
+		page
+			.getByRole("menuitem", {
+				exact: true,
+				name: `Cut (2) ${cmdOrCtrlLabel("X")}`,
+			})
+			.click(),
+	);
+	expect(await getAllCommentIds(page)).toEqual(["comment3"]);
+	expect(await getHighlightedCommentIds(page)).toEqual([]);
+	expect(await getSelectedId(page)).toBeNull();
+
+	await act(
+		page.mouse.click(...(await getEmptySpace(page)), {
+			button: "right",
+		}),
+	);
+	await act(
+		page
+			.getByRole("menuitem", {
+				exact: true,
+				name: `Paste (2) ${cmdOrCtrlLabel("V")}`,
+			})
+			.click(),
+	);
+	expect(await getAllCommentIds(page)).toHaveLength(3);
+	const highlightedCommentIds = await getHighlightedCommentIds(page);
+	expect(highlightedCommentIds).toHaveLength(2);
+	expect(highlightedCommentIds).not.toContain("comment3");
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
+	expect(await isEphemeralFocusTaken(page)).toBe(false);
 });
 
 test("delete comments via keyboard", async ({ page, act }) => {
@@ -155,11 +259,9 @@ test("delete comments via context menu", async ({ page, act }) => {
 			button: "right",
 		}),
 	);
-	expect(await getHighlightedCommentIds(page)).toEqual([
-		"comment1",
-		"comment2",
-	]);
+	expect(await getHighlightedCommentIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
+	expect(await isEphemeralFocusTaken(page)).toBe(true);
 	await act(
 		page
 			.getByRole("menuitem", {
@@ -172,6 +274,7 @@ test("delete comments via context menu", async ({ page, act }) => {
 	expect(await getAllCommentIds(page)).toEqual(["comment3"]);
 	expect(await getHighlightedCommentIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBeNull();
+	expect(await isEphemeralFocusTaken(page)).toBe(false);
 });
 
 test("drag comments to trash", async ({ page, act }) => {
@@ -182,14 +285,14 @@ test("drag comments to trash", async ({ page, act }) => {
 
 	expect(await getAllCommentIds(page)).toEqual(["comment3"]);
 	expect(await getHighlightedCommentIds(page)).toEqual([]);
-	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
+	expect(await getSelectedId(page)).toBeNull();
 });
 
 test("undo via keyboard", async ({ page, act }) => {
 	await act(page.keyboard.press("Delete"));
 	expect(await getAllCommentIds(page)).toEqual(["comment3"]);
 
-	await act(page.keyboard.press("Control+Z"));
+	await act(page.keyboard.press(cmdOrCtrl("Z")));
 
 	expect(await getAllCommentIds(page)).toEqual([
 		"comment1",
