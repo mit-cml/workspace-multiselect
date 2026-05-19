@@ -144,9 +144,15 @@ export class MultiselectDraggable {
    */
   pointerDownEventHandlerCapture_(event) {
     if (!inMultipleSelectionModeWeakMap.get(this.workspace)) {
-      const clickedBlock = this.workspace.getBlockById(
+      let clickedBlock = this.workspace.getBlockById(
           event.target.closest('[data-id]').getAttribute('data-id'));
-      if (!this.subDraggables.has(clickedBlock)) {
+
+      // Find first non-shadow block parent, because shadow blocks can't be grabbed
+      while (clickedBlock && clickedBlock.isShadow()) {
+        clickedBlock = clickedBlock.getParent();
+      }
+
+      if (clickedBlock && !this.subDraggables.has(clickedBlock)) {
         this.clearAll_();
         this.dragSelection.clear();
       }

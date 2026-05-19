@@ -43,6 +43,38 @@ test("clicking selected block keeps selection", async ({ page, act }) => {
 	expect(await getSelectedId(page)).toBe("block1");
 });
 
+test("clicking selected block's shadow block input keeps visual selection", async ({ page, act }) => {
+	await act(
+		loadBlocks(page, [
+			{
+				type: "controls_repeat_ext",
+				id: "parent",
+				inputs: {
+					TIMES: {
+						shadow: {
+							type: "math_number",
+							id: "shadow",
+							fields: {
+								NUM: 10,
+							},
+						},
+					},
+				},
+			},
+		]),
+	);
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "parent" })).centerTop),
+	);
+
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "shadow" })).centerTop),
+	);
+
+	expect(await getHighlightedBlockIds(page)).toEqual(["parent"]);
+	expect(await getSelectedId(page)).toBe("shadow");
+});
+
 test("clicking child of selected block selects it", async ({ page, act }) => {
 	await act(
 		loadBlocks(page, [

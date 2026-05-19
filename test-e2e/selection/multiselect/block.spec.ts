@@ -176,6 +176,51 @@ test("clicking selected child block keeps selection", async ({ page, act }) => {
 	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 });
 
+test("clicking selected child block's shadow block input keeps selection", async ({page, act}) => {
+	await act(
+		loadBlocks(page, [
+			{
+				type: "math_arithmetic",
+				id: "other",
+			},
+			{
+				type: "controls_repeat_ext",
+				id: "parent",
+				inputs: {
+					TIMES: {
+						shadow: {
+							type: "math_number",
+							id: "shadow",
+							fields: {
+								NUM: 10,
+							},
+						},
+					},
+				},
+			},
+		]),
+	);
+
+	await act(page.keyboard.down("Shift"));
+	await act(
+		page.mouse.click(...(await getBlock(page, {id: "other"})).centerTop),
+	);
+	await act(
+		page.mouse.click(...(await getBlock(page, {id: "parent"})).centerTop),
+	);
+	await act(page.keyboard.up("Shift"));
+
+	await act(
+		page.mouse.click(...(await getBlock(page, {id: "shadow"})).centerTop),
+	);
+
+	expect(await getHighlightedBlockIds(page)).toEqual([
+		"other",
+		"parent",
+	]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
+});
+
 test("clicking unselected block clears selection and selects it", async ({
 	page,
 	act,
