@@ -420,3 +420,83 @@ test("shift clicking child inside parent bounds selects child", async ({
 	expect(await getHighlightedBlockIds(page)).toEqual(["child"]);
 	expect(await getSelectedId(page)).toBe("child");
 });
+
+test("shift clicking block's shadow block input selects main block", async ({
+	page,
+	act,
+}) => {
+	await act(
+		loadBlocks(page, [
+			{
+				type: "controls_repeat_ext",
+				id: "block",
+				inputs: {
+					TIMES: {
+						shadow: {
+							type: "math_number",
+							id: "shadow",
+							fields: {
+								NUM: 10,
+							},
+						},
+					},
+				},
+			},
+		]),
+	);
+
+	await act(page.keyboard.down("Shift"));
+
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "shadow" })).centerTop),
+	);
+
+	await act(page.keyboard.up("Shift"));
+
+	expect(await getHighlightedBlockIds(page)).toEqual(["block"]);
+	expect(await getSelectedId(page)).toBe("block");
+});
+
+test("shift clicking block's shadow block input adds main block into existing multiselection", async ({
+	page,
+	act,
+}) => {
+	await act(
+		loadBlocks(page, [
+			{ type: "math_number", id: "block1" },
+			{ type: "math_number", id: "block2" },
+			{
+				type: "controls_repeat_ext",
+				id: "block3",
+				inputs: {
+					TIMES: {
+						shadow: {
+							type: "math_number",
+							id: "shadow",
+							fields: {
+								NUM: 10,
+							},
+						},
+					},
+				},
+			},
+		]),
+	);
+
+	await act(page.keyboard.down("Shift"));
+
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "block1" })).centerTop),
+	);
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "block2" })).centerTop),
+	);
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "shadow" })).centerTop),
+	);
+
+	await act(page.keyboard.up("Shift"));
+
+	expect(await getHighlightedBlockIds(page)).toEqual(["block1", "block2", "block3"]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
+});

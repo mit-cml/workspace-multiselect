@@ -491,15 +491,37 @@ export class MultiselectControls {
       }
       return toRemove;
     };
+    // Filter out shadow blocks from selection
+    const filterShadows = (list) => {
+      const toRemove = [];
+      for (const [element] of list.entries()) {
+        const elementParent = element.parentElement;
+        if (elementParent && elementParent.dataset && elementParent.dataset.id) {
+          const block = getByID(this.workspace_, elementParent.dataset.id);
+          if (block && block?.isShadow?.()) {
+            toRemove.push(element);
+          }
+        }
+      }
+      return toRemove;
+    };
+
     this.dragSelect_.Selection.filterSelected = (
         {selectorRect, select: _select, unselect: _unselect}) => {
       const select = _select; const unselect = _unselect;
-      const toRemove = filterParent(select, selectorRect);
-      toRemove.forEach((el) => {
+
+      const shadowsToRemove = filterShadows(select);
+      shadowsToRemove.forEach((el) => {
+        select.delete(el);
+      });
+      
+      const parentsToRemove = filterParent(select, selectorRect);
+      parentsToRemove.forEach((el) => {
         const rect = select.get(el);
         select.delete(el);
         unselect.set(el, rect);
       });
+
       return {select, unselect};
     };
 
