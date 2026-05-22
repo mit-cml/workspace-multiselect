@@ -509,6 +509,7 @@ export class MultiselectControls {
           element && element.dataset && element.dataset.id) {
         this.updateDraggables_(
             getByID(this.workspace_, element.dataset.id));
+        this.updateMultiselect();
       }
     });
     this.dragSelect_.subscribe('elementunselect', (info) => {
@@ -517,6 +518,7 @@ export class MultiselectControls {
           element && element.dataset && element.dataset.id) {
         this.updateDraggables_(
             getByID(this.workspace_, element.dataset.id));
+        this.updateMultiselect();
       }
     });
     if (byIcon) {

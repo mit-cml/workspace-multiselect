@@ -420,3 +420,58 @@ test("shift clicking child inside parent bounds selects child", async ({
 	expect(await getHighlightedBlockIds(page)).toEqual(["child"]);
 	expect(await getSelectedId(page)).toBe("child");
 });
+
+test("dragging rectangle selects blocks when multiselect is enabled via icon", async ({ page, act }) => {
+	await act(
+		loadBlocks(page, [
+			{ type: "math_number", id: "block1" },
+			{ type: "math_number", id: "block2" },
+		]),
+	);
+
+	await act(page.locator('.blocklyMultiselect').click());
+
+	const block1Bounds = (await getBlock(page, { id: "block1" })).bounds;
+	const block2Bounds = (await getBlock(page, { id: "block2" })).bounds;
+	const gridSpacing = await getGridSpacing(page);
+	if (gridSpacing === null) throw new Error("Workspace has no grid");
+	const halfGridSpacing = gridSpacing / 2;
+
+	await act(
+		page.mouse.move(
+			block1Bounds.left - halfGridSpacing,
+			block1Bounds.top - halfGridSpacing,
+		),
+	);
+	await act(page.mouse.down());
+	await act(
+		page.mouse.move(
+			block2Bounds.right + halfGridSpacing,
+			block2Bounds.bottom + halfGridSpacing,
+		),
+	);
+	await act(page.mouse.up());
+
+	expect(await getHighlightedBlockIds(page)).toEqual(["block1", "block2"]);
+	
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
+});
+
+test("shortcuts work after lasso selection via icon", async ({ page, act }) => {
+	await act(
+		loadBlocks(page, [
+			{ type: "math_number", id: "block1" },
+		]),
+	);
+
+	await act(page.locator('.blocklyMultiselect').click());
+	const bounds = (await getBlock(page, { id: "block1" })).bounds;
+	await act(page.mouse.move(bounds.left - 10, bounds.top - 10));
+	await act(page.mouse.down());
+	await act(page.mouse.move(bounds.right + 10, bounds.bottom + 10));
+	await act(page.mouse.up());
+
+	await page.keyboard.press("Delete");
+
+	expect(await getHighlightedBlockIds(page)).toEqual([]);
+});
