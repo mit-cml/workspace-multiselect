@@ -139,7 +139,7 @@ test("drag block to trash", async ({ page, act }) => {
 	expect(await getSelectedId(page)).toBe("block1");
 
 	await openTrash(page);
-	await getBlock(page, { type: "logic_boolean", workspace: "trash" });
+	await getBlock(page, { type: "logic_boolean", scope: "top", workspace: { name: "trash" } });
 });
 
 test("drag block from trash", async ({ page, act }) => {
@@ -149,7 +149,7 @@ test("drag block from trash", async ({ page, act }) => {
 	await openTrash(page);
 	await act(
 		page.mouse.move(
-			...(await getBlock(page, { type: "logic_boolean", workspace: "trash" }))
+			...(await getBlock(page, { type: "logic_boolean", scope: "top", workspace: { name: "trash" } }))
 				.centerTop,
 		),
 	);
@@ -181,7 +181,7 @@ test("drag block to backpack", async ({ page, act }) => {
 	expect(block1BoundsEnd.top).toBe(block1BoundsStart.top);
 
 	await openBackpack(page);
-	await getBlock(page, { type: "logic_boolean", workspace: "backpack" });
+	await getBlock(page, { type: "logic_boolean", scope: "top", workspace: { name: "backpack" } });
 });
 
 test("drag block from backpack", async ({ page, act }) => {
@@ -198,7 +198,7 @@ test("drag block from backpack", async ({ page, act }) => {
 			...(
 				await getBlock(page, {
 					type: "logic_boolean",
-					workspace: "backpack",
+					scope: "top", workspace: { name: "backpack" },
 				})
 			).centerTop,
 		),
@@ -278,7 +278,7 @@ test("dragging block from toolbox selects new block", async ({ page, act }) => {
 	expect(await getSelectedId(page)).toBe("block1");
 	await act(
 		page.mouse.move(
-			...(await getBlock(page, { type: "controls_if", workspace: "toolbox" }))
+			...(await getBlock(page, { type: "controls_if", scope: "top", workspace: { name: "toolbox" } }))
 				.centerTop,
 		),
 	);

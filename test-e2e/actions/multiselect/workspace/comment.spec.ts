@@ -216,6 +216,90 @@ test("undo via context menu", async ({ page, act }) => {
 	]);
 });
 
+test("single multiselect comment delete via keyboard", async ({ page, act }) => {
+	await act(page.mouse.click(...(await getEmptySpace(page))));
+	expect(await getHighlightedCommentIds(page)).toEqual([]);
+
+	await act(page.keyboard.down("Shift"));
+	await act(
+		page.mouse.click(...(await getComment(page, "comment1")).centerTop),
+	);
+	await act(page.keyboard.up("Shift"));
+
+	expect(await getHighlightedCommentIds(page)).toEqual(["comment1"]);
+	expect(await getSelectedId(page)).toBe("comment1");
+
+	await act(page.keyboard.press("Delete"));
+
+	expect(await getAllCommentIds(page)).toEqual(["comment2", "comment3"]);
+	expect(await getHighlightedCommentIds(page)).toEqual([]);
+	expect(await getSelectedId(page)).toBeNull();
+});
+
+test("single multiselect comment copy/paste via keyboard", async ({ page, act }) => {
+	await act(page.mouse.click(...(await getEmptySpace(page))));
+
+	await act(page.keyboard.down("Shift"));
+	await act(
+		page.mouse.click(...(await getComment(page, "comment1")).centerTop),
+	);
+	await act(page.keyboard.up("Shift"));
+
+	expect(await getHighlightedCommentIds(page)).toEqual(["comment1"]);
+	expect(await getSelectedId(page)).toBe("comment1");
+
+	await act(page.keyboard.press("ControlOrMeta+C"));
+
+	await act(page.mouse.click(...(await getEmptySpace(page))));
+	expect(await getHighlightedCommentIds(page)).toEqual([]);
+
+	await act(page.keyboard.press("ControlOrMeta+V"));
+
+	const allCommentIds = await getAllCommentIds(page);
+	expect(allCommentIds).toHaveLength(4);
+
+	const newCommentId = allCommentIds.find(
+		(id) => !["comment1", "comment2", "comment3"].includes(id),
+	);
+	expect(newCommentId).toBeDefined();
+	expect(await getHighlightedCommentIds(page)).toEqual([newCommentId!]);
+	expect(await getSelectedId(page)).toBe(newCommentId);
+});
+
+test("single multiselect comment cut/paste via keyboard", async ({ page, act }) => {
+	await act(page.mouse.click(...(await getEmptySpace(page))));
+
+	await act(page.keyboard.down("Shift"));
+	await act(
+		page.mouse.click(...(await getComment(page, "comment1")).centerTop),
+	);
+	await act(page.keyboard.up("Shift"));
+
+	expect(await getAllCommentIds(page)).toEqual([
+		"comment1",
+		"comment2",
+		"comment3",
+	]);
+	expect(await getHighlightedCommentIds(page)).toEqual(["comment1"]);
+	expect(await getSelectedId(page)).toBe("comment1");
+
+	await act(page.keyboard.press("ControlOrMeta+X"));
+
+	expect(await getAllCommentIds(page)).toEqual(["comment2", "comment3"]);
+	expect(await getHighlightedCommentIds(page)).toEqual([]);
+	expect(await getSelectedId(page)).toBeNull();
+
+	await act(page.keyboard.press("ControlOrMeta+V"));
+
+	expect(await getAllCommentIds(page)).toEqual([
+		"comment1",
+		"comment2",
+		"comment3",
+	]);
+	expect(await getHighlightedCommentIds(page)).toEqual(["comment1"]);
+	expect(await getSelectedId(page)).toBe("comment1");
+});
+
 test("drag comments", async ({ page, act }) => {
 	const gridSpacing = await getGridSpacing(page);
 	if (gridSpacing === null) throw new Error("Workspace has no grid");

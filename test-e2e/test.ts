@@ -3,6 +3,7 @@ import { test as base, type Page } from "@playwright/test";
 import type {
 	comments,
 	IComponent,
+	icons,
 	serialization,
 	WorkspaceSvg,
 } from "blockly";
@@ -17,18 +18,30 @@ declare global {
 	}
 }
 
+type BlockSelector =
+	| { id: string; type?: never; scope?: never }
+	| { type: string; scope?: "all" | "top"; id?: never };
+
+type WorkspaceSelector =
+	| { name: "main"; mutatorOf?: never }
+	| { name: "toolbox"; mutatorOf?: never }
+	| { name: "trash"; mutatorOf?: never }
+	| { name: "backpack"; mutatorOf?: never }
+	| { name: "mutator"; mutatorOf: BlockSelector };
+
+type BlocksQuery = { workspace?: WorkspaceSelector; block?: BlockSelector };
+type BlockQuery = { workspace?: WorkspaceSelector } & BlockSelector;
+
 type Act = (action: Promise<void>) => Promise<void>;
-type BlockQuery = { workspace?: "main" | "toolbox" | "trash" | "backpack" } & (
-	| { id: string; type?: never }
-	| { type: string; id?: never }
-);
 type Point = [number, number];
 type Bounds = { top: number; bottom: number; left: number; right: number };
 type FieldJSON = { center: Point; value: unknown | null };
 type BlockJSON = {
+	id: string;
 	centerTop: Point;
 	bounds: Bounds;
 	isCollapsed: boolean;
+	isHighlighted: boolean;
 	hasComment: boolean;
 	hasInlineInputs: boolean;
 	isEnabled: boolean;
@@ -94,11 +107,26 @@ export const loadBlocks = (
 		workspace.cleanUp();
 	}, blocks);
 
-export const getBlock = (page: Page, query: BlockQuery): Promise<BlockJSON> =>
-	page.evaluate((query: BlockQuery) => {
+export const getBlocks = (
+	page: Page,
+	query: BlocksQuery = {},
+): Promise<BlockJSON[]> =>
+	page.evaluate((query: BlocksQuery) => {
+		const getBlockFromWorkspace = (
+			workspace: WorkspaceSvg,
+			selector: BlockSelector,
+		) =>
+			selector.id
+				? workspace.getBlockById(selector.id)
+				: (selector.scope === "top"
+						? workspace.getTopBlocks()
+						: workspace.getAllBlocks()
+					).find((b) => b.type === selector.type);
+
 		const mainWorkspace = Blockly.getMainWorkspace() as WorkspaceSvg;
+		const workspaceSelector = query.workspace ?? { name: "main" };
 		let workspace: WorkspaceSvg;
-		switch (query.workspace ?? "main") {
+		switch (workspaceSelector.name) {
 			case "main":
 				workspace = mainWorkspace;
 				break;
@@ -125,80 +153,109 @@ export const getBlock = (page: Page, query: BlockQuery): Promise<BlockJSON> =>
 				workspace = flyout.getWorkspace();
 				break;
 			}
-			default:
-				throw new Error(`Workspace "${query.workspace}" not found`);
-		}
-		const block = query.id
-			? workspace.getBlockById(query.id)
-			: workspace.getTopBlocks().find((b) => b.type === query.type);
-		if (!block)
-			throw new Error(
-				`Block ${query.id ? `"${query.id}"` : `type "${query.type}"`} not found`,
-			);
-		const workspaceBounds = block.getBoundingRectangleWithoutChildren();
-		const topLeft = Blockly.utils.svgMath.wsToScreenCoordinates(
-			workspace,
-			new Blockly.utils.Coordinate(workspaceBounds.left, workspaceBounds.top),
-		);
-		const bottomRight = Blockly.utils.svgMath.wsToScreenCoordinates(
-			workspace,
-			new Blockly.utils.Coordinate(
-				workspaceBounds.right,
-				workspaceBounds.bottom,
-			),
-		);
-		const bounds = {
-			top: topLeft.y,
-			bottom: bottomRight.y,
-			left: topLeft.x,
-			right: bottomRight.x,
-		};
-		const centerTop: Point = [(bounds.left + bounds.right) / 2, bounds.top + 1];
-		const fields: Record<string, FieldJSON> = {};
-		for (const input of block.inputList) {
-			for (const field of input.fieldRow) {
-				if (!field.name) continue;
-				const svgRoot = field.getSvgRoot();
-				if (!svgRoot) continue;
-				const fieldBounds = svgRoot.getBoundingClientRect();
-				fields[field.name] = {
-					center: [
-						(fieldBounds.left + fieldBounds.right) / 2,
-						(fieldBounds.top + fieldBounds.bottom) / 2,
-					],
-					value: field.getValue(),
-				};
+			case "mutator": {
+				const mutatorSourceBlock = getBlockFromWorkspace(
+					mainWorkspace,
+					workspaceSelector.mutatorOf,
+				);
+				if (!mutatorSourceBlock)
+					throw new Error("Mutator source block not found");
+				const mutatorIcon = mutatorSourceBlock.getIcon<icons.MutatorIcon>(
+					Blockly.icons.IconType.MUTATOR,
+				);
+				if (!mutatorIcon) throw new Error("Mutator icon not found");
+				const mutatorWorkspace = mutatorIcon.getWorkspace();
+				if (!mutatorWorkspace) throw new Error("Mutator workspace not found");
+				workspace = mutatorWorkspace;
+				break;
 			}
+			default:
+				throw new Error(`Workspace "${(workspaceSelector as any).name}" not found`);
 		}
-		return {
-			centerTop,
-			bounds,
-			isCollapsed: block.isCollapsed(),
-			hasComment: block.hasIcon(Blockly.icons.CommentIcon.TYPE),
-			hasInlineInputs: block.getInputsInline(),
-			isEnabled: block.isEnabled(),
-			fields,
-		};
+		const blocks = query.block
+			? [getBlockFromWorkspace(workspace, query.block)].filter((block) => !!block)
+			: workspace.getAllBlocks();
+		return blocks.map((block) => {
+			const workspaceBounds = block.getBoundingRectangleWithoutChildren();
+			const topLeft = Blockly.utils.svgMath.wsToScreenCoordinates(
+				workspace,
+				new Blockly.utils.Coordinate(workspaceBounds.left, workspaceBounds.top),
+			);
+			const bottomRight = Blockly.utils.svgMath.wsToScreenCoordinates(
+				workspace,
+				new Blockly.utils.Coordinate(
+					workspaceBounds.right,
+					workspaceBounds.bottom,
+				),
+			);
+			const bounds = {
+				top: topLeft.y,
+				bottom: bottomRight.y,
+				left: topLeft.x,
+				right: bottomRight.x,
+			};
+			const centerTop: Point = [(bounds.left + bounds.right) / 2, bounds.top + 1];
+			const fields: Record<string, FieldJSON> = {};
+			for (const input of block.inputList) {
+				for (const field of input.fieldRow) {
+					if (!field.name) continue;
+					const svgRoot = field.getSvgRoot();
+					if (!svgRoot) continue;
+					const fieldBounds = svgRoot.getBoundingClientRect();
+					fields[field.name] = {
+						center: [
+							(fieldBounds.left + fieldBounds.right) / 2,
+							(fieldBounds.top + fieldBounds.bottom) / 2,
+						],
+						value: field.getValue(),
+					};
+				}
+			}
+			return {
+				id: block.id,
+				centerTop,
+				bounds,
+				isCollapsed: block.isCollapsed(),
+				isHighlighted: block.getSvgRoot().classList.contains("blocklySelected"),
+				hasComment: block.hasIcon(Blockly.icons.CommentIcon.TYPE),
+				hasInlineInputs: block.getInputsInline(),
+				isEnabled: block.isEnabled(),
+				fields,
+			};
+		});
 	}, query);
 
-export const getAllBlockIds = (page: Page): Promise<string[]> =>
-	page.evaluate(() =>
-		(Blockly.getMainWorkspace() as WorkspaceSvg)
-			.getAllBlocks()
-			.map((block) => block.id)
-			.sort(),
-	);
+export const getBlock = async (
+	page: Page,
+	query: BlockQuery,
+): Promise<BlockJSON> => {
+	const blocks = await getBlocks(page, {
+		workspace: query.workspace,
+		block: query,
+	});
+	if (blocks.length === 0) throw new Error("Block not found");
+	if (blocks.length > 1) throw new Error("Expected one block, found multiple");
+	return blocks[0];
+};
 
-export const getHighlightedBlockIds = (page: Page): Promise<string[]> =>
-	page.evaluate(() =>
-		(Blockly.getMainWorkspace() as WorkspaceSvg)
-			.getAllBlocks()
-			.filter((block) =>
-				block.getSvgRoot().classList.contains("blocklySelected"),
-			)
-			.map((block) => block.id)
-			.sort(),
-	);
+export const getAllBlockIds = (
+  page: Page,
+  query: BlocksQuery = {},  // <-- ADD PARAMETER
+): Promise<string[]> =>
+  getBlocks(page, query).then((blocks) =>
+    blocks.map((block) => block.id).sort(),
+  );
+
+export const getHighlightedBlockIds = (
+  page: Page,
+  query: BlocksQuery = {},  // <-- ADD PARAMETER
+): Promise<string[]> =>
+  getBlocks(page, query).then((blocks) =>
+    blocks
+      .filter((block) => block.isHighlighted)  // <-- USE NEW FIELD
+      .map((block) => block.id)
+      .sort(),
+  );
 
 export const loadComments = (
 	page: Page,
@@ -347,6 +404,24 @@ export const openBackpack = async (page: Page): Promise<void> => {
 		if (!backpack) throw new Error("Backpack not found");
 		backpack.open();
 	});
+};
+
+export const openMutator = async (
+  page: Page,
+  blockId: string,
+): Promise<void> => {
+  await page.locator(`g[data-id="${blockId}"] .blockly-icon-mutator`).click();
+  await page.waitForFunction(
+    (blockId) => {
+      const workspace = Blockly.getMainWorkspace() as WorkspaceSvg;
+      const block = workspace.getBlockById(blockId);
+      if (!block) return false;
+      const mutatorIcon = block.getIcon(Blockly.icons.IconType.MUTATOR);
+      if (!mutatorIcon) return false;
+      return mutatorIcon.bubbleIsVisible();
+    },
+    blockId,
+  );
 };
 
 export const isMultiselectEnabled = (page: Page): Promise<boolean> =>
