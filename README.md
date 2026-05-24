@@ -64,6 +64,10 @@ options = {
     // Show the copy/paste menu entries (true by default).
     menu: true,
   },
+
+  // Enable backpacking selected blocks as a single unit when possible
+  // And avoid saving not selected blocks
+  backpackOnlySelected: false,
 };
 
 // Inject Blockly.

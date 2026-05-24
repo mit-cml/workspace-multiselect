@@ -34,6 +34,7 @@ function createWorkspace(blocklyDiv, options) {
 
   // Initialize multiselect plugin.
   const multiselectPlugin = new Multiselect(workspace);
+  window.multiselectPlugin = multiselectPlugin;
   multiselectPlugin.init(options);
 
   return workspace;

@@ -891,11 +891,11 @@ const registerSelectAll = function() {
 
 /**
  * Registers copy to back pack context menu item in back pack.
- * @param {boolean} disablePreconditionContainsCheck Option for
- *                  the back pack plugin, default is false.
+ * @param {boolean} backpackOnlySelected Option for
+ *                  adding only selected items. Default is false
  */
 const updateToMultiCopyToBackpack =
-    function(disablePreconditionContainsCheck = false) {
+    function(backpackOnlySelected = false) {
       const id = 'copy_to_backpack';
       const copyToBackpack = {
         getBackPack: function(ws) {
@@ -911,6 +911,91 @@ const updateToMultiCopyToBackpack =
              !backpack.containsBlock(block) &&
              !hasSelectedParent(block);
         },
+        cleanFlyoutInfo: function(dirtyInfo) {
+          // The keys to remove.
+          const removeKeys = [
+            'id',
+            'height',
+            'width',
+            'pinned',
+            'enabled',
+            //'disabledReasons',
+          ];
+
+          // Traverse the object recursively.
+          const traverseClean = function (obj, keys) {
+            for (const key of Object.keys(obj)) {
+              if (keys.indexOf(key) !== -1) {
+                delete obj[key];
+                continue;
+              }
+
+              const item = obj[key];
+              if (item !== null && typeof item === 'object') {
+                traverseClean(item, keys);
+              }
+            }
+          };
+
+          traverseClean(dirtyInfo, removeKeys);
+        },
+        getMultiselectedBlocksForBackpack(blocks) {
+          const allBlocksIds = new Set(blocks.map((block) => block.id));
+          const rootBlocks = new Set(blocks);
+
+          blocks.forEach((block) => {
+            const prevBlock = block.getPreviousBlock();
+            if (prevBlock && allBlocksIds.has(prevBlock.id)) {
+              // Parent will be in the list
+              rootBlocks.delete(block);
+              return;
+            }
+
+            let parent = block.getSurroundParent();
+            while (parent?.getSurroundParent()) {
+              if (allBlocksIds.has(parent.id)) {
+                // Parent will be in the list
+                rootBlocks.delete(block);
+                return;
+              }
+
+              parent = parent.getSurroundParent();
+            }
+          })
+
+          const blocksInfo = [];
+          rootBlocks.forEach((block) => {
+            const json = Blockly.serialization.blocks.save(block);
+            if (json) {
+              let currentBlock = json;
+
+              while (currentBlock) {
+                let nextBlock = currentBlock?.next?.block;
+                if (nextBlock) {
+                  const id = nextBlock.id;
+                  if (id && !allBlocksIds.has(id)) {
+                    // Block is not selected. We do not add it
+                    delete currentBlock.next;
+                    nextBlock = null;
+                  }
+                }
+
+                currentBlock = nextBlock;
+              }
+
+              let modifiedJson = {
+                kind: 'BLOCK',
+                ...json,
+              };
+
+              copyToBackpack.cleanFlyoutInfo(modifiedJson);
+
+              blocksInfo.push(JSON.stringify(modifiedJson));
+            }
+          });
+
+          return blocksInfo;
+        },
         displayText: function(scope) {
           if (!scope.block) {
             return '';
@@ -922,16 +1007,30 @@ const updateToMultiCopyToBackpack =
           }
           let workableBlocksLength = 0;
           const dragSelection = dragSelectionWeakMap.get(ws);
+          
+          const blocksToAdd = [];
           if (!dragSelection.size) {
             if (copyToBackpack.check(scope.block)) {
-              workableBlocksLength++;
+              blocksToAdd.push(scope.block);
+            }
+          } else {
+            dragSelection.forEach((id) => {
+              const block = ws.getBlockById(id);
+              if (copyToBackpack.check(block)) {
+                blocksToAdd.push(block);
+              }
+            });
+
+            if (blocksToAdd.length > 0) {
+              if (backpackOnlySelected) {
+                const backpackBlocks = copyToBackpack.getMultiselectedBlocksForBackpack(blocksToAdd);
+                workableBlocksLength = backpackBlocks.length;
+              } else {
+                workableBlocksLength = blocksToAdd.length;
+              }
             }
           }
-          for (const id of dragSelection) {
-            if (copyToBackpack.check(ws.getBlockById(id))) {
-              workableBlocksLength++;
-            }
-          }
+          
           if (workableBlocksLength > 1) {
             if (Blockly.Msg['COPY_X_TO_BACKPACK']) {
               return Blockly.Msg['COPY_X_TO_BACKPACK']
@@ -950,9 +1049,6 @@ const updateToMultiCopyToBackpack =
           if (!ws.isFlyout) {
             if (!copyToBackpack.getBackPack(ws)) {
               return 'hidden';
-            }
-            if (disablePreconditionContainsCheck) {
-              return 'enabled';
             }
             const dragSelection = dragSelectionWeakMap.get(ws);
             if (!dragSelection.size) {
@@ -974,17 +1070,29 @@ const updateToMultiCopyToBackpack =
           const ws = scope.block.workspace;
           const backpack = copyToBackpack.getBackPack(ws);
           const dragSelection = dragSelectionWeakMap.get(ws);
+
+          const blocksToAdd = [];
           if (!dragSelection.size) {
             if (copyToBackpack.check(scope.block)) {
-              backpack.addBlock(scope.block);
+              blocksToAdd.push(scope.block);
+            }
+          } else {
+            dragSelection.forEach((id) => {
+              const block = ws.getBlockById(id);
+              if (copyToBackpack.check(block)) {
+                blocksToAdd.push(block);
+              }
+            });
+          }
+
+          if (blocksToAdd.length > 0) {
+            if (backpackOnlySelected) {
+              const backpackBlocks = copyToBackpack.getMultiselectedBlocksForBackpack(blocksToAdd);
+              backpack.addItems(backpackBlocks);
+            } else {
+              backpack.addBlocks(blocksToAdd);
             }
           }
-          dragSelection.forEach(function(id) {
-            const block = ws.getBlockById(id);
-            if (copyToBackpack.check(block)) {
-              backpack.addBlock(block);
-            }
-          });
         },
         scopeType: Blockly.ContextMenuRegistry.ScopeType.BLOCK,
         id,
@@ -1322,7 +1430,7 @@ export const registerOrigContextMenu = function() {
  * @param {boolean} useCopyPasteMenu Whether to use copy/paste menu.
  * @param {boolean} useCopyPasteCrossTab Whether to use cross tab copy/paste.
  */
-export const registerOurContextMenu = function(useCopyPasteMenu, useCopyPasteCrossTab) {
+export const registerOurContextMenu = function(useCopyPasteMenu, useCopyPasteCrossTab, backpackOnlySelected) {
   if (useCopyPasteMenu) {
     registerCopy(useCopyPasteCrossTab);
     registerPaste(useCopyPasteCrossTab);
@@ -1342,5 +1450,5 @@ export const registerOurContextMenu = function(useCopyPasteMenu, useCopyPasteCro
     map[id]();
   }
   registerSelectAll();
-  updateToMultiCopyToBackpack();
+  updateToMultiCopyToBackpack(backpackOnlySelected);
 };

@@ -42,6 +42,7 @@ export class Multiselect {
     this.multiFieldUpdate_ = true;
     this.multiSelectKeys_ = ['shift'];
     this.registeredShortcut_ = true;
+    this.backpackOnlySelected_ = true;
   }
 
   /**
@@ -109,10 +110,14 @@ export class Multiselect {
       this.useCopyPasteMenu_ = false;
     }
 
+    if (!options.backpackOnlySelected) {
+      this.backpackOnlySelected_ = false;
+    }
+
     if (!Blockly.ContextMenuRegistry.registry.getItem('workspaceSelectAll')) {
       ContextMenu.unregisterContextMenu();
       ContextMenu.registerOurContextMenu(this.useCopyPasteMenu_,
-          this.useCopyPasteCrossTab_);
+          this.useCopyPasteCrossTab_, this.backpackOnlySelected_);
       Shortcut.unregisterOrigShortcut();
       Shortcut.registerOurShortcut(this.useCopyPasteCrossTab_);
     }
