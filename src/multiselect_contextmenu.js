@@ -131,6 +131,7 @@ const registerCopy = function(useCopyPasteCrossTab) {
     scopeType: Blockly.ContextMenuRegistry.ScopeType.BLOCK,
     id,
     weight: 0,
+    associatedKeyboardShortcut: Blockly.ShortcutItems.names.COPY,
   };
   if (Blockly.ContextMenuRegistry.registry.getItem(id) !== null) {
     Blockly.ContextMenuRegistry.registry.unregister(id);
@@ -858,6 +859,7 @@ const registerPaste = function(useCopyPasteCrossTab) {
     scopeType: Blockly.ContextMenuRegistry.ScopeType.WORKSPACE,
     id,
     weight: 0,
+    associatedKeyboardShortcut: Blockly.ShortcutItems.names.PASTE,
   };
   if (Blockly.ContextMenuRegistry.registry.getItem(id) !== null) {
     Blockly.ContextMenuRegistry.registry.unregister(id);
@@ -1326,6 +1328,7 @@ const registerCommentCopy = function(useCopyPasteCrossTab) {
     scopeType: Blockly.ContextMenuRegistry.ScopeType.COMMENT,
     id,
     weight: 0,
+    associatedKeyboardShortcut: Blockly.ShortcutItems.names.COPY,
   };
   if (Blockly.ContextMenuRegistry.registry.getItem(id) !== null) {
     Blockly.ContextMenuRegistry.registry.unregister(id);
@@ -1439,23 +1442,8 @@ export const registerOurKeyboardNavigationMenuItems = function(useCopyPasteCross
   };
 
   addMultiselectCount(
-      Blockly.ContextMenuRegistry.registry.getItem('blockCopyFromContextMenu'),
-      (scope) => {
-        if (scope.block) return blockCopyDisplayText(scope);
-        if (scope.comment) return commentCopyDisplayText(scope);
-      });
-  addMultiselectCount(
-      Blockly.ContextMenuRegistry.registry.getItem('blockCutFromContextMenu'),
-      (scope) => {
-        if (scope.block) return blockCutDisplayText(scope);
-        if (scope.comment) return commentCutDisplayText(scope);
-      });
-  addMultiselectCount(
       Blockly.ContextMenuRegistry.registry.getItem('blockDuplicate'),
       multiselectDisplayText['blockDuplicate']);
-  addMultiselectCount(
-      Blockly.ContextMenuRegistry.registry.getItem('blockPasteFromContextMenu'),
-      () => pasteDisplayText(useCopyPasteCrossTab));
   addMultiselectCount(
       Blockly.ContextMenuRegistry.registry.getItem('commentDuplicate'),
       multiselectDisplayText['commentDuplicate']);

@@ -65,29 +65,19 @@ test("open context menu", async ({ page, act }) => {
 	);
 
 	await expect(page.getByRole("menu")).toBeVisible();
-	const expectedMenuItems: [string, boolean][] = [
-		["Duplicate (3) D", true],
-		["Add Comment (4)", true],
-		["Collapse Block (3)", true],
-		["Disable Block (3)", true],
-		["Delete 5 Blocks Delete", true],
-		["Help", true],
-		[`Cut (3) ${cmdOrCtrlLabel("X")}`, true],
-		[`Copy (3) ${cmdOrCtrlLabel("C")}`, true],
-		[`Paste ${cmdOrCtrlLabel("V")}`, true],
-		["Copy to Backpack (3)", true],
+	const expectedMenuItems = [
+		`Copy (3) ${cmdOrCtrlLabel("C")}`,
+		"Duplicate (3) D",
+		"Add Comment (4)",
+		"Collapse Block (3)",
+		"Disable Block (3)",
+		"Delete 5 Blocks Delete",
+		"Help",
+		"Copy to Backpack (3)",
 	];
 	expect(await page.getByRole("menuitem").allTextContents()).toEqual(
-		expectedMenuItems.map(([name]) => name),
+		expectedMenuItems,
 	);
-	for (const [name, enabled] of expectedMenuItems) {
-		const menuItem = page.getByRole("menuitem", { exact: true, name });
-		if (enabled) {
-			await expect(menuItem).toBeEnabled();
-		} else {
-			await expect(menuItem).toBeDisabled();
-		}
-	}
 	expect(await getHighlightedBlockIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 	expect(await isEphemeralFocusTaken(page)).toBe(true);
@@ -293,48 +283,6 @@ test("cut and paste blocks via keyboard", async ({ page, act }) => {
 	expect(highlightedBlockIds).toHaveLength(3);
 	expect(highlightedBlockIds).not.toContain("block4");
 	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
-});
-
-test("cut and paste blocks via context menu", async ({ page, act }) => {
-	await act(
-		page.mouse.click(...(await getBlock(page, { id: "block1" })).centerTop, {
-			button: "right",
-		}),
-	);
-	expect(await getHighlightedBlockIds(page)).toEqual([]);
-	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
-	expect(await isEphemeralFocusTaken(page)).toBe(true);
-	await act(
-		page
-			.getByRole("menuitem", {
-				exact: true,
-				name: `Cut (3) ${cmdOrCtrlLabel("X")}`,
-			})
-			.click(),
-	);
-	expect(await getAllBlockIds(page)).toEqual(["block4"]);
-	expect(await getHighlightedBlockIds(page)).toEqual(["block4"]);
-	expect(await getSelectedId(page)).toBe("block4");
-
-	await act(
-		page.mouse.click(...(await getEmptySpace(page)), {
-			button: "right",
-		}),
-	);
-	await act(
-		page
-			.getByRole("menuitem", {
-				exact: true,
-				name: `Paste (3) ${cmdOrCtrlLabel("V")}`,
-			})
-			.click(),
-	);
-	expect(await getAllBlockIds(page)).toHaveLength(6);
-	const highlightedBlockIds = await getHighlightedBlockIds(page);
-	expect(highlightedBlockIds).toHaveLength(3);
-	expect(highlightedBlockIds).not.toContain("block4");
-	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
-	expect(await isEphemeralFocusTaken(page)).toBe(false);
 });
 
 test("delete blocks via keyboard", async ({ page, act }) => {

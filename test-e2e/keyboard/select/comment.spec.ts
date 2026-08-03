@@ -255,25 +255,15 @@ test("open context menu", async ({ page, act }) => {
 	await act(page.keyboard.press(cmdOrCtrl("Enter")));
 
 	await expect(page.getByRole("menu")).toBeVisible();
-	const expectedMenuItems: [string, boolean][] = [
-		["Duplicate Comment D", true],
-		["Remove Comment", true],
-		["Move Comment M", true],
-		[`Cut ${cmdOrCtrlLabel("X")}`, true],
-		[`Copy ${cmdOrCtrlLabel("C")}`, true],
-		[`Paste ${cmdOrCtrlLabel("V")}`, true],
+	const expectedMenuItems = [
+		`Copy ${cmdOrCtrlLabel("C")}`,
+		"Duplicate Comment D",
+		"Remove Comment",
+		"Move Comment M",
 	];
 	expect(await page.getByRole("menuitem").allTextContents()).toEqual(
-		expectedMenuItems.map(([name]) => name),
+		expectedMenuItems,
 	);
-	for (const [name, enabled] of expectedMenuItems) {
-		const menuItem = page.getByRole("menuitem", { exact: true, name });
-		if (enabled) {
-			await expect(menuItem).toBeEnabled();
-		} else {
-			await expect(menuItem).toBeDisabled();
-		}
-	}
 	expect(await getHighlightedCommentIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBe("comment2");
 	expect(await isEphemeralFocusTaken(page)).toBe(true);

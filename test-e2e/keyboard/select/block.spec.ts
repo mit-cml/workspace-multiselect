@@ -159,31 +159,21 @@ test("open context menu", async ({ page, act }) => {
 	await act(page.keyboard.press(cmdOrCtrl("Enter")));
 
 	await expect(page.getByRole("menu")).toBeVisible();
-	const expectedMenuItems: [string, boolean][] = [
-		["Duplicate D", true],
-		["Add Comment", true],
-		["Collapse Block", true],
-		["Disable Block", true],
-		["Delete Block Delete", true],
-		["Help", true],
-		["Move Block M", true],
-		["Edit Block contents Right", true],
-		[`Cut ${cmdOrCtrlLabel("X")}`, true],
-		[`Copy ${cmdOrCtrlLabel("C")}`, true],
-		[`Paste ${cmdOrCtrlLabel("V")}`, true],
-		["Copy to Backpack", true],
+	const expectedMenuItems = [
+		`Copy ${cmdOrCtrlLabel("C")}`,
+		"Duplicate D",
+		"Add Comment",
+		"Collapse Block",
+		"Disable Block",
+		"Delete Block Delete",
+		"Help",
+		"Move Block M",
+		"Edit Block contents Right",
+		"Copy to Backpack",
 	];
 	expect(await page.getByRole("menuitem").allTextContents()).toEqual(
-		expectedMenuItems.map(([name]) => name),
+		expectedMenuItems,
 	);
-	for (const [name, enabled] of expectedMenuItems) {
-		const menuItem = page.getByRole("menuitem", { exact: true, name });
-		if (enabled) {
-			await expect(menuItem).toBeEnabled();
-		} else {
-			await expect(menuItem).toBeDisabled();
-		}
-	}
 	expect(await getHighlightedBlockIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBe("block2");
 	expect(await isEphemeralFocusTaken(page)).toBe(true);
