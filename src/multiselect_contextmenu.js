@@ -278,6 +278,7 @@ const registerDuplicate = function() {
     scopeType: Blockly.ContextMenuRegistry.ScopeType.BLOCK,
     id,
     weight: 1,
+    associatedKeyboardShortcut: Blockly.ShortcutItems.names.DUPLICATE,
   };
   if (Blockly.ContextMenuRegistry.registry.getItem(id) !== null) {
     Blockly.ContextMenuRegistry.registry.unregister(id);
@@ -744,6 +745,7 @@ const registerDelete = function() {
     scopeType: Blockly.ContextMenuRegistry.ScopeType.BLOCK,
     id,
     weight: 6,
+    associatedKeyboardShortcut: Blockly.ShortcutItems.names.DELETE,
   };
   if (Blockly.ContextMenuRegistry.registry.getItem(id) !== null) {
     Blockly.ContextMenuRegistry.registry.unregister(id);
@@ -1214,6 +1216,7 @@ const registerCommentDuplicate = function() {
     scopeType: Blockly.ContextMenuRegistry.ScopeType.COMMENT,
     id,
     weight: 1,
+    associatedKeyboardShortcut: Blockly.ShortcutItems.names.DUPLICATE,
   };
   if (Blockly.ContextMenuRegistry.registry.getItem(id) !== null) {
     Blockly.ContextMenuRegistry.registry.unregister(id);
@@ -1423,39 +1426,4 @@ export const registerOurContextMenu = function(useCopyPasteMenu, useCopyPasteCro
   }
   registerSelectAll();
   updateToMultiCopyToBackpack();
-};
-
-const origKeyboardNavigationMenuItems = [];
-
-export const registerOurKeyboardNavigationMenuItems = function(useCopyPasteCrossTab) {
-  const addMultiselectCount = (keyboardNavMenuItem, multiselectDisplayText) => {
-    origKeyboardNavigationMenuItems.push(keyboardNavMenuItem);
-    Blockly.ContextMenuRegistry.registry.unregister(keyboardNavMenuItem.id);
-    Blockly.ContextMenuRegistry.registry.register({
-      ...keyboardNavMenuItem,
-      displayText: (scope) => {
-        const element = keyboardNavMenuItem.displayText(scope);
-        element.firstChild.textContent = multiselectDisplayText(scope);
-        return element;
-      },
-    });
-  };
-
-  addMultiselectCount(
-      Blockly.ContextMenuRegistry.registry.getItem('blockDuplicate'),
-      multiselectDisplayText['blockDuplicate']);
-  addMultiselectCount(
-      Blockly.ContextMenuRegistry.registry.getItem('commentDuplicate'),
-      multiselectDisplayText['commentDuplicate']);
-
-};
-
-export const registerOrigKeyboardNavigationMenuItems = function() {
-  for (const item of origKeyboardNavigationMenuItems) {
-    if (Blockly.ContextMenuRegistry.registry.getItem(item.id) !== null) {
-      Blockly.ContextMenuRegistry.registry.unregister(item.id);
-    }
-    Blockly.ContextMenuRegistry.registry.register(item);
-  }
-  origKeyboardNavigationMenuItems.length = 0;
 };
