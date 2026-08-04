@@ -67,10 +67,10 @@ test("unconstrained move", async ({ page, act }) => {
 	const block3BoundsStart = (await getBlock(page, { id: "block3" })).bounds;
 
 	await act(page.keyboard.press("M"));
-	await expect(page.locator(".blocklyMoveIndicatorBubble")).toBeVisible();
+	await expect(page.locator(".blocklyMoveIndicator")).toBeVisible();
 	await act(page.keyboard.press("Alt+ArrowRight"));
 	await act(page.keyboard.press("Enter"));
-	await expect(page.locator(".blocklyMoveIndicatorBubble")).not.toBeVisible();
+	await expect(page.locator(".blocklyMoveIndicator")).not.toBeVisible();
 
 	const block1BoundsEnd = (await getBlock(page, { id: "block1" })).bounds;
 	const block2BoundsEnd = (await getBlock(page, { id: "block2" })).bounds;
@@ -91,10 +91,10 @@ test("abort unconstrained move", async ({ page, act }) => {
 	const block2BoundsStart = (await getBlock(page, { id: "block2" })).bounds;
 
 	await act(page.keyboard.press("M"));
-	await expect(page.locator(".blocklyMoveIndicatorBubble")).toBeVisible();
+	await expect(page.locator(".blocklyMoveIndicator")).toBeVisible();
 	await act(page.keyboard.press("Alt+ArrowRight"));
 	await act(page.keyboard.press("Escape"));
-	await expect(page.locator(".blocklyMoveIndicatorBubble")).not.toBeVisible();
+	await expect(page.locator(".blocklyMoveIndicator")).not.toBeVisible();
 
 	const block2BoundsEnd = (await getBlock(page, { id: "block2" })).bounds;
 	expect(block2BoundsEnd.left).toBeCloseTo(block2BoundsStart.left);

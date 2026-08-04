@@ -67,10 +67,10 @@ test("navigate to next stack", async ({ page, act }) => {
 
 test("constrained move", async ({ page, act }) => {
 	await act(page.keyboard.press("M"));
-	await expect(page.locator(".blocklyMoveIndicatorBubble")).toBeVisible();
+	await expect(page.locator(".blocklyMoveIndicator")).toBeVisible();
 	await act(page.keyboard.press("ArrowDown"));
 	await act(page.keyboard.press("Enter"));
-	await expect(page.locator(".blocklyMoveIndicatorBubble")).not.toBeVisible();
+	await expect(page.locator(".blocklyMoveIndicator")).not.toBeVisible();
 
 	expect(await getStackBlockIds(page, "stack2_top")).toEqual([
 		"stack2_top",
@@ -81,10 +81,10 @@ test("constrained move", async ({ page, act }) => {
 
 test("abort constrained move", async ({ page, act }) => {
 	await act(page.keyboard.press("M"));
-	await expect(page.locator(".blocklyMoveIndicatorBubble")).toBeVisible();
+	await expect(page.locator(".blocklyMoveIndicator")).toBeVisible();
 	await act(page.keyboard.press("ArrowDown"));
 	await act(page.keyboard.press("Escape"));
-	await expect(page.locator(".blocklyMoveIndicatorBubble")).not.toBeVisible();
+	await expect(page.locator(".blocklyMoveIndicator")).not.toBeVisible();
 
 	expect(await getStackBlockIds(page, "stack2_top")).toEqual([
 		"stack2_top",
@@ -102,12 +102,12 @@ test("unconstrained move", async ({ page, act }) => {
 	const stack3BoundsStart = (await getBlock(page, { id: "stack3" })).bounds;
 
 	await act(page.keyboard.press("M"));
-	await expect(page.locator(".blocklyMoveIndicatorBubble")).toBeVisible();
+	await expect(page.locator(".blocklyMoveIndicator")).toBeVisible();
 	for (let i = 0; i < 3; i++) {
 		await act(page.keyboard.press("Alt+ArrowRight"));
 	}
 	await act(page.keyboard.press("Enter"));
-	await expect(page.locator(".blocklyMoveIndicatorBubble")).not.toBeVisible();
+	await expect(page.locator(".blocklyMoveIndicator")).not.toBeVisible();
 
 	expect(await getStackBlockIds(page, "stack2_top")).toEqual([
 		"stack2_top",
@@ -136,12 +136,12 @@ test("unconstrained move", async ({ page, act }) => {
 
 test("abort unconstrained move", async ({ page, act }) => {
 	await act(page.keyboard.press("M"));
-	await expect(page.locator(".blocklyMoveIndicatorBubble")).toBeVisible();
+	await expect(page.locator(".blocklyMoveIndicator")).toBeVisible();
 	for (let i = 0; i < 3; i++) {
 		await act(page.keyboard.press("Alt+ArrowRight"));
 	}
 	await act(page.keyboard.press("Escape"));
-	await expect(page.locator(".blocklyMoveIndicatorBubble")).not.toBeVisible();
+	await expect(page.locator(".blocklyMoveIndicator")).not.toBeVisible();
 
 	expect(await getStackBlockIds(page, "stack2_top")).toEqual([
 		"stack2_top",

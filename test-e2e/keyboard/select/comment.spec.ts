@@ -67,10 +67,10 @@ test("constrained move", async ({ page, act }) => {
 	const comment3BoundsStart = (await getComment(page, "comment3")).bounds;
 
 	await act(page.keyboard.press("M"));
-	await expect(page.locator(".blocklyMoveIndicatorBubble")).toBeVisible();
+	await expect(page.locator(".blocklyMoveIndicator")).toBeVisible();
 	await act(page.keyboard.press("ArrowRight"));
 	await act(page.keyboard.press("Enter"));
-	await expect(page.locator(".blocklyMoveIndicatorBubble")).not.toBeVisible();
+	await expect(page.locator(".blocklyMoveIndicator")).not.toBeVisible();
 
 	const comment1BoundsEnd = (await getComment(page, "comment1")).bounds;
 	const comment2BoundsEnd = (await getComment(page, "comment2")).bounds;
@@ -91,10 +91,10 @@ test("abort constrained move", async ({ page, act }) => {
 	const comment2BoundsStart = (await getComment(page, "comment2")).bounds;
 
 	await act(page.keyboard.press("M"));
-	await expect(page.locator(".blocklyMoveIndicatorBubble")).toBeVisible();
+	await expect(page.locator(".blocklyMoveIndicator")).toBeVisible();
 	await act(page.keyboard.press("ArrowRight"));
 	await act(page.keyboard.press("Escape"));
-	await expect(page.locator(".blocklyMoveIndicatorBubble")).not.toBeVisible();
+	await expect(page.locator(".blocklyMoveIndicator")).not.toBeVisible();
 
 	const comment2BoundsEnd = (await getComment(page, "comment2")).bounds;
 	expect(comment2BoundsEnd.top).toBeCloseTo(comment2BoundsStart.top);
@@ -111,10 +111,10 @@ test("unconstrained move", async ({ page, act }) => {
 	const comment3BoundsStart = (await getComment(page, "comment3")).bounds;
 
 	await act(page.keyboard.press("M"));
-	await expect(page.locator(".blocklyMoveIndicatorBubble")).toBeVisible();
+	await expect(page.locator(".blocklyMoveIndicator")).toBeVisible();
 	await act(page.keyboard.press("Alt+ArrowRight"));
 	await act(page.keyboard.press("Enter"));
-	await expect(page.locator(".blocklyMoveIndicatorBubble")).not.toBeVisible();
+	await expect(page.locator(".blocklyMoveIndicator")).not.toBeVisible();
 
 	const comment1BoundsEnd = (await getComment(page, "comment1")).bounds;
 	const comment2BoundsEnd = (await getComment(page, "comment2")).bounds;
@@ -135,10 +135,10 @@ test("abort unconstrained move", async ({ page, act }) => {
 	const comment2BoundsStart = (await getComment(page, "comment2")).bounds;
 
 	await act(page.keyboard.press("M"));
-	await expect(page.locator(".blocklyMoveIndicatorBubble")).toBeVisible();
+	await expect(page.locator(".blocklyMoveIndicator")).toBeVisible();
 	await act(page.keyboard.press("Alt+ArrowRight"));
 	await act(page.keyboard.press("Escape"));
-	await expect(page.locator(".blocklyMoveIndicatorBubble")).not.toBeVisible();
+	await expect(page.locator(".blocklyMoveIndicator")).not.toBeVisible();
 
 	const comment2BoundsEnd = (await getComment(page, "comment2")).bounds;
 	expect(comment2BoundsEnd.top).toBeCloseTo(comment2BoundsStart.top);
