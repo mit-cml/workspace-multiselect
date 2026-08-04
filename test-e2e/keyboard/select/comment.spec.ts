@@ -112,7 +112,7 @@ test("unconstrained move", async ({ page, act }) => {
 
 	await act(page.keyboard.press("M"));
 	await expect(page.locator(".blocklyMoveIndicator")).toBeVisible();
-	await act(page.keyboard.press("Alt+ArrowRight"));
+	await act(page.keyboard.press(cmdOrCtrl("ArrowRight")));
 	await act(page.keyboard.press("Enter"));
 	await expect(page.locator(".blocklyMoveIndicator")).not.toBeVisible();
 
@@ -136,7 +136,7 @@ test("abort unconstrained move", async ({ page, act }) => {
 
 	await act(page.keyboard.press("M"));
 	await expect(page.locator(".blocklyMoveIndicator")).toBeVisible();
-	await act(page.keyboard.press("Alt+ArrowRight"));
+	await act(page.keyboard.press(cmdOrCtrl("ArrowRight")));
 	await act(page.keyboard.press("Escape"));
 	await expect(page.locator(".blocklyMoveIndicator")).not.toBeVisible();
 
