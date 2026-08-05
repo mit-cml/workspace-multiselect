@@ -213,7 +213,7 @@ test("undo via context menu", async ({ page, act }) => {
 			button: "right",
 		}),
 	);
-	await act(page.getByRole("menuitem", { exact: true, name: "Undo" }).click());
+	await act(page.getByRole("menuitem", { exact: true, name: `Undo ${cmdOrCtrlLabel("Z")}` }).click());
 
 	expect(await getAllCommentIds(page)).toEqual(["comment1", "comment2"]);
 });
