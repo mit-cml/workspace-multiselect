@@ -65,19 +65,17 @@ test("open context menu", async ({ page, act }) => {
 	);
 
 	await expect(page.getByRole("menu")).toBeVisible();
-	const expectedMenuItems = [
-		`Copy (3) ${cmdOrCtrlLabel("C")}`,
-		"Duplicate (3) D",
-		"Add Comment (4)",
-		"Collapse Block (3)",
-		"Disable Block (3)",
-		"Delete 5 Blocks Delete",
-		"Help",
-		"Copy to Backpack (3)",
-	];
-	expect(await page.getByRole("menuitem").allTextContents()).toEqual(
-		expectedMenuItems,
-	);
+	await expect(page.getByRole("menu")).toMatchAriaSnapshot(`
+		- menu:
+		  - menuitem "Copy (3) ${cmdOrCtrlLabel("C")}"
+		  - menuitem "Duplicate (3) D"
+		  - menuitem "Add Comment (4)"
+		  - menuitem "Collapse Block (3)"
+		  - menuitem "Disable Block (3)"
+		  - menuitem "Delete 5 Blocks Delete"
+		  - menuitem "Help"
+		  - menuitem "Copy to Backpack (3)"
+	`);
 	expect(await getHighlightedBlockIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 	expect(await isEphemeralFocusTaken(page)).toBe(true);

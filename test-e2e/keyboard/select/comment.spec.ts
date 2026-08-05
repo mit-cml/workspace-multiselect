@@ -151,14 +151,12 @@ test("open context menu", async ({ page, act }) => {
 	await act(page.keyboard.press(cmdOrCtrl("Enter")));
 
 	await expect(page.getByRole("menu")).toBeVisible();
-	const expectedMenuItems = [
-		`Copy ${cmdOrCtrlLabel("C")}`,
-		"Duplicate Comment D",
-		"Remove Comment Delete",
-	];
-	expect(await page.getByRole("menuitem").allTextContents()).toEqual(
-		expectedMenuItems,
-	);
+	await expect(page.getByRole("menu")).toMatchAriaSnapshot(`
+		- menu:
+		  - menuitem "Copy ${cmdOrCtrlLabel("C")}"
+		  - menuitem "Duplicate Comment D"
+		  - menuitem "Remove Comment Delete"
+	`);
 	expect(await getHighlightedCommentIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBe("comment2");
 	expect(await isEphemeralFocusTaken(page)).toBe(true);
