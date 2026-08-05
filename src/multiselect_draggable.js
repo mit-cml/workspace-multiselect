@@ -255,6 +255,7 @@ export class MultiselectDraggable {
       Blockly.utils.dom.addClass(subDraggable.getSvgRoot(), 'blocklySelected');
     }
     Blockly.common.setSelected(this);
+    return this;
   }
 
   /**
