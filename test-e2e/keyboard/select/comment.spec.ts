@@ -154,7 +154,7 @@ test("open context menu", async ({ page, act }) => {
 	const expectedMenuItems = [
 		`Copy ${cmdOrCtrlLabel("C")}`,
 		"Duplicate Comment D",
-		"Remove Comment",
+		"Remove Comment Delete",
 	];
 	expect(await page.getByRole("menuitem").allTextContents()).toEqual(
 		expectedMenuItems,

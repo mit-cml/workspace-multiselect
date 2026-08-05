@@ -32,7 +32,7 @@ test("open context menu", async ({ page, act }) => {
 	const expectedMenuItems = [
 		`Copy ${cmdOrCtrlLabel("C")}`,
 		"Duplicate Comment D",
-		"Remove Comment",
+		"Remove Comment Delete",
 	];
 	expect(await page.getByRole("menuitem").allTextContents()).toEqual(
 		expectedMenuItems,
@@ -175,7 +175,7 @@ test("delete comment via context menu", async ({ page, act }) => {
 	expect(await getSelectedId(page)).toBe("comment1");
 	expect(await isEphemeralFocusTaken(page)).toBe(true);
 	await act(
-		page.getByRole("menuitem", { exact: true, name: "Remove Comment" }).click(),
+		page.getByRole("menuitem", { exact: true, name: "Remove Comment Delete" }).click(),
 	);
 
 	expect(await getAllCommentIds(page)).toEqual(["comment2"]);

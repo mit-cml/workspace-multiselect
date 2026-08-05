@@ -1115,6 +1115,7 @@ const registerCommentDelete = function() {
     scopeType: Blockly.ContextMenuRegistry.ScopeType.COMMENT,
     id,
     weight: 6,
+    associatedKeyboardShortcut: Blockly.ShortcutItems.names.DELETE,
   };
   if (Blockly.ContextMenuRegistry.registry.getItem(id) !== null) {
     Blockly.ContextMenuRegistry.registry.unregister(id);
