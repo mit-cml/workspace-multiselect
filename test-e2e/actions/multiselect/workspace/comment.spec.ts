@@ -11,6 +11,7 @@ import {
 	getSelectedId,
 	getTrash,
 	isEphemeralFocusTaken,
+	isWorkspaceFocused,
 	loadComments,
 	test,
 } from "../../../test";
@@ -182,6 +183,7 @@ test("cut and paste comments via keyboard", async ({ page, act }) => {
 	expect(await getAllCommentIds(page)).toEqual(["comment3"]);
 	expect(await getHighlightedCommentIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBeNull();
+	expect(await isWorkspaceFocused(page)).toBe(true);
 
 	await act(page.keyboard.press(cmdOrCtrl("V")));
 	expect(await getAllCommentIds(page)).toHaveLength(3);
@@ -197,6 +199,7 @@ test("delete comments via keyboard", async ({ page, act }) => {
 	expect(await getAllCommentIds(page)).toEqual(["comment3"]);
 	expect(await getHighlightedCommentIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBeNull();
+	expect(await isWorkspaceFocused(page)).toBe(true);
 });
 
 test("delete comments via context menu", async ({ page, act }) => {
@@ -220,6 +223,7 @@ test("delete comments via context menu", async ({ page, act }) => {
 	expect(await getAllCommentIds(page)).toEqual(["comment3"]);
 	expect(await getHighlightedCommentIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBeNull();
+	expect(await isWorkspaceFocused(page)).toBe(true);
 	expect(await isEphemeralFocusTaken(page)).toBe(false);
 });
 
@@ -232,6 +236,7 @@ test("drag comments to trash", async ({ page, act }) => {
 	expect(await getAllCommentIds(page)).toEqual(["comment3"]);
 	expect(await getHighlightedCommentIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBeNull();
+	expect(await isWorkspaceFocused(page)).toBe(true);
 });
 
 test("undo via keyboard", async ({ page, act }) => {

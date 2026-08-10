@@ -333,6 +333,12 @@ export const getFocusedCommentButton = (
 		return null;
 	});
 
+export const isWorkspaceFocused = (page: Page): Promise<boolean> =>
+	page.evaluate(() => {
+		const workspace = Blockly.getMainWorkspace() as WorkspaceSvg;
+		return Blockly.getFocusManager().getFocusedNode() === workspace.getWorkspaceFocusTarget();
+	});
+
 export const isEphemeralFocusTaken = (page: Page): Promise<boolean> =>
 	page.evaluate(() => Blockly.getFocusManager().ephemeralFocusTaken());
 
