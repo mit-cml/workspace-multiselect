@@ -3,7 +3,6 @@ import {
 	cmdOrCtrl,
 	cmdOrCtrlLabel,
 	getBlock,
-	getFocusedField,
 	getHighlightedBlockIds,
 	getMultiselectDraggableId,
 	getSelectedId,
@@ -48,18 +47,15 @@ test("navigate down", async ({ page, act }) => {
 test("navigate left", async ({ page, act }) => {
 	await act(page.keyboard.press("ArrowLeft"));
 
-	expect(await getHighlightedBlockIds(page)).toEqual([]);
-	expect(await getFocusedField(page)).toEqual({
-		blockId: "block1",
-		name: "BOOL",
-	});
+	expect(await getHighlightedBlockIds(page)).toEqual(["block2", "block3"]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 });
 
 test("navigate right", async ({ page, act }) => {
 	await act(page.keyboard.press("ArrowRight"));
 
-	expect(await getHighlightedBlockIds(page)).toEqual(["block4"]);
-	expect(await getSelectedId(page)).toBe("block4");
+	expect(await getHighlightedBlockIds(page)).toEqual(["block2", "block3"]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 });
 
 test("open context menu", async ({ page, act }) => {

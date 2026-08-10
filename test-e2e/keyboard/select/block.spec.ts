@@ -39,17 +39,7 @@ test("navigate down", async ({ page, act }) => {
 	expect(await getSelectedId(page)).toBe("block3");
 });
 
-test("navigate left", async ({ page, act }) => {
-	await act(page.keyboard.press("ArrowLeft"));
-
-	expect(await getHighlightedBlockIds(page)).toEqual([]);
-	expect(await getFocusedField(page)).toEqual({
-		blockId: "block1",
-		name: "BOOL",
-	});
-});
-
-test("navigate right", async ({ page, act }) => {
+test("navigate right and left", async ({ page, act }) => {
 	await act(page.keyboard.press("ArrowRight"));
 
 	expect(await getHighlightedBlockIds(page)).toEqual([]);
@@ -57,6 +47,11 @@ test("navigate right", async ({ page, act }) => {
 		blockId: "block2",
 		name: "NUM",
 	});
+
+	await act(page.keyboard.press("ArrowLeft"));
+
+	expect(await getHighlightedBlockIds(page)).toEqual(["block2"]);
+	expect(await getSelectedId(page)).toBe("block2");
 });
 
 test("unconstrained move", async ({ page, act }) => {

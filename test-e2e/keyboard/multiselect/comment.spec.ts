@@ -3,7 +3,6 @@ import {
 	cmdOrCtrl,
 	cmdOrCtrlLabel,
 	getComment,
-	getFocusedCommentButton,
 	getHighlightedCommentIds,
 	getMultiselectDraggableId,
 	getSelectedId,
@@ -48,18 +47,15 @@ test("navigate down", async ({ page, act }) => {
 test("navigate left", async ({ page, act }) => {
 	await act(page.keyboard.press("ArrowLeft"));
 
-	expect(await getHighlightedCommentIds(page)).toEqual([]);
-	expect(await getFocusedCommentButton(page)).toEqual({
-		commentId: "comment1",
-		type: "delete",
-	});
+	expect(await getHighlightedCommentIds(page)).toEqual(["comment2", "comment3"]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 });
 
 test("navigate right", async ({ page, act }) => {
 	await act(page.keyboard.press("ArrowRight"));
 
-	expect(await getHighlightedCommentIds(page)).toEqual(["comment4"]);
-	expect(await getSelectedId(page)).toBe("comment4");
+	expect(await getHighlightedCommentIds(page)).toEqual(["comment2", "comment3"]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 });
 
 test("open context menu", async ({ page, act }) => {

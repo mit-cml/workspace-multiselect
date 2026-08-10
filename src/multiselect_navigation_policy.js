@@ -45,6 +45,10 @@ export class MultiselectNavigationPolicy {
 		return anchor.getPreviousBlock() || selection.workspace.getNavigator().navigateStacks(anchor, -1);
 	}
 
+	getRowId(selection) {
+		return selection.id;
+	}
+
 	isNavigable(selection) {
 		return selection.canBeFocused();
 	}

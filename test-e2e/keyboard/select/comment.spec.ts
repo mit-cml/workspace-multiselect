@@ -39,17 +39,7 @@ test("navigate down", async ({ page, act }) => {
 	expect(await getSelectedId(page)).toBe("comment3");
 });
 
-test("navigate left", async ({ page, act }) => {
-	await act(page.keyboard.press("ArrowLeft"));
-
-	expect(await getHighlightedCommentIds(page)).toEqual([]);
-	expect(await getFocusedCommentButton(page)).toEqual({
-		commentId: "comment1",
-		type: "delete",
-	});
-});
-
-test("navigate right", async ({ page, act }) => {
+test("navigate right and left", async ({ page, act }) => {
 	await act(page.keyboard.press("ArrowRight"));
 
 	expect(await getHighlightedCommentIds(page)).toEqual([]);
@@ -57,6 +47,11 @@ test("navigate right", async ({ page, act }) => {
 		commentId: "comment2",
 		type: "collapse",
 	});
+
+	await act(page.keyboard.press("ArrowLeft"));
+
+	expect(await getHighlightedCommentIds(page)).toEqual(["comment2"]);
+	expect(await getSelectedId(page)).toBe("comment2");
 });
 
 test("constrained move", async ({ page, act }) => {
