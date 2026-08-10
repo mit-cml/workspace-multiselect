@@ -28,21 +28,21 @@ export class MultiselectNavigationPolicy {
 		const { bottomBlock } =
 			MultiselectNavigationPolicy.getSelectionBounds(selection);
 		if (bottomBlock instanceof Blockly.comments.RenderedWorkspaceComment) {
-			return Blockly.navigateStacks(bottomBlock, 1);
+			return selection.workspace.getNavigator().navigateStacks(bottomBlock, 1);
 		}
 		const anchor =
 			MultiselectNavigationPolicy.findStatementAncestor(bottomBlock);
-		return anchor.getNextBlock() || Blockly.navigateStacks(anchor, 1);
+		return anchor.getNextBlock() || selection.workspace.getNavigator().navigateStacks(anchor, 1);
 	}
 
 	getPreviousSibling(selection) {
 		const { topBlock } =
 			MultiselectNavigationPolicy.getSelectionBounds(selection);
 		if (topBlock instanceof Blockly.comments.RenderedWorkspaceComment) {
-			return Blockly.navigateStacks(topBlock, -1);
+			return selection.workspace.getNavigator().navigateStacks(topBlock, -1);
 		}
 		const anchor = MultiselectNavigationPolicy.findStatementAncestor(topBlock);
-		return anchor.getPreviousBlock() || Blockly.navigateStacks(anchor, -1);
+		return anchor.getPreviousBlock() || selection.workspace.getNavigator().navigateStacks(anchor, -1);
 	}
 
 	isNavigable(selection) {
@@ -128,7 +128,7 @@ export class MultiselectNavigationPolicy {
 				const stacks = MultiselectNavigationPolicy.getSelectedStacks(
 					Blockly.getSelected(),
 				);
-				workspace.getCursor().setCurNode(Blockly.navigateStacks(stacks[0], -1));
+				workspace.getCursor().setCurNode(workspace.getNavigator().navigateStacks(stacks[0], -1));
 				return true;
 			},
 			keyCodes: [Blockly.utils.KeyCodes.B],
@@ -145,7 +145,7 @@ export class MultiselectNavigationPolicy {
 				);
 				workspace
 					.getCursor()
-					.setCurNode(Blockly.navigateStacks(stacks[stacks.length - 1], 1));
+					.setCurNode(workspace.getNavigator().navigateStacks(stacks[stacks.length - 1], 1));
 				return true;
 			},
 			keyCodes: [Blockly.utils.KeyCodes.N],
