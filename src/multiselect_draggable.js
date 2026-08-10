@@ -393,6 +393,7 @@ export class MultiselectDraggable {
    * Disposes all subdraggables in the multiselectDraggable object.
    */
   dispose() {
+    Blockly.getFocusManager().focusNode(this.workspace.getWorkspaceFocusTarget());
     for (const draggable of this.subDraggables) {
       if (!draggable[0].isDeletable()) {
         continue;

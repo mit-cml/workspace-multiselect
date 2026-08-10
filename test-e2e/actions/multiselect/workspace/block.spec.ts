@@ -323,7 +323,7 @@ test("drag blocks to trash", async ({ page, act }) => {
 
 	expect(await getAllBlockIds(page)).toEqual(["block4"]);
 	expect(await getHighlightedBlockIds(page)).toEqual([]);
-	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
+	expect(await isWorkspaceFocused(page)).toBe(true);
 
 	await openTrash(page);
 	await getBlock(page, { type: "logic_boolean", workspace: "trash" });
