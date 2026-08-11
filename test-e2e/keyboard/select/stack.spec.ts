@@ -149,3 +149,90 @@ test("abort unconstrained move", async ({ page, act }) => {
 		"stack2_bottom",
 	]);
 });
+
+test("constrained stack move", async ({ page, act }) => {
+	await act(page.keyboard.press("Shift+M"));
+	await expect(page.locator(".blocklyMoveIndicator")).toBeVisible();
+	await act(page.keyboard.press("ArrowDown"));
+	await act(page.keyboard.press("Enter"));
+	await expect(page.locator(".blocklyMoveIndicator")).not.toBeVisible();
+
+	expect(await getStackBlockIds(page, "stack2_top")).toEqual(["stack2_top"]);
+	expect(await getStackBlockIds(page, "stack2_middle")).toEqual([
+		"stack2_middle",
+		"stack2_bottom",
+	]);
+});
+
+test("abort constrained stack move", async ({ page, act }) => {
+	await act(page.keyboard.press("Shift+M"));
+	await expect(page.locator(".blocklyMoveIndicator")).toBeVisible();
+	await act(page.keyboard.press("ArrowDown"));
+	await act(page.keyboard.press("Escape"));
+	await expect(page.locator(".blocklyMoveIndicator")).not.toBeVisible();
+
+	expect(await getStackBlockIds(page, "stack2_top")).toEqual([
+		"stack2_top",
+		"stack2_middle",
+		"stack2_bottom",
+	]);
+});
+
+test("unconstrained stack move", async ({ page, act }) => {
+	const gridSpacing = await getGridSpacing(page);
+	if (gridSpacing === null) throw new Error("Workspace has no grid");
+	const stack1BoundsStart = (await getBlock(page, { id: "stack1" })).bounds;
+	const stack2TopBoundsStart = (await getBlock(page, { id: "stack2_top" }))
+		.bounds;
+	const stack3BoundsStart = (await getBlock(page, { id: "stack3" })).bounds;
+
+	await act(page.keyboard.press("Shift+M"));
+	await expect(page.locator(".blocklyMoveIndicator")).toBeVisible();
+	for (let i = 0; i < 3; i++) {
+		await act(page.keyboard.press(cmdOrCtrl("ArrowRight")));
+	}
+	await act(page.keyboard.press("Enter"));
+	await expect(page.locator(".blocklyMoveIndicator")).not.toBeVisible();
+
+	expect(await getStackBlockIds(page, "stack2_top")).toEqual(["stack2_top"]);
+	expect(await getStackBlockIds(page, "stack2_middle")).toEqual([
+		"stack2_middle",
+		"stack2_bottom",
+	]);
+	const stack2MiddleBoundsEnd = (await getBlock(page, { id: "stack2_middle" }))
+		.bounds;
+	const stack2BottomBoundsEnd = (await getBlock(page, { id: "stack2_bottom" }))
+		.bounds;
+	expect(stack2MiddleBoundsEnd.left - stack2TopBoundsStart.left).toBeCloseTo(
+		3 * gridSpacing,
+	);
+	expect(stack2MiddleBoundsEnd.top - stack2TopBoundsStart.top).toBeCloseTo(
+		gridSpacing,
+	);
+	expect(stack2BottomBoundsEnd.left).toBeCloseTo(stack2MiddleBoundsEnd.left);
+	expect(stack2BottomBoundsEnd.top).toBeGreaterThan(stack2MiddleBoundsEnd.top);
+	const stack1BoundsEnd = (await getBlock(page, { id: "stack1" })).bounds;
+	expect(stack1BoundsEnd.left).toBeCloseTo(stack1BoundsStart.left);
+	expect(stack1BoundsEnd.top).toBeCloseTo(stack1BoundsStart.top);
+	const stack3BoundsEnd = (await getBlock(page, { id: "stack3" })).bounds;
+	expect(stack3BoundsEnd.left).toBeCloseTo(stack3BoundsStart.left);
+	expect(stack3BoundsEnd.top).toBeCloseTo(stack3BoundsStart.top);
+	expect(await getHighlightedBlockIds(page)).toEqual(["stack2_middle"]);
+	expect(await getSelectedId(page)).toBe("stack2_middle");
+});
+
+test("abort unconstrained stack move", async ({ page, act }) => {
+	await act(page.keyboard.press("Shift+M"));
+	await expect(page.locator(".blocklyMoveIndicator")).toBeVisible();
+	for (let i = 0; i < 3; i++) {
+		await act(page.keyboard.press(cmdOrCtrl("ArrowRight")));
+	}
+	await act(page.keyboard.press("Escape"));
+	await expect(page.locator(".blocklyMoveIndicator")).not.toBeVisible();
+
+	expect(await getStackBlockIds(page, "stack2_top")).toEqual([
+		"stack2_top",
+		"stack2_middle",
+		"stack2_bottom",
+	]);
+});

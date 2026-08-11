@@ -524,6 +524,11 @@ export class MultiselectControls {
     }
     this.updateMultiselectIcon(true);
     inMultipleSelectionModeWeakMap.set(this.workspace_, true);
+    const selected = Blockly.getSelected();
+    if (selected && !(selected instanceof MultiselectDraggable) && !this.dragSelection.has(selected.id)) {
+      this.updateDraggables_(selected);
+      this.lastSelectedElement_ = null;
+    }
   }
 
   /**
