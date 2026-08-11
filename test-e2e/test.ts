@@ -40,7 +40,7 @@ export const cmdOrCtrl = (key: string): string =>
 	`${process.platform === "darwin" ? "Meta" : "Control"}+${key}`;
 
 export const cmdOrCtrlLabel = (key: string): string =>
-	`${process.platform === "darwin" ? "⌘" : "Ctrl +"} ${key}`;
+	`${process.platform === "darwin" ? "⌘" : "Control +"} ${key}`;
 
 export const test = base.extend<{ act: Act }>({
 	page: async (
