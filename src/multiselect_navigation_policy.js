@@ -124,6 +124,21 @@ export class MultiselectNavigationPolicy {
 
 	install() {
 		Blockly.ShortcutRegistry.registry.register({
+			name: "multiselect_navigate_up",
+			allowCollision: true,
+			preconditionFn: () =>
+				Blockly.getSelected() instanceof MultiselectDraggable &&
+				!Blockly.KeyboardMover.mover.isMoving(),
+			callback: (workspace) => {
+				const { topBlock } = MultiselectNavigationPolicy.getSelectionBounds(Blockly.getSelected());
+				const previousNode = workspace.getNavigator().getPreviousNode(topBlock);
+				if (previousNode) Blockly.getFocusManager().focusNode(previousNode);
+				return true;
+			},
+			keyCodes: [Blockly.utils.KeyCodes.UP],
+		});
+
+		Blockly.ShortcutRegistry.registry.register({
 			name: "multiselect_previous_stack",
 			allowCollision: true,
 			preconditionFn: () =>
@@ -132,7 +147,8 @@ export class MultiselectNavigationPolicy {
 				const stacks = MultiselectNavigationPolicy.getSelectedStacks(
 					Blockly.getSelected(),
 				);
-				workspace.getCursor().setCurNode(workspace.getNavigator().navigateStacks(stacks[0], -1));
+				const previousStack = workspace.getNavigator().navigateStacks(stacks[0], -1);
+				if (previousStack) Blockly.getFocusManager().focusNode(previousStack);
 				return true;
 			},
 			keyCodes: [Blockly.utils.KeyCodes.B],
@@ -147,9 +163,8 @@ export class MultiselectNavigationPolicy {
 				const stacks = MultiselectNavigationPolicy.getSelectedStacks(
 					Blockly.getSelected(),
 				);
-				workspace
-					.getCursor()
-					.setCurNode(workspace.getNavigator().navigateStacks(stacks[stacks.length - 1], 1));
+				const nextStack = workspace.getNavigator().navigateStacks(stacks[stacks.length - 1], 1);
+				if (nextStack) Blockly.getFocusManager().focusNode(nextStack);
 				return true;
 			},
 			keyCodes: [Blockly.utils.KeyCodes.N],
@@ -157,6 +172,7 @@ export class MultiselectNavigationPolicy {
 	}
 
 	uninstall() {
+		Blockly.ShortcutRegistry.registry.unregister("multiselect_navigate_up");
 		Blockly.ShortcutRegistry.registry.unregister("multiselect_previous_stack");
 		Blockly.ShortcutRegistry.registry.unregister("multiselect_next_stack");
 	}
