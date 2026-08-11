@@ -503,7 +503,7 @@ export const registerDuplicateShortcut = function() {
         });
         dragSelection.clear();
         multiDraggable.clearAll_();
-        Blockly.getFocusManager().focusTree(workspace);
+        Blockly.getFocusManager().focusNode(workspace.getWorkspaceFocusTarget());
       } else {
         apply(selected);
       }
@@ -584,7 +584,7 @@ const registerSelectAll = function() {
         } else {
           Blockly.getSelected().unselect();
         }
-        Blockly.getFocusManager().focusTree(workspace);
+        Blockly.getFocusManager().focusNode(workspace.getWorkspaceFocusTarget());
         multiDraggable.clearAll_();
         dragSelectionWeakMap.get(workspace).clear();
       }

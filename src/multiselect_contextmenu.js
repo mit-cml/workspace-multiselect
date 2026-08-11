@@ -242,7 +242,7 @@ const registerDuplicate = function() {
         });
         dragSelection.clear();
         multiDraggable.clearAll_();
-        Blockly.getFocusManager().focusTree(workspace);
+        Blockly.getFocusManager().focusNode(workspace.getWorkspaceFocusTarget());
       } else {
         apply(scope.block);
       }
@@ -739,7 +739,7 @@ const registerDelete = function() {
         apply(selected);
       }
 
-      Blockly.getFocusManager().focusTree(workspace);
+      Blockly.getFocusManager().focusNode(workspace.getWorkspaceFocusTarget());
       Blockly.Events.setGroup(false);
     },
     scopeType: Blockly.ContextMenuRegistry.ScopeType.BLOCK,
@@ -901,7 +901,7 @@ const registerSelectAll = function() {
         } else {
           Blockly.getSelected().unselect();
         }
-        Blockly.getFocusManager().focusTree(scope.workspace);
+        Blockly.getFocusManager().focusNode(scope.workspace.getWorkspaceFocusTarget());
         multiDraggable.clearAll_();
         dragSelectionWeakMap.get(scope.workspace).clear();
       }
@@ -1109,7 +1109,7 @@ const registerCommentDelete = function() {
         apply(scope.comment);
       }
 
-      Blockly.getFocusManager().focusTree(workspace);
+      Blockly.getFocusManager().focusNode(workspace.getWorkspaceFocusTarget());
       Blockly.Events.setGroup(false);
     },
     scopeType: Blockly.ContextMenuRegistry.ScopeType.COMMENT,
@@ -1193,7 +1193,7 @@ const registerCommentDuplicate = function() {
         });
         dragSelection.clear();
         multiDraggable.clearAll_();
-        Blockly.getFocusManager().focusTree(workspace);
+        Blockly.getFocusManager().focusNode(workspace.getWorkspaceFocusTarget());
       } else {
         apply(scope.comment);
       }
