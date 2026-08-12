@@ -140,7 +140,6 @@ export class Multiselect {
       Blockly.BlockSvg.prototype.bumpNeighbours = function() {};
     }
 
-    Shortcut.registerDuplicateShortcut();
   }
 
   /**
@@ -207,7 +206,6 @@ export class Multiselect {
       Blockly.ContextMenuRegistry.registry.unregister('copy_to_backpack');
       ContextMenu.registerOrigContextMenu();
 
-      Shortcut.unregisterDuplicateShortcut();
       Shortcut.unregisterOrigShortcut();
       Blockly.ShortcutRegistry.registry.unregister('selectall');
       Shortcut.registerOrigShortcut();

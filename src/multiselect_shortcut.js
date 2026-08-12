@@ -16,8 +16,6 @@ import {
 } from './global';
 import {MultiselectDraggable} from './multiselect_draggable';
 
-let originalDuplicateShortcut = null;
-
 /**
  * Modification for keyboard shortcut 'Delete' to be available
  * for multiple blocks.
@@ -429,10 +427,8 @@ const registerPaste = function(useCopyPasteCrossTab) {
  * Modification for keyboard shortcut 'Duplicate' to be available
  * for multiple blocks or comments.
  */
-export const registerDuplicateShortcut = function() {
-  const name = 'duplicate';
-  originalDuplicateShortcut =
-      Blockly.ShortcutRegistry.registry.getRegistry()[name] || null;
+const registerDuplicateShortcut = function() {
+  const name = Blockly.ShortcutItems.names.DUPLICATE;
   const duplicateShortcut = {
     name,
     preconditionFn: function(workspace) {
@@ -630,7 +626,8 @@ export const unregisterOrigShortcut = function() {
   registeredShortcut.length = 0;
   for (const name of [Blockly.ShortcutItems.names.DELETE,
     Blockly.ShortcutItems.names.COPY,
-    Blockly.ShortcutItems.names.CUT, Blockly.ShortcutItems.names.PASTE]) {
+    Blockly.ShortcutItems.names.CUT, Blockly.ShortcutItems.names.PASTE,
+    Blockly.ShortcutItems.names.DUPLICATE]) {
     if (Object.entries(Blockly.ShortcutRegistry.registry.getRegistry())
         .map(([_, value]) => value.name).includes(name)) {
       Blockly.ShortcutRegistry.registry.unregister(name);
@@ -643,23 +640,13 @@ export const unregisterOurShortcut = function() {
   registeredShortcut.length = 0;
   for (const name of [Blockly.ShortcutItems.names.DELETE,
     Blockly.ShortcutItems.names.COPY,
-    Blockly.ShortcutItems.names.CUT, Blockly.ShortcutItems.names.PASTE]) {
+    Blockly.ShortcutItems.names.CUT, Blockly.ShortcutItems.names.PASTE,
+    Blockly.ShortcutItems.names.DUPLICATE]) {
     if (Object.entries(Blockly.ShortcutRegistry.registry.getRegistry())
         .map(([_, value]) => value.name).includes(name)) {
       Blockly.ShortcutRegistry.registry.unregister(name);
     }
     registeredShortcut.push(name);
-  }
-};
-
-export const unregisterDuplicateShortcut = function() {
-  const name = 'duplicate';
-  if (name in Blockly.ShortcutRegistry.registry.getRegistry()) {
-    Blockly.ShortcutRegistry.registry.unregister(name);
-  }
-  if (originalDuplicateShortcut) {
-    Blockly.ShortcutRegistry.registry.register(originalDuplicateShortcut);
-    originalDuplicateShortcut = null;
   }
 };
 
@@ -672,6 +659,7 @@ export const registerOrigShortcut = function() {
     [Blockly.ShortcutItems.names.COPY]: Blockly.ShortcutItems.registerCopy,
     [Blockly.ShortcutItems.names.CUT]: Blockly.ShortcutItems.registerCut,
     [Blockly.ShortcutItems.names.PASTE]: Blockly.ShortcutItems.registerPaste,
+    [Blockly.ShortcutItems.names.DUPLICATE]: Blockly.ShortcutItems.registerDuplicate,
   };
   for (const name of registeredShortcut) {
     map[name]();
@@ -683,12 +671,13 @@ export const registerOrigShortcut = function() {
  * @param {boolean} useCopyPasteCrossTab Whether to use copy/paste cross tab.
  */
 export const registerOurShortcut = function(useCopyPasteCrossTab) {
-  const ListNoParameter = [Blockly.ShortcutItems.names.DELETE];
+  const ListNoParameter = [Blockly.ShortcutItems.names.DELETE, Blockly.ShortcutItems.names.DUPLICATE];
   const map = {
     [Blockly.ShortcutItems.names.DELETE]: registerShortcutDelete,
     [Blockly.ShortcutItems.names.COPY]: registerCopy,
     [Blockly.ShortcutItems.names.CUT]: registerCut,
     [Blockly.ShortcutItems.names.PASTE]: registerPaste,
+    [Blockly.ShortcutItems.names.DUPLICATE]: registerDuplicateShortcut,
   };
   for (const name of registeredShortcut) {
     if (ListNoParameter.includes(name)) {
