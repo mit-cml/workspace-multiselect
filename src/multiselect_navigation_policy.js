@@ -169,11 +169,36 @@ export class MultiselectNavigationPolicy {
 			},
 			keyCodes: [Blockly.utils.KeyCodes.N],
 		});
+
+		Blockly.ShortcutRegistry.registry.register({
+			name: "multiselect_move_disabled",
+			allowCollision: true,
+			preconditionFn: () =>
+				Blockly.getSelected() instanceof MultiselectDraggable,
+			callback: () => true,
+			keyCodes: [Blockly.utils.KeyCodes.M],
+		});
+
+		Blockly.ShortcutRegistry.registry.register({
+			name: "multiselect_stack_move_disabled",
+			allowCollision: true,
+			preconditionFn: () =>
+				Blockly.getSelected() instanceof MultiselectDraggable,
+			callback: () => true,
+			keyCodes: [
+				Blockly.ShortcutRegistry.registry.createSerializedKey(
+					Blockly.utils.KeyCodes.M,
+					[Blockly.utils.KeyCodes.SHIFT],
+				),
+			],
+		});
 	}
 
 	uninstall() {
 		Blockly.ShortcutRegistry.registry.unregister("multiselect_navigate_up");
 		Blockly.ShortcutRegistry.registry.unregister("multiselect_previous_stack");
 		Blockly.ShortcutRegistry.registry.unregister("multiselect_next_stack");
+		Blockly.ShortcutRegistry.registry.unregister("multiselect_move_disabled");
+		Blockly.ShortcutRegistry.registry.unregister("multiselect_stack_move_disabled");
 	}
 }

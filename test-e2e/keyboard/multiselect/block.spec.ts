@@ -58,6 +58,22 @@ test("navigate right", async ({ page, act }) => {
 	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
 });
 
+test("move is disabled", async ({ page, act }) => {
+	await act(page.keyboard.press("M"));
+
+	await expect(page.locator(".blocklyMoveIndicator")).not.toBeVisible();
+	expect(await getHighlightedBlockIds(page)).toEqual(["block2", "block3"]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
+});
+
+test("stack move is disabled", async ({ page, act }) => {
+	await act(page.keyboard.press("Shift+M"));
+
+	await expect(page.locator(".blocklyMoveIndicator")).not.toBeVisible();
+	expect(await getHighlightedBlockIds(page)).toEqual(["block2", "block3"]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
+});
+
 test("open context menu", async ({ page, act }) => {
 	await act(page.keyboard.press(cmdOrCtrl("Enter")));
 
