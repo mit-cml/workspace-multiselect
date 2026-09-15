@@ -1,0 +1,95 @@
+import { expect } from "@playwright/test";
+import {
+	cmdOrCtrl,
+	cmdOrCtrlLabel,
+	getBlock,
+	getHighlightedBlockIds,
+	getMultiselectDraggableId,
+	getSelectedId,
+	isEphemeralFocusTaken,
+	loadBlocks,
+	test,
+} from "../../test";
+
+test.beforeEach(async ({ page, act }) => {
+	await act(
+		loadBlocks(page, [
+			{ type: "logic_boolean", id: "block1" },
+			{ type: "logic_boolean", id: "block2" },
+			{ type: "math_number", id: "block3" },
+			{ type: "math_number", id: "block4" },
+		]),
+	);
+	await act(page.keyboard.down("Shift"));
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "block2" })).centerTop),
+	);
+	await act(
+		page.mouse.click(...(await getBlock(page, { id: "block3" })).centerTop),
+	);
+	await act(page.keyboard.up("Shift"));
+});
+
+test("navigate up", async ({ page, act }) => {
+	await act(page.keyboard.press("ArrowUp"));
+
+	expect(await getHighlightedBlockIds(page)).toEqual(["block1"]);
+	expect(await getSelectedId(page)).toBe("block1");
+});
+
+test("navigate down", async ({ page, act }) => {
+	await act(page.keyboard.press("ArrowDown"));
+
+	expect(await getHighlightedBlockIds(page)).toEqual(["block4"]);
+	expect(await getSelectedId(page)).toBe("block4");
+});
+
+test("navigate left", async ({ page, act }) => {
+	await act(page.keyboard.press("ArrowLeft"));
+
+	expect(await getHighlightedBlockIds(page)).toEqual(["block2", "block3"]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
+});
+
+test("navigate right", async ({ page, act }) => {
+	await act(page.keyboard.press("ArrowRight"));
+
+	expect(await getHighlightedBlockIds(page)).toEqual(["block2", "block3"]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
+});
+
+test("move is disabled", async ({ page, act }) => {
+	await act(page.keyboard.press("M"));
+
+	await expect(page.locator(".blocklyMoveIndicator")).not.toBeVisible();
+	expect(await getHighlightedBlockIds(page)).toEqual(["block2", "block3"]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
+});
+
+test("stack move is disabled", async ({ page, act }) => {
+	await act(page.keyboard.press("Shift+M"));
+
+	await expect(page.locator(".blocklyMoveIndicator")).not.toBeVisible();
+	expect(await getHighlightedBlockIds(page)).toEqual(["block2", "block3"]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
+});
+
+test("open context menu", async ({ page, act }) => {
+	await act(page.keyboard.press(cmdOrCtrl("Enter")));
+
+	await expect(page.getByRole("menu")).toBeVisible();
+	await expect(page.getByRole("menu")).toMatchAriaSnapshot(`
+		- menu:
+		  - menuitem "Copy (2) ${cmdOrCtrlLabel("C")}"
+		  - menuitem "Duplicate (2) D"
+		  - menuitem "Add Comment (2)"
+		  - menuitem "Collapse Block (2)"
+		  - menuitem "Disable Block (2)"
+		  - menuitem "Delete 2 Blocks Delete"
+		  - menuitem "Help"
+		  - menuitem "Copy to Backpack (2)"
+	`);
+	expect(await getHighlightedBlockIds(page)).toEqual([]);
+	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));
+	expect(await isEphemeralFocusTaken(page)).toBe(true);
+});

@@ -387,7 +387,6 @@ export class MultiselectControls {
         }
         this.multiDraggable.clearAll_();
         this.dragSelection.clear();
-        Blockly.common.setSelected(null);
       } else if (Blockly.getSelected() &&
           !(Blockly.getSelected() instanceof MultiselectDraggable) &&
           !this.dragSelection.has(Blockly.getSelected().id)) {
@@ -411,7 +410,7 @@ export class MultiselectControls {
         Blockly.common.setSelected(getByID(this.workspace_, this.dragSelection.values().next().value));
       } else if (this.dragSelection.size === 0 &&
           Blockly.getSelected() !== null) {
-        Blockly.common.setSelected(null);
+        Blockly.getFocusManager().focusNode(this.workspace_.getWorkspaceFocusTarget());
       } else if (this.lastSelectedElement_ &&
           !inPasteShortcut.get(this.workspace_)) {
         this.updateDraggables_(this.lastSelectedElement_);
@@ -425,7 +424,7 @@ export class MultiselectControls {
           Blockly.common.setSelected(getByID(this.workspace_, this.dragSelection.values().next().value));
         } else if (this.dragSelection.size === 0 &&
             Blockly.getSelected() !== null) {
-          Blockly.common.setSelected(null);
+          Blockly.getFocusManager().focusNode(this.workspace_.getWorkspaceFocusTarget());
         }
       } else if (!this.dragSelection.size && !(Blockly.getSelected() instanceof
           MultiselectDraggable)) {
@@ -525,6 +524,11 @@ export class MultiselectControls {
     }
     this.updateMultiselectIcon(true);
     inMultipleSelectionModeWeakMap.set(this.workspace_, true);
+    const selected = Blockly.getSelected();
+    if (selected && !(selected instanceof MultiselectDraggable) && !this.dragSelection.has(selected.id)) {
+      this.updateDraggables_(selected);
+      this.lastSelectedElement_ = null;
+    }
   }
 
   /**
@@ -549,7 +553,7 @@ export class MultiselectControls {
       Blockly.common.setSelected(getByID(this.workspace_, this.dragSelection.values().next().value));
     } else if (this.dragSelection.size === 0 &&
         Blockly.getSelected() !== null) {
-      Blockly.common.setSelected(null);
+      Blockly.getFocusManager().focusNode(this.workspace_.getWorkspaceFocusTarget());
     }
     if (this.hasDisableWorkspaceDrag_) {
       this.workspace_.options.moveOptions.drag = true;

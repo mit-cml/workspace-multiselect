@@ -1,5 +1,6 @@
 import { expect } from "@playwright/test";
 import {
+	cmdOrCtrl,
 	getBlock,
 	getEmptySpace,
 	getGridSpacing,
@@ -346,7 +347,7 @@ test("select all blocks via keyboard", async ({ page, act }) => {
 		]),
 	);
 
-	await act(page.keyboard.press("Control+A"));
+	await act(page.keyboard.press(cmdOrCtrl("A")));
 
 	expect(await getHighlightedBlockIds(page)).toEqual(["block1", "block2"]);
 	expect(await getSelectedId(page)).toBe(await getMultiselectDraggableId(page));

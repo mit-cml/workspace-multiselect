@@ -14,9 +14,7 @@ import {Multiselect} from '../src/index';
 import {multiDraggableWeakMap} from '../src/global';
 window.multiDraggableWeakMap = multiDraggableWeakMap;
 import {Backpack} from '@blockly/workspace-backpack';
-import {NavigationController} from '@blockly/keyboard-navigation';
 
-const navigationController = new NavigationController();
 /**
  * Create a workspace.
  * @param {HTMLElement} blocklyDiv The blockly container div.
@@ -30,8 +28,6 @@ function createWorkspace(blocklyDiv, options) {
   const backpack = new Backpack(workspace);
   backpack.init();
 
-  navigationController.addWorkspace(workspace);
-
   // Initialize multiselect plugin.
   const multiselectPlugin = new Multiselect(workspace);
   multiselectPlugin.init(options);
@@ -40,8 +36,6 @@ function createWorkspace(blocklyDiv, options) {
 }
 
 Blockly.ContextMenuItems.registerCommentOptions();
-// Initialize keyboard nav plugin.
-navigationController.init();
 
 Blockly.Blocks['radix'] = {
   init() {

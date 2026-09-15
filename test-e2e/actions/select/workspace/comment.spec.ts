@@ -1,5 +1,7 @@
 import { expect } from "@playwright/test";
 import {
+	cmdOrCtrl,
+	cmdOrCtrlLabel,
 	getAllCommentIds,
 	getComment,
 	getEmptySpace,
@@ -7,6 +9,7 @@ import {
 	getHighlightedCommentIds,
 	getSelectedId,
 	getTrash,
+	isEphemeralFocusTaken,
 	loadComments,
 	test,
 } from "../../../test";
@@ -18,19 +21,31 @@ test.beforeEach(async ({ page, act }) => {
 	);
 });
 
-test("duplicate comment via context menu", async ({ page, act }) => {
+test("open context menu", async ({ page, act }) => {
 	await act(
 		page.mouse.click(...(await getComment(page, "comment1")).centerTop, {
 			button: "right",
 		}),
 	);
+
+	await expect(page.getByRole("menu")).toBeVisible();
+	await expect(page.getByRole("menu")).toMatchAriaSnapshot(`
+		- menu:
+		  - menuitem "Copy ${cmdOrCtrlLabel("C")}"
+		  - menuitem "Duplicate Comment D"
+		  - menuitem "Remove Comment Delete"
+	`);
+	expect(await getHighlightedCommentIds(page)).toEqual([]);
+	expect(await getSelectedId(page)).toBe("comment1");
+	expect(await isEphemeralFocusTaken(page)).toBe(true);
+});
+
+test("duplicate comment via keyboard", async ({ page, act }) => {
+	expect(await getAllCommentIds(page)).toEqual(["comment1", "comment2"]);
 	expect(await getHighlightedCommentIds(page)).toEqual(["comment1"]);
 	expect(await getSelectedId(page)).toBe("comment1");
-	await act(
-		page
-			.getByRole("menuitem", { exact: true, name: "Duplicate Comment" })
-			.click(),
-	);
+
+	await act(page.keyboard.press("D"));
 
 	const allCommentIds = await getAllCommentIds(page);
 	expect(allCommentIds).toHaveLength(3);
@@ -41,13 +56,38 @@ test("duplicate comment via context menu", async ({ page, act }) => {
 	expect(await getSelectedId(page)).toBe(newCommentId);
 });
 
+test("duplicate comment via context menu", async ({ page, act }) => {
+	await act(
+		page.mouse.click(...(await getComment(page, "comment1")).centerTop, {
+			button: "right",
+		}),
+	);
+	expect(await getHighlightedCommentIds(page)).toEqual([]);
+	expect(await getSelectedId(page)).toBe("comment1");
+	expect(await isEphemeralFocusTaken(page)).toBe(true);
+	await act(
+		page
+			.getByRole("menuitem", { exact: true, name: "Duplicate Comment D" })
+			.click(),
+	);
+
+	const allCommentIds = await getAllCommentIds(page);
+	expect(allCommentIds).toHaveLength(3);
+	const [newCommentId] = allCommentIds.filter(
+		(id) => !["comment1", "comment2"].includes(id),
+	);
+	expect(await getHighlightedCommentIds(page)).toEqual([newCommentId]);
+	expect(await getSelectedId(page)).toBe(newCommentId);
+	expect(await isEphemeralFocusTaken(page)).toBe(false);
+});
+
 test("copy and paste comment via keyboard", async ({ page, act }) => {
-	await act(page.keyboard.press("Control+C"));
+	await act(page.keyboard.press(cmdOrCtrl("C")));
 	expect(await getAllCommentIds(page)).toEqual(["comment1", "comment2"]);
 	expect(await getHighlightedCommentIds(page)).toEqual(["comment1"]);
 	expect(await getSelectedId(page)).toBe("comment1");
 
-	await act(page.keyboard.press("Control+V"));
+	await act(page.keyboard.press(cmdOrCtrl("V")));
 	const allCommentIds = await getAllCommentIds(page);
 	expect(allCommentIds).toHaveLength(3);
 	const [newCommentId] = allCommentIds.filter(
@@ -63,9 +103,17 @@ test("copy and paste comment via context menu", async ({ page, act }) => {
 			button: "right",
 		}),
 	);
-	expect(await getHighlightedCommentIds(page)).toEqual(["comment1"]);
+	expect(await getHighlightedCommentIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBe("comment1");
-	await act(page.getByRole("menuitem", { exact: true, name: "Copy" }).click());
+	expect(await isEphemeralFocusTaken(page)).toBe(true);
+	await act(
+		page
+			.getByRole("menuitem", {
+				exact: true,
+				name: `Copy ${cmdOrCtrlLabel("C")}`,
+			})
+			.click(),
+	);
 	expect(await getAllCommentIds(page)).toEqual(["comment1", "comment2"]);
 	expect(await getHighlightedCommentIds(page)).toEqual(["comment1"]);
 	expect(await getSelectedId(page)).toBe("comment1");
@@ -75,7 +123,14 @@ test("copy and paste comment via context menu", async ({ page, act }) => {
 			button: "right",
 		}),
 	);
-	await act(page.getByRole("menuitem", { exact: true, name: "Paste" }).click());
+	await act(
+		page
+			.getByRole("menuitem", {
+				exact: true,
+				name: `Paste ${cmdOrCtrlLabel("V")}`,
+			})
+			.click(),
+	);
 	const allCommentIds = await getAllCommentIds(page);
 	expect(allCommentIds).toHaveLength(3);
 	const [newCommentId] = allCommentIds.filter(
@@ -83,16 +138,21 @@ test("copy and paste comment via context menu", async ({ page, act }) => {
 	);
 	expect(await getHighlightedCommentIds(page)).toEqual([newCommentId]);
 	expect(await getSelectedId(page)).toBe(newCommentId);
+	expect(await isEphemeralFocusTaken(page)).toBe(false);
 });
 
 test("cut and paste comment via keyboard", async ({ page, act }) => {
-	await act(page.keyboard.press("Control+X"));
+	await act(page.keyboard.press(cmdOrCtrl("X")));
 	expect(await getAllCommentIds(page)).toEqual(["comment2"]);
+	expect(await getHighlightedCommentIds(page)).toEqual([]);
+	expect(await getSelectedId(page)).toBeNull();
 
-	await act(page.keyboard.press("Control+V"));
-	expect(await getAllCommentIds(page)).toEqual(["comment1", "comment2"]);
-	expect(await getHighlightedCommentIds(page)).toEqual(["comment1"]);
-	expect(await getSelectedId(page)).toBe("comment1");
+	await act(page.keyboard.press(cmdOrCtrl("V")));
+	expect(await getAllCommentIds(page)).toHaveLength(2);
+	const highlightedCommentIds = await getHighlightedCommentIds(page);
+	expect(highlightedCommentIds).toHaveLength(1);
+	expect(highlightedCommentIds).not.toContain("comment2");
+	expect(await getSelectedId(page)).toBe(highlightedCommentIds[0]);
 });
 
 test("delete comment via keyboard", async ({ page, act }) => {
@@ -109,15 +169,17 @@ test("delete comment via context menu", async ({ page, act }) => {
 			button: "right",
 		}),
 	);
-	expect(await getHighlightedCommentIds(page)).toEqual(["comment1"]);
+	expect(await getHighlightedCommentIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBe("comment1");
+	expect(await isEphemeralFocusTaken(page)).toBe(true);
 	await act(
-		page.getByRole("menuitem", { exact: true, name: "Remove Comment" }).click(),
+		page.getByRole("menuitem", { exact: true, name: "Remove Comment Delete" }).click(),
 	);
 
 	expect(await getAllCommentIds(page)).toEqual(["comment2"]);
 	expect(await getHighlightedCommentIds(page)).toEqual([]);
 	expect(await getSelectedId(page)).toBeNull();
+	expect(await isEphemeralFocusTaken(page)).toBe(false);
 });
 
 test("drag comment to trash", async ({ page, act }) => {
@@ -128,14 +190,14 @@ test("drag comment to trash", async ({ page, act }) => {
 
 	expect(await getAllCommentIds(page)).toEqual(["comment2"]);
 	expect(await getHighlightedCommentIds(page)).toEqual([]);
-	expect(await getSelectedId(page)).toBe("comment1");
+	expect(await getSelectedId(page)).toBeNull();
 });
 
 test("undo via keyboard", async ({ page, act }) => {
 	await act(page.keyboard.press("Delete"));
 	expect(await getAllCommentIds(page)).toEqual(["comment2"]);
 
-	await act(page.keyboard.press("Control+Z"));
+	await act(page.keyboard.press(cmdOrCtrl("Z")));
 
 	expect(await getAllCommentIds(page)).toEqual(["comment1", "comment2"]);
 });
@@ -149,7 +211,7 @@ test("undo via context menu", async ({ page, act }) => {
 			button: "right",
 		}),
 	);
-	await act(page.getByRole("menuitem", { exact: true, name: "Undo" }).click());
+	await act(page.getByRole("menuitem", { exact: true, name: `Undo ${cmdOrCtrlLabel("Z")}` }).click());
 
 	expect(await getAllCommentIds(page)).toEqual(["comment1", "comment2"]);
 });

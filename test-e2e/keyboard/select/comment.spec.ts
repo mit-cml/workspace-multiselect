@@ -1,0 +1,158 @@
+import { expect } from "@playwright/test";
+import {
+	cmdOrCtrl,
+	cmdOrCtrlLabel,
+	getComment,
+	getFocusedCommentButton,
+	getGridSpacing,
+	getHighlightedCommentIds,
+	getSelectedId,
+	isEphemeralFocusTaken,
+	loadComments,
+	test,
+} from "../../test";
+
+test.beforeEach(async ({ page, act }) => {
+	await act(
+		loadComments(page, [
+			{ id: "comment1" },
+			{ id: "comment2" },
+			{ id: "comment3" },
+		]),
+	);
+	await act(
+		page.mouse.click(...(await getComment(page, "comment2")).centerTop),
+	);
+});
+
+test("navigate up", async ({ page, act }) => {
+	await act(page.keyboard.press("ArrowUp"));
+
+	expect(await getHighlightedCommentIds(page)).toEqual(["comment1"]);
+	expect(await getSelectedId(page)).toBe("comment1");
+});
+
+test("navigate down", async ({ page, act }) => {
+	await act(page.keyboard.press("ArrowDown"));
+
+	expect(await getHighlightedCommentIds(page)).toEqual(["comment3"]);
+	expect(await getSelectedId(page)).toBe("comment3");
+});
+
+test("navigate right and left", async ({ page, act }) => {
+	await act(page.keyboard.press("ArrowRight"));
+
+	expect(await getHighlightedCommentIds(page)).toEqual([]);
+	expect(await getFocusedCommentButton(page)).toEqual({
+		commentId: "comment2",
+		type: "collapse",
+	});
+
+	await act(page.keyboard.press("ArrowLeft"));
+
+	expect(await getHighlightedCommentIds(page)).toEqual(["comment2"]);
+	expect(await getSelectedId(page)).toBe("comment2");
+});
+
+test("constrained move", async ({ page, act }) => {
+	const gridSpacing = await getGridSpacing(page);
+	if (gridSpacing === null) throw new Error("Workspace has no grid");
+	const comment1BoundsStart = (await getComment(page, "comment1")).bounds;
+	const comment2BoundsStart = (await getComment(page, "comment2")).bounds;
+	const comment3BoundsStart = (await getComment(page, "comment3")).bounds;
+
+	await act(page.keyboard.press("M"));
+	await expect(page.locator(".blocklyMoveIndicator")).toBeVisible();
+	await act(page.keyboard.press("ArrowRight"));
+	await act(page.keyboard.press("Enter"));
+	await expect(page.locator(".blocklyMoveIndicator")).not.toBeVisible();
+
+	const comment1BoundsEnd = (await getComment(page, "comment1")).bounds;
+	const comment2BoundsEnd = (await getComment(page, "comment2")).bounds;
+	const comment3BoundsEnd = (await getComment(page, "comment3")).bounds;
+	expect(comment2BoundsEnd.left).toBeCloseTo(
+		comment2BoundsStart.left + gridSpacing,
+	);
+	expect(comment2BoundsEnd.top).toBeCloseTo(comment2BoundsStart.top);
+	expect(comment1BoundsEnd.left).toBeCloseTo(comment1BoundsStart.left);
+	expect(comment1BoundsEnd.top).toBeCloseTo(comment1BoundsStart.top);
+	expect(comment3BoundsEnd.left).toBeCloseTo(comment3BoundsStart.left);
+	expect(comment3BoundsEnd.top).toBeCloseTo(comment3BoundsStart.top);
+	expect(await getHighlightedCommentIds(page)).toEqual(["comment2"]);
+	expect(await getSelectedId(page)).toBe("comment2");
+});
+
+test("abort constrained move", async ({ page, act }) => {
+	const comment2BoundsStart = (await getComment(page, "comment2")).bounds;
+
+	await act(page.keyboard.press("M"));
+	await expect(page.locator(".blocklyMoveIndicator")).toBeVisible();
+	await act(page.keyboard.press("ArrowRight"));
+	await act(page.keyboard.press("Escape"));
+	await expect(page.locator(".blocklyMoveIndicator")).not.toBeVisible();
+
+	const comment2BoundsEnd = (await getComment(page, "comment2")).bounds;
+	expect(comment2BoundsEnd.top).toBeCloseTo(comment2BoundsStart.top);
+	expect(comment2BoundsEnd.left).toBeCloseTo(comment2BoundsStart.left);
+	expect(await getHighlightedCommentIds(page)).toEqual(["comment2"]);
+	expect(await getSelectedId(page)).toBe("comment2");
+});
+
+test("unconstrained move", async ({ page, act }) => {
+	const gridSpacing = await getGridSpacing(page);
+	if (gridSpacing === null) throw new Error("Workspace has no grid");
+	const comment1BoundsStart = (await getComment(page, "comment1")).bounds;
+	const comment2BoundsStart = (await getComment(page, "comment2")).bounds;
+	const comment3BoundsStart = (await getComment(page, "comment3")).bounds;
+
+	await act(page.keyboard.press("M"));
+	await expect(page.locator(".blocklyMoveIndicator")).toBeVisible();
+	await act(page.keyboard.press(cmdOrCtrl("ArrowRight")));
+	await act(page.keyboard.press("Enter"));
+	await expect(page.locator(".blocklyMoveIndicator")).not.toBeVisible();
+
+	const comment1BoundsEnd = (await getComment(page, "comment1")).bounds;
+	const comment2BoundsEnd = (await getComment(page, "comment2")).bounds;
+	const comment3BoundsEnd = (await getComment(page, "comment3")).bounds;
+	expect(comment2BoundsEnd.left).toBeCloseTo(
+		comment2BoundsStart.left + gridSpacing,
+	);
+	expect(comment2BoundsEnd.top).toBeCloseTo(comment2BoundsStart.top);
+	expect(comment1BoundsEnd.left).toBeCloseTo(comment1BoundsStart.left);
+	expect(comment1BoundsEnd.top).toBeCloseTo(comment1BoundsStart.top);
+	expect(comment3BoundsEnd.left).toBeCloseTo(comment3BoundsStart.left);
+	expect(comment3BoundsEnd.top).toBeCloseTo(comment3BoundsStart.top);
+	expect(await getHighlightedCommentIds(page)).toEqual(["comment2"]);
+	expect(await getSelectedId(page)).toBe("comment2");
+});
+
+test("abort unconstrained move", async ({ page, act }) => {
+	const comment2BoundsStart = (await getComment(page, "comment2")).bounds;
+
+	await act(page.keyboard.press("M"));
+	await expect(page.locator(".blocklyMoveIndicator")).toBeVisible();
+	await act(page.keyboard.press(cmdOrCtrl("ArrowRight")));
+	await act(page.keyboard.press("Escape"));
+	await expect(page.locator(".blocklyMoveIndicator")).not.toBeVisible();
+
+	const comment2BoundsEnd = (await getComment(page, "comment2")).bounds;
+	expect(comment2BoundsEnd.top).toBeCloseTo(comment2BoundsStart.top);
+	expect(comment2BoundsEnd.left).toBeCloseTo(comment2BoundsStart.left);
+	expect(await getHighlightedCommentIds(page)).toEqual(["comment2"]);
+	expect(await getSelectedId(page)).toBe("comment2");
+});
+
+test("open context menu", async ({ page, act }) => {
+	await act(page.keyboard.press(cmdOrCtrl("Enter")));
+
+	await expect(page.getByRole("menu")).toBeVisible();
+	await expect(page.getByRole("menu")).toMatchAriaSnapshot(`
+		- menu:
+		  - menuitem "Copy ${cmdOrCtrlLabel("C")}"
+		  - menuitem "Duplicate Comment D"
+		  - menuitem "Remove Comment Delete"
+	`);
+	expect(await getHighlightedCommentIds(page)).toEqual([]);
+	expect(await getSelectedId(page)).toBe("comment2");
+	expect(await isEphemeralFocusTaken(page)).toBe(true);
+});

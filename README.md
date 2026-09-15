@@ -120,7 +120,6 @@ scope of its wrapped input function.
 - [x] Backpack (Need to update UI in Backpack plugin side)
 
 **Workspace-related**
-- [x] Keyboard-navigation
 - [x] Shadow-block-converter
 - [x] Workspace-content-highlight
 - [x] Disable-top-blocks
@@ -132,15 +131,6 @@ scope of its wrapped input function.
 - [x] Block-test
 
 For more information, please check out the following [issue page](https://github.com/mit-cml/workspace-multiselect/issues/50).
-
-### Note on keyboard navigation plugin
-Currently, the keyboard navigation plugin has no compatibility issues with the multiselect plugin. It is enabled by default
-in the test files. However, one thing that developers and users should note is that the regular Blockly core's copy/cut/paste shortcuts 
-and multiselect plugin's copy/cut/paste shortcuts are completely disabled when the keyboard navigation mode is turned on. This was assumed
-to be the expected behavior of the user as it defeats the purpose of having the keyboard navigation mode turned on and the user would try to
-select blocks using the cursor and copy/cut/paste with that selection. However, if a developer wants to allow for either copy/cut/paste behavior
-(Blockly Core or multiselect plugin) while the keyboard navigation mode is turned on, we would have to make the following changes described in this
-[issue](https://github.com/google/blockly-samples/issues/2424).
 
 ### Note on disable top blocks plugin
 The disable top blocks plugin has to be initialized after the multiselect plugin. The main reason behind this is that 
