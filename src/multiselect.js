@@ -78,9 +78,7 @@ export class Multiselect {
         }
       }
     });
-    this.dropdownDivObserver_.observe(
-        document.querySelector('.blocklyDropDownDiv').parentNode,
-        {childList: true});
+    this.dropdownDivObserver_.observe(injectionDiv, {childList: true});
     injectionDiv.addEventListener('mouseenter', () => {
       if (options.workspaceAutoFocus === false ||
           Blockly.getFocusManager().getFocusedTree() === this.workspace_) {
