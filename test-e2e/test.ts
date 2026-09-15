@@ -323,7 +323,7 @@ export const getFocusedCommentButton = (
 		const focusedNode = Blockly.getFocusManager().getFocusedNode();
 		if (!(focusedNode instanceof Blockly.comments.CommentBarButton))
 			return null;
-		const commentId = (focusedNode as unknown as { id: string }).id;
+		const commentId = focusedNode.getCommentView().commentId;
 		if (focusedNode instanceof Blockly.comments.CollapseCommentBarButton) {
 			return { commentId, type: "collapse" as const };
 		}
